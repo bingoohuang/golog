@@ -38,7 +38,6 @@ type Rotate struct {
 	curBaseFn   string
 	globPattern string
 	generation  int
-	linkName    string
 	maxAge      time.Duration
 	mutex       sync.RWMutex
 	handler     Handler

@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/bingoohuang/golog/apachelog"
-	"github.com/bingoohuang/golog/rotate"
 	"log"
 	"net"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/bingoohuang/golog/apachelog"
+	"github.com/bingoohuang/golog/rotate"
 )
 
 func main() {
@@ -19,7 +20,7 @@ func main() {
 
 	logf, err := rotate.New(
 		"access_log.%Y%m%d%H%M",
-		//rotate.WithLinkName("access_log"),
+		// rotate.WithLinkName("access_log"),
 		rotate.WithMaxAge(24*time.Hour),
 	)
 	if err != nil {

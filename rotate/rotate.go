@@ -96,13 +96,28 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 
 	if baseFn != rl.curBaseFn {
 		generation = 0
-
 	} else {
 		if !useGenerationalNames {
 			// nothing to do
 			return rl.outFh, nil
 		}
+		generation++
+	}
 
+	// A new file has been requested. Instead of just using the
+	// regular strftime pattern, we create a new file name using
+	// generational names such as "foo.1", "foo.2", "foo.3", etc
+	var name string
+	for {
+		if generation == 0 {
+			name = filename
+		} else {
+			name = fmt.Sprintf("%s.%d", filename, generation)
+		}
+		if _, err := os.Stat(name); err != nil {
+			filename = name
+			break
+		}
 		generation++
 	}
 
@@ -238,10 +253,6 @@ func (rl *Rotate) rotateNolock(filename string) error {
 	}
 	defer guard.Close()
 
-	if err := rl.link(filename); err != nil {
-		return err
-	}
-
 	matches, err := filepath.Glob(rl.globPattern)
 	if err != nil {
 		return err
@@ -272,23 +283,6 @@ func removeFiles(toUnlink []string) {
 	for _, path := range toUnlink {
 		_ = os.Remove(path)
 	}
-}
-
-func (rl *Rotate) link(filename string) error {
-	if rl.linkName == "" {
-		return nil
-	}
-
-	tmpLinkName := filename + `_symlink`
-	if err := os.Symlink(filename, tmpLinkName); err != nil {
-		return errors.Wrap(err, `failed to create new symlink`)
-	}
-
-	if err := os.Rename(tmpLinkName, rl.linkName); err != nil {
-		return errors.Wrap(err, `failed to rename new symlink`)
-	}
-
-	return nil
 }
 
 // Close satisfies the io.Closer interface. You must

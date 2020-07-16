@@ -8,7 +8,7 @@ import (
 	"github.com/bingoohuang/golog/rotate"
 )
 
-func ExampleForceNewFile() {
+func ExampleNew() {
 	logDir, err := ioutil.TempDir("", "rotate_test")
 	if err != nil {
 		fmt.Println("could not create log directory ", err)
@@ -18,8 +18,7 @@ func ExampleForceNewFile() {
 	logPath := fmt.Sprintf("%s/test.log", logDir)
 
 	for i := 0; i < 2; i++ {
-		writer, err := rotate.New(logPath,
-		)
+		writer, err := rotate.New(logPath)
 		if err != nil {
 			fmt.Println("Could not open log file ", err)
 			return
