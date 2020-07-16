@@ -104,7 +104,7 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 		generation++
 	}
 
-	generation, filename = tryGenerational(generation, filename)
+	generation, filename = rl.tryGenerational(generation, filename)
 
 	fh, err := rl.openFile(filename)
 	if err != nil {
@@ -126,7 +126,11 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 	return fh, nil
 }
 
-func tryGenerational(generation int, filename string) (int, string) {
+func (rl *Rotate) tryGenerational(generation int, filename string) (int, string) {
+	if rl.outFh == nil {
+		return generation, filename
+	}
+
 	// A new file has been requested. Instead of just using the
 	// regular strftime pattern, we create a new file name using
 	// generational names such as "foo.1", "foo.2", "foo.3", etc
@@ -184,6 +188,8 @@ func (rl *Rotate) openFile(filename string) (*os.File, error) {
 	if err != nil {
 		return nil, errors.Errorf("failed to open file %s: %s", rl.pattern, err)
 	}
+
+	fmt.Println("log file created", filename)
 
 	return fh, nil
 }

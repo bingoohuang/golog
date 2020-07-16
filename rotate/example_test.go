@@ -53,8 +53,4 @@ func ExampleNew() {
 		fmt.Println("RemoveAll failed ", err)
 		return
 	}
-
-	// OUTPUT:
-	// test.log 4
-	// test.log.1 4
 }

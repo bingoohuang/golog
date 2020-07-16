@@ -20,7 +20,6 @@ func main() {
 
 	logf, err := rotate.New(
 		"access_log.%Y%m%d%H%M",
-		// rotate.WithLinkName("access_log"),
 		rotate.WithMaxAge(24*time.Hour),
 	)
 	if err != nil {
