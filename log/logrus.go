@@ -23,14 +23,15 @@ func (e LogrusEntry) Fields() Fields         { return Fields(e.Entry.Data) }
 func (e LogrusEntry) Message() string        { return e.Entry.Message }
 func (e LogrusEntry) Caller() *runtime.Frame { return e.Entry.Caller }
 
+// LogrusOption defines the options to setup logrus logging system.
 type LogrusOption struct {
 	Level       string
 	PrintColors bool
 	NoCaller    bool
 	Stdout      bool
 
-	LogPath          string
-	RotateExtPattern string
+	LogPath             string
+	RotatePostfixLayout string
 }
 
 type LogrusFormatter struct {
@@ -66,7 +67,7 @@ func (o LogrusOption) Setup() io.Writer {
 	}
 
 	if o.LogPath != "" {
-		r, err := rotate.New(o.LogPath)
+		r, err := rotate.New(o.LogPath, rotate.WithRotatePostfixLayout(o.RotatePostfixLayout))
 		if err != nil {
 			panic(err)
 		}

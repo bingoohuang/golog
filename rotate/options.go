@@ -39,9 +39,8 @@ func WithLocation(loc *time.Location) OptionFn {
 // the file system.
 func WithMaxAge(v time.Duration) OptionFn {
 	return func(r *Rotate) {
-		r.maxAge = v
-		if r.maxAge < 0 {
-			r.maxAge = 0
+		if v >= 0 {
+			r.maxAge = v
 		}
 	}
 }
@@ -52,5 +51,13 @@ func WithMaxAge(v time.Duration) OptionFn {
 func WithHandler(v Handler) OptionFn {
 	return func(r *Rotate) {
 		r.handler = v
+	}
+}
+
+// WithRotatePostfixLayout creates a layout for the postfix of rotated file.
+// eg. .2006-01-02 for daily rotation.
+func WithRotatePostfixLayout(v string) OptionFn {
+	return func(r *Rotate) {
+		r.rotatePostfixLayout = v
 	}
 }

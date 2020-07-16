@@ -2,13 +2,14 @@ package log
 
 import (
 	"flag"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 
 	"github.com/spf13/viper"
 
-	"github.com/mitchellh/go-homedir"
+	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/pflag"
 )
 
@@ -51,16 +52,18 @@ func LogrusSetup() io.Writer {
 
 	viper.SetDefault(LogMaxBackupsDaysKey, 7)
 	viper.SetDefault(LogDebugKey, false)
-	viper.SetDefault(LogTimeFormatKey, "%Y-%m-%d")
+	viper.SetDefault(LogTimeFormatKey, ".2006-01-02")
 
 	logrusOption := LogrusOption{
-		Level:            viper.GetString(LoglevelKey),
-		PrintColors:      true,
-		NoCaller:         false,
-		Stdout:           viper.GetBool(LogrusKey),
-		LogPath:          logdir + ".log." + viper.GetString(LogTimeFormatKey),
-		RotateExtPattern: "",
+		Level:               viper.GetString(LoglevelKey),
+		PrintColors:         true,
+		NoCaller:            false,
+		Stdout:              viper.GetBool(LogrusKey),
+		LogPath:             logdir + ".log",
+		RotatePostfixLayout: viper.GetString(LogTimeFormatKey),
 	}
+
+	fmt.Println("log file created:", logrusOption.LogPath)
 
 	return logrusOption.Setup()
 }

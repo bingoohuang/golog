@@ -5,8 +5,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/bingoohuang/golog/strftime"
 )
 
 // Handler defines the event handler interface.
@@ -33,21 +31,32 @@ type FileRotatedEvent struct {
 // Rotate represents a log file that gets
 // automatically rotated as you write to it.
 type Rotate struct {
-	clock       Clock
-	curFn       string
-	curBaseFn   string
-	globPattern string
-	generation  int
-	maxAge      time.Duration
-	mutex       sync.RWMutex
-	handler     Handler
-	outFh       *os.File
-	pattern     *strftime.Strftime
+	clock      Clock
+	curFn      string
+	generation int
+	maxAge     time.Duration
+	mutex      sync.RWMutex
+	handler    Handler
+	outFh      *os.File
+
+	logfile             string
+	rotatePostfixLayout string
+}
+
+// HasAnySuffixes tests that string s has any of suffixes.
+func HasAnySuffixes(s string, suffixes ...string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(s, suffix) {
+			return true
+		}
+	}
+
+	return false
 }
 
 func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
-	// Ignore lock files
-	if strings.HasSuffix(path, "_lock") || strings.HasSuffix(path, "_symlink") {
+	// Ignore original log file and lock files
+	if path == rl.logfile || HasAnySuffixes(path, "_lock") {
 		return false
 	}
 
@@ -70,6 +79,10 @@ type Clock interface {
 }
 
 type clockFn func() time.Time
+
+func (c clockFn) Now() time.Time {
+	return c()
+}
 
 // returns the current time in UTC.
 // nolint:gochecknoglobals

@@ -1,4 +1,4 @@
-// Package golog is a port of File-RotateLogs from Perl
+// Package rotate is a port of File-RotateLogs from Perl
 // (https://metacpan.org/release/File-RotateLogs), and it allows
 // you to automatically rotate output files when you write to them
 // according to the filename pattern that you can specify.
@@ -9,30 +9,19 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sync"
 	"time"
 
-	"github.com/bingoohuang/golog/strftime"
 	"github.com/pkg/errors"
 )
 
-func (c clockFn) Now() time.Time {
-	return c()
-}
-
 // New creates a new RotateLogs object. A log filename pattern
 // must be passed. Optional `Option` parameters may be passed.
-func New(p string, options ...OptionFn) (*Rotate, error) {
-	globPattern, pattern, err := parseLogFilePattern(p)
-	if err != nil {
-		return nil, err
-	}
-
+func New(logfile string, options ...OptionFn) (*Rotate, error) {
 	r := &Rotate{
-		clock:       Local,
-		globPattern: globPattern,
-		pattern:     pattern,
+		logfile:             logfile,
+		clock:               Local,
+		rotatePostfixLayout: ".2006-01-02",
 	}
 
 	for _, o := range options {
@@ -43,29 +32,18 @@ func New(p string, options ...OptionFn) (*Rotate, error) {
 		r.maxAge = 7 * 24 * time.Hour // nolint:gomnd
 	}
 
+	// make sure the dir is existed, eg:
+	// ./foo/bar/baz/hello.log must make sure ./foo/bar/baz is existed
+	dirname := filepath.Dir(logfile)
+	if err := os.MkdirAll(dirname, 0o755); err != nil {
+		return nil, errors.Wrapf(err, "failed to create directory %s", dirname)
+	}
+
 	return r, nil
 }
 
-func parseLogFilePattern(p string) (string, *strftime.Strftime, error) {
-	globPattern := p
-	for _, re := range []*regexp.Regexp{
-		regexp.MustCompile(`%[%+A-Za-z]`),
-		regexp.MustCompile(`\*+`),
-	} {
-		globPattern = re.ReplaceAllString(globPattern, "*")
-	}
-
-	pattern, err := strftime.New(p)
-	if err != nil {
-		return "", nil, errors.Wrap(err, `invalid strftime pattern`)
-	}
-
-	return globPattern, pattern, nil
-}
-
 func (rl *Rotate) genFilename() string {
-	now := rl.clock.Now()
-	return rl.pattern.FormatString(now)
+	return rl.logfile + rl.clock.Now().Format(rl.rotatePostfixLayout)
 }
 
 // Write satisfies the io.Writer interface. It writes to the
@@ -90,11 +68,10 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 	previousFn := rl.curFn
 	// This filename contains the name of the "NEW" filename
 	// to log to, which may be newer than rl.currentFilename
-	baseFn := rl.genFilename()
-	filename := baseFn
+	filename := rl.genFilename()
 	generation := rl.generation
 
-	if baseFn != rl.curBaseFn {
+	if filename != rl.curFn {
 		generation = 0
 	} else {
 		if !useGenerationalNames {
@@ -106,24 +83,20 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 
 	generation, filename = rl.tryGenerational(generation, filename)
 
-	fh, err := rl.openFile(filename)
-	if err != nil {
+	if err := rl.openFile(); err != nil {
 		return nil, err
 	}
 
-	if err := rl.doRotate(bailOnRotateFail, filename, fh); err != nil {
-		return fh, err
+	if err := rl.doRotate(bailOnRotateFail); err != nil {
+		return nil, err
 	}
 
-	_ = rl.outFh.Close()
-	rl.outFh = fh
-	rl.curBaseFn = baseFn
 	rl.curFn = filename
 	rl.generation = generation
 
 	rl.notifyFileRotateEvent(previousFn, filename)
 
-	return fh, nil
+	return rl.outFh, nil
 }
 
 func (rl *Rotate) tryGenerational(generation int, filename string) (int, string) {
@@ -147,8 +120,8 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 	}
 }
 
-func (rl *Rotate) doRotate(bailOnRotateFail bool, filename string, fh io.Closer) error {
-	err := rl.rotateNolock(filename)
+func (rl *Rotate) doRotate(bailOnRotateFail bool) error {
+	err := rl.rotateNolock()
 
 	if err == nil {
 		return nil
@@ -164,8 +137,8 @@ func (rl *Rotate) doRotate(bailOnRotateFail bool, filename string, fh io.Closer)
 		// We only return this error when explicitly needed (as specified by bailOnRotateFail)
 		//
 		// However, we *NEED* to close `fh` here
-		if fh != nil { // probably can't happen, but being paranoid
-			_ = fh.Close()
+		if rl.outFh != nil { // probably can't happen, but being paranoid
+			_ = rl.outFh.Close()
 		}
 
 		return err
@@ -176,22 +149,23 @@ func (rl *Rotate) doRotate(bailOnRotateFail bool, filename string, fh io.Closer)
 	return nil
 }
 
-func (rl *Rotate) openFile(filename string) (*os.File, error) {
-	// make sure the dir is existed, eg:
-	// ./foo/bar/baz/hello.log must make sure ./foo/bar/baz is existed
-	dirname := filepath.Dir(filename)
-	if err := os.MkdirAll(dirname, 0o755); err != nil {
-		return nil, errors.Wrapf(err, "failed to create directory %s", dirname)
+func (rl *Rotate) openFile() error {
+	if rl.outFh != nil {
+		_ = rl.outFh.Close()
+		if err := os.Rename(rl.logfile, rl.curFn); err != nil {
+			return err
+		}
 	}
+
 	// if we got here, then we need to create a file
-	fh, err := os.OpenFile(filename, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
+	fh, err := os.OpenFile(rl.logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
-		return nil, errors.Errorf("failed to open file %s: %s", rl.pattern, err)
+		return errors.Errorf("failed to open file %s: %s", rl.logfile, err)
 	}
 
-	fmt.Println("log file created", filename)
+	rl.outFh = fh
 
-	return fh, nil
+	return nil
 }
 
 func (rl *Rotate) notifyFileRotateEvent(previousFn string, filename string) {
@@ -246,8 +220,8 @@ func (rl *Rotate) Rotate() error {
 	return nil
 }
 
-func (rl *Rotate) rotateNolock(filename string) error {
-	lockfn := filename + `_lock`
+func (rl *Rotate) rotateNolock() error {
+	lockfn := rl.logfile + `_lock`
 	fh, err := os.OpenFile(lockfn, os.O_CREATE|os.O_EXCL, 0o644)
 	if err != nil {
 		return err // Can't lock, just return
@@ -261,7 +235,7 @@ func (rl *Rotate) rotateNolock(filename string) error {
 	}
 	defer guard.Close()
 
-	matches, err := filepath.Glob(rl.globPattern)
+	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
 		return err
 	}

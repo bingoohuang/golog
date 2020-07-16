@@ -43,10 +43,12 @@ func TestLogRotate(t *testing.T) {
 	dummyTime := time.Now().Add(-7 * 24 * time.Hour)
 	dummyTime = dummyTime.Add(time.Duration(-1 * dummyTime.Nanosecond()))
 	clock := clockwork.NewFakeClockAt(dummyTime)
+	logfile := filepath.Join(dir, "a.log")
 	rl, err := rotate.New(
-		filepath.Join(dir, "log.%Y%m%d%H%M%S"),
+		logfile,
 		rotate.WithClock(clock),
 		rotate.WithMaxAge(24*time.Hour),
+		rotate.WithRotatePostfixLayout(".20060102150405"),
 	)
 
 	if !assert.NoError(t, err, `rotate.New should succeed`) {
@@ -69,6 +71,9 @@ func TestLogRotate(t *testing.T) {
 	if fn == "" {
 		t.Errorf("Could not get filename %s", fn)
 	}
+
+	oldFn := fn
+	fn = logfile
 
 	content, err := ioutil.ReadFile(fn)
 	if err != nil {
@@ -103,6 +108,7 @@ func TestLogRotate(t *testing.T) {
 		t.Errorf(`New file name and old file name should not match ("%s" != "%s")`, fn, newfn)
 	}
 
+	newfn = logfile
 	content, err = ioutil.ReadFile(newfn)
 	if err != nil {
 		t.Errorf("Failed to read file %s: %s", newfn, err)
@@ -116,7 +122,7 @@ func TestLogRotate(t *testing.T) {
 
 	// fn was declared above, before mocking CurrentTime
 	// Old files should have been unlinked
-	_, err = os.Stat(fn)
+	_, err = os.Stat(oldFn)
 	if !assert.Error(t, err, "os.Stat should have failed") {
 		return
 	}
@@ -196,8 +202,9 @@ func TestRotationGenerationalNames(t *testing.T) {
 	defer os.RemoveAll(dir)
 
 	t.Run("Rotate over unchanged pattern", func(t *testing.T) {
+		logfile := filepath.Join(dir, "unchanged-pattern.log")
 		rl, err := rotate.New(
-			filepath.Join(dir, "unchanged-pattern.log"),
+			logfile,
 		)
 		if !assert.NoError(t, err, `rotate.New should succeed`) {
 			return
@@ -220,17 +227,17 @@ func TestRotationGenerationalNames(t *testing.T) {
 			rl.Write([]byte("Hello, World!"))
 			suffix := strings.TrimPrefix(fn, "unchanged-pattern.log")
 			expectedSuffix := fmt.Sprintf(".%d", i+1)
-			if !assert.True(t, suffix == expectedSuffix, "expected suffix %s found %s", expectedSuffix, suffix) {
+			if !assert.True(t, strings.HasSuffix(suffix, expectedSuffix), "expected suffix %s found %s", expectedSuffix, suffix) {
 				return
 			}
-			assert.FileExists(t, rl.CurrentFileName(), "file does not exist %s", rl.CurrentFileName())
-			stat, err := os.Stat(rl.CurrentFileName())
+			assert.FileExists(t, logfile, "file does not exist %s", logfile)
+			stat, err := os.Stat(logfile)
 			if err == nil {
-				if !assert.True(t, stat.Size() == 13, "file %s size is %d, expected 13", rl.CurrentFileName(), stat.Size()) {
+				if !assert.True(t, stat.Size() == 13, "file %s size is %d, expected 13", logfile, stat.Size()) {
 					return
 				}
 			} else {
-				assert.Failf(t, "could not stat file %s", rl.CurrentFileName())
+				assert.Failf(t, "could not stat file %s", logfile)
 				return
 			}
 
@@ -292,13 +299,13 @@ func TestGHIssue23(t *testing.T) {
 			Clock    rotate.Clock
 		}{
 			{
-				Expected: filepath.Join(dir, ToLowerReplace(locName, "/", "_", -1)+".20180601.log"),
+				Expected: filepath.Join(dir, ToLowerReplace(locName, "/", "_", -1)+".log.20180601"),
 				Clock: ClockFunc(func() time.Time {
 					return time.Date(2018, 6, 1, 3, 18, 0, 0, loc)
 				}),
 			},
 			{
-				Expected: filepath.Join(dir, ToLowerReplace(locName, "/", "_", -1)+".20171231.log"),
+				Expected: filepath.Join(dir, ToLowerReplace(locName, "/", "_", -1)+".log.20171231"),
 				Clock: ClockFunc(func() time.Time {
 					return time.Date(2017, 12, 31, 23, 52, 0, 0, loc)
 				}),
@@ -311,10 +318,11 @@ func TestGHIssue23(t *testing.T) {
 
 			t.Run(fmt.Sprintf("location = %s, time = %s", locName, test.Clock.Now().Format(time.RFC3339)),
 				func(t *testing.T) {
-					template := ToLowerReplace(locName, "/", "_", -1) + ".%Y%m%d.log"
+					template := ToLowerReplace(locName, "/", "_", -1) + ".log"
 					rl, err := rotate.New(
 						filepath.Join(dir, template),
 						rotate.WithClock(test.Clock), // we're not using WithLocation, but it's the same thing
+						rotate.WithRotatePostfixLayout(".20060102"),
 					)
 					if !assert.NoError(t, err, "rotate.New should succeed") {
 						return

@@ -17,7 +17,9 @@ func TestGenFilename(t *testing.T) {
 	}
 
 	for _, xt := range ts {
-		rl, err := New("/path/to/%Y/%m/%d", WithClock(clockwork.NewFakeClockAt(xt)))
+		rl, err := New("a.log",
+			WithClock(clockwork.NewFakeClockAt(xt)),
+			WithRotatePostfixLayout(".20060102"))
 		if !assert.NoError(t, err, "New should succeed") {
 			return
 		}
@@ -25,7 +27,7 @@ func TestGenFilename(t *testing.T) {
 		defer rl.Close()
 
 		fn := rl.genFilename()
-		expected := fmt.Sprintf("/path/to/%04d/%02d/%02d", xt.Year(), xt.Month(), xt.Day())
+		expected := fmt.Sprintf("a.log.%04d%02d%02d", xt.Year(), xt.Month(), xt.Day())
 
 		if !assert.Equal(t, expected, fn) {
 			return
