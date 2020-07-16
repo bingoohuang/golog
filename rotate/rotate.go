@@ -104,22 +104,7 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 		generation++
 	}
 
-	// A new file has been requested. Instead of just using the
-	// regular strftime pattern, we create a new file name using
-	// generational names such as "foo.1", "foo.2", "foo.3", etc
-	var name string
-	for {
-		if generation == 0 {
-			name = filename
-		} else {
-			name = fmt.Sprintf("%s.%d", filename, generation)
-		}
-		if _, err := os.Stat(name); err != nil {
-			filename = name
-			break
-		}
-		generation++
-	}
+	generation, filename = tryGenerational(generation, filename)
 
 	fh, err := rl.openFile(filename)
 	if err != nil {
@@ -139,6 +124,23 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 	rl.notifyFileRotateEvent(previousFn, filename)
 
 	return fh, nil
+}
+
+func tryGenerational(generation int, filename string) (int, string) {
+	// A new file has been requested. Instead of just using the
+	// regular strftime pattern, we create a new file name using
+	// generational names such as "foo.1", "foo.2", "foo.3", etc
+	name := filename
+
+	for ; ; generation++ {
+		if generation > 0 {
+			name = fmt.Sprintf("%s.%d", filename, generation)
+		}
+
+		if _, err := os.Stat(name); err != nil {
+			return generation, name
+		}
+	}
 }
 
 func (rl *Rotate) doRotate(bailOnRotateFail bool, filename string, fh io.Closer) error {
