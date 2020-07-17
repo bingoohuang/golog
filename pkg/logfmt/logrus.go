@@ -1,4 +1,4 @@
-package log
+package logfmt
 
 import (
 	"io"
@@ -47,7 +47,7 @@ func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 // Setup setup log parameters.
-func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
+func (o LogrusOption) Setup(ll *logrus.Logger) *Result {
 	l, err := logrus.ParseLevel(o.Level)
 	if err != nil {
 		l = logrus.InfoLevel
@@ -72,6 +72,10 @@ func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
 		writers = append(writers, os.Stdout)
 	}
 
+	g := &Result{
+		Option: o,
+	}
+
 	if o.LogPath != "" {
 		r, err := rotate.New(o.LogPath,
 			rotate.WithRotateLayout(o.Rotate),
@@ -83,14 +87,16 @@ func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
 			panic(err)
 		}
 
+		g.Rotate = r
+
 		writers = append(writers, r)
 	}
 
-	writer := io.MultiWriter(writers...)
+	g.Writer = io.MultiWriter(writers...)
 
-	ll.SetOutput(writer)
+	ll.SetOutput(g.Writer)
 	ll.SetFormatter(formatter)
 	ll.SetReportCaller(o.PrintCaller)
 
-	return writer
+	return g
 }

@@ -1,17 +1,17 @@
-package log_test
+package logfmt_test
 
 import (
 	"fmt"
 	"testing"
 
-	"github.com/bingoohuang/golog/pkg/log"
+	"github.com/bingoohuang/golog/pkg/logfmt"
 )
 
 func TestFormat(t *testing.T) {
-	f := log.Formatter{
+	f := logfmt.Formatter{
 		PrintColor: true,
 	}
-	v := f.Format(&log.EntryItem{
+	v := f.Format(&logfmt.EntryItem{
 		EntryMessage: "hello world",
 	})
 

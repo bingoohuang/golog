@@ -2,29 +2,29 @@ package golog
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/bingoohuang/golog/pkg/logfmt"
 
 	"github.com/bingoohuang/golog/pkg/str"
 
 	"github.com/bingoohuang/golog/pkg/spec"
 
-	"github.com/bingoohuang/golog/pkg/log"
 	"github.com/sirupsen/logrus"
 )
 
 // SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
-func SetupLogrus(ll *logrus.Logger, specification string) io.Writer {
+func SetupLogrus(ll *logrus.Logger, specification string) *logfmt.Result {
 	logSpec := &LogSpec{}
 
 	if err := spec.ParseSpec(specification, "spec", logSpec); err != nil {
 		panic(err)
 	}
 
-	logrusOption := log.LogrusOption{
+	logrusOption := logfmt.LogrusOption{
 		Level:       logSpec.Level,
 		LogPath:     str.Or(logSpec.File, "~/logs/"+filepath.Base(os.Args[0])+".log"),
 		Rotate:      string(logSpec.Rotate),
