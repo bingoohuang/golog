@@ -39,8 +39,7 @@ func main() {
 
 	for {
 		time.Sleep((3 * time.Second))
-
-		http.Get("http://127.0.0.1" + addr)
+		http.Get("http://127.0.0.1" + addr) // nolint:errcheck
 	}
 }
 
