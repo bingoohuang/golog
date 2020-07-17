@@ -23,13 +23,12 @@ name | default value | description
 level| info          | log level to record (debug/info/warn/error)
 file | ~/logs/{bin}.log | base log file
 rotate| .yyyy-MM-dd  | time rotate pattern(yyyy-MM-dd HH:mm:ss.SSS)
-maxAge| 30d          | max age to rotate log files (unit s/m/h/d/w)
-gzipAge| 3d          | gzip rotated aged log files 
-maxSize| 100M         | max size to rotate log files (unit K/M/K)
-printColor| true         | print color on the log level or not
-printCall | true          | print caller file and line number  or not (performance cost)
-stdout | true | print the log to stdout at the same time or not
-
+maxAge| 30d          | max age to keep log files (unit s/m/h/d/w)
+gzipAge| 3d          | gzip aged log files 
+maxSize| 100M        | max size to rotate log files (unit K/M/K)
+printColor| true     | print color on the log level or not
+printCall | true     | print caller file and line number  or not (performance slow)
+stdout   | true      | print the log to stdout at the same time or not
 
 ## Demonstration
 
