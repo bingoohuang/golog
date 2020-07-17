@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"net/http"
+
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/port"
 	"github.com/sirupsen/logrus"
-	"net/http"
 )
 
 func main() {
@@ -14,10 +15,17 @@ func main() {
 		_, _ = w.Write([]byte("OK\n"))
 	})
 
+	golog.SetupLogrus(nil, "file=gologdemo.log")
+
+	for i := 0; i < 100; i++ {
+		i := i
+		go func() {
+			logrus.Infof("go routine %d", i)
+		}()
+	}
+
 	addr := port.FreeAddr()
 	fmt.Println("start to listen on", addr)
-
-	golog.SetupLogrus(nil, "file=gologdemo.log")
 
 	// Now you must write to apachelog library can create
 	// a http.Handler that only writes the appropriate logs for the request to the given handle

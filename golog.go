@@ -16,7 +16,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
+// SetupLog setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
 func SetupLog(ll *log.Logger, specification string) *logfmt.Result {
 	return nil
