@@ -2,6 +2,7 @@ package golog
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,6 +15,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
+
+// SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
+// eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
+func SetupLog(ll *log.Logger, specification string) *logfmt.Result {
+	return nil
+}
 
 // SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
@@ -45,7 +52,7 @@ func SetupLogrus(ll *logrus.Logger, specification string) *logfmt.Result {
 type LogSpec struct {
 	Level       string        `spec:"level,info"`
 	File        string        `spec:"file"`
-	Rotate      spec.Layout   `spec:"rotate,yyyy-MM-dd"`
+	Rotate      spec.Layout   `spec:"rotate,.yyyy-MM-dd"`
 	MaxAge      time.Duration `spec:"maxAge,30d"`
 	GzipAge     time.Duration `spec:"gzipAge,3d"`
 	MaxSize     spec.Size     `spec:"maxSize,100M"`

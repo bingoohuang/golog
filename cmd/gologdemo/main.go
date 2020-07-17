@@ -28,7 +28,11 @@ func main() {
 
 func logRequest(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logrus.Infof("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+		logrus.
+			WithField("proto", r.Proto).
+			WithField("contemtType", r.Header.Get("Content-Type")).
+			Infof("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+
 		handler.ServeHTTP(w, r)
 	})
 }
