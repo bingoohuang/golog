@@ -66,7 +66,7 @@ func (f Formatter) Format(e Entry) []byte {
 	f.printLevel(b, e.Level())
 
 	b.WriteString(fmt.Sprintf("%d --- ", os.Getpid()))
-	b.WriteString(fmt.Sprintf("[%d] ", gid.CurGoroutineID().Uint64()))
+	b.WriteString(fmt.Sprintf("[%5d] ", gid.CurGoroutineID().Uint64()))
 	b.WriteString(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
 
 	f.printCaller(b, e.Caller())
@@ -93,7 +93,7 @@ func (f Formatter) printCaller(b *bytes.Buffer, c *runtime.Frame) {
 
 	if c != nil {
 		fileLine := fmt.Sprintf("%s:%d", filepath.Base(c.File), c.Line)
-		b.WriteString(fmt.Sprintf("%-20s", fileLine))
+		b.WriteString(fmt.Sprintf("%20s", fileLine))
 	}
 }
 
