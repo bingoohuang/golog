@@ -6,9 +6,27 @@
 [![Coverage Status](http://codecov.io/github/bingoohuang/golog/coverage.svg?branch=master)](http://codecov.io/github/bingoohuang/golog?branch=master)
 [![goreport](https://www.goreportcard.com/badge/github.com/bingoohuang/golog)](https://www.goreportcard.com/report/github.com/bingoohuang/golog)
 
-golog
+golog，支持:
+
+1. 日志格式化标准
+1. 日志级别颜色
+1. 按天/大小滚动
+1. 自动压缩
+1. 自动删除
+1. 自动日志文件名
+1. logrus一行集成
 
 ## Integration with logrus
+
+Use default settings:
+
+```go
+func init() {
+    golog.SetupLogrus(nil, "")
+}
+```
+
+Customize the settings:
 
 ```go
 func init() {
@@ -16,7 +34,7 @@ func init() {
 }
 ```
 
-specifications available
+## Specifications
 
 name       | default value    | description
 -----------|------------------|-------------------------------------------------------------
