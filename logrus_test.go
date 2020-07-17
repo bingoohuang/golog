@@ -4,8 +4,12 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/spec"
+
+	"github.com/bingoohuang/golog/pkg/timex"
+
 	"github.com/bingoohuang/golog"
-	"github.com/bingoohuang/golog/rotate"
+	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,22 +27,19 @@ func TestSetupLogrus(t *testing.T) {
 }
 
 func TestParseSpec(t *testing.T) {
-	spec := "level=info,file=a.log,rotate=.yyyy-MM-dd,gzipDays=3,maxSize=100M,printColor,stdout=true,printCaller"
+	s := "level=info,file=a.log,rotate=.yyyy-MM-dd,gzipAge=3d,maxSize=100M,printColor,stdout=true,printCaller"
 	logSpec := golog.LogSpec{}
 
-	assert.Nil(t, golog.ParseSpec(spec, "spec", &logSpec))
+	assert.Nil(t, spec.ParseSpec(s, "spec", &logSpec))
 	assert.Equal(t, golog.LogSpec{
 		Level:       "info",
 		File:        "a.log",
-		Rotate:      ".yyyy-MM-dd",
-		KeepDays:    30,
-		GzipDays:    3,
-		MaxSize:     "100M",
+		Rotate:      ".2006-01-02",
+		KeepAge:     30 * timex.Day,
+		GzipAge:     3 * timex.Day,
+		MaxSize:     100 * rotate.MiB,
 		PrintColor:  true,
 		Stdout:      true,
 		PrintCaller: true,
 	}, logSpec)
-
-	assert.Equal(t, 100*rotate.MiB, logSpec.GetMaxSize())
-	assert.Equal(t, ".2006-01-02", logSpec.GetRotate())
 }

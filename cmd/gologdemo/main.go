@@ -8,8 +8,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/bingoohuang/golog/apachelog"
-	"github.com/bingoohuang/golog/rotate"
+	"github.com/bingoohuang/golog/pkg/apachelog"
+	"github.com/bingoohuang/golog/pkg/rotate"
 )
 
 func main() {
