@@ -246,7 +246,7 @@ func TestMock_After(t *testing.T) {
 	}
 
 	// Move c forward to the after channel's time.
-	c.Add(1100 * time.Millisecond)
+	c.Add(11 * time.Second)
 	if atomic.LoadInt32(&ok) == 0 {
 		t.Fatal("too late")
 	}
@@ -351,7 +351,7 @@ func TestMock_Tick(t *testing.T) {
 	}
 
 	// Move c forward to the start of the first tick.
-	c.Add(1 * time.Second)
+	c.Add(2 * time.Second)
 	if atomic.LoadInt32(&n) != 1 {
 		t.Fatalf("expected 1, got %d", n)
 	}
