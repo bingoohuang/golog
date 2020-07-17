@@ -9,7 +9,7 @@ import (
 
 func TestFormat(t *testing.T) {
 	f := log.Formatter{
-		PrintColors: true,
+		PrintColor: true,
 	}
 	v := f.Format(&log.EntryItem{
 		EntryMessage: "hello world",

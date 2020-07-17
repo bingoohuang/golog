@@ -50,7 +50,7 @@ func (e EntryItem) Message() string        { return e.EntryMessage }
 func (e EntryItem) Caller() *runtime.Frame { return nil }
 
 type Formatter struct {
-	PrintColors bool
+	PrintColor  bool
 	PrintCaller bool
 }
 
@@ -62,14 +62,14 @@ func (f Formatter) Format(e Entry) []byte {
 
 	level := strings.ToUpper(Or(e.Level(), "info"))
 
-	if f.PrintColors {
+	if f.PrintColor {
 		_, _ = fmt.Fprintf(&b, "\x1b[%dm", ColorByLevel(level))
 	}
 
 	// align the longest WARNING, which has the length of 7
 	b.WriteString(fmt.Sprintf("%7s ", level))
 
-	if f.PrintColors { // reset
+	if f.PrintColor { // reset
 		b.WriteString("\x1b[0m")
 	}
 

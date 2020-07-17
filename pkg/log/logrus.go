@@ -26,13 +26,15 @@ func (e LogrusEntry) Caller() *runtime.Frame { return e.Entry.Caller }
 // LogrusOption defines the options to setup logrus logging system.
 type LogrusOption struct {
 	Level       string
-	PrintColors bool
+	PrintColor  bool
 	PrintCaller bool
 	Stdout      bool
 
-	LogPath             string
-	RotatePostfixLayout string
-	MaxSize             int
+	LogPath string
+	Rotate  string
+	MaxSize int
+	MaxAge  time.Duration
+	GzipAge time.Duration
 }
 
 type LogrusFormatter struct {
@@ -61,7 +63,7 @@ func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
 	// https://stackoverflow.com/a/48972299
 	formatter := &LogrusFormatter{
 		Formatter: Formatter{
-			PrintColors: o.PrintColors,
+			PrintColor:  o.PrintColor,
 			PrintCaller: o.PrintCaller,
 		},
 	}
@@ -73,8 +75,10 @@ func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
 
 	if o.LogPath != "" {
 		r, err := rotate.New(o.LogPath,
-			rotate.WithRotatePostfixLayout(o.RotatePostfixLayout),
+			rotate.WithRotateLayout(o.Rotate),
 			rotate.WithMaxSize(o.MaxSize),
+			rotate.WithMaxAge(o.MaxAge),
+			rotate.WithGzipAge(o.GzipAge),
 		)
 		if err != nil {
 			panic(err)

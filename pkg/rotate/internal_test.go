@@ -20,7 +20,7 @@ func TestGenFilename(t *testing.T) {
 	for _, xt := range ts {
 		rl, err := New("a.log",
 			WithClock(clock.NewMockAt(xt)),
-			WithRotatePostfixLayout(".20060102"))
+			WithRotateLayout(".20060102"))
 		if !assert.NoError(t, err, "New should succeed") {
 			return
 		}

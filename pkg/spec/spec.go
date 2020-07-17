@@ -4,17 +4,18 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/bingoohuang/golog/pkg/typ"
 
 	"github.com/bingoohuang/golog/pkg/str"
 	"github.com/bingoohuang/golog/pkg/timex"
 	"github.com/pkg/errors"
 )
 
-type Parseable interface {
+type Parser interface {
 	Parse(string) error
 }
-
-var ParseableType = reflect.TypeOf((*Parseable)(nil)).Elem()
 
 // ParseSpec parses a specification to a structure.
 func ParseSpec(spec, tagName string, v interface{}) error {
@@ -57,9 +58,9 @@ func setFieldSpec(fv reflect.Value, specMap map[string]string, name, defaultValu
 
 	ftt := fv.Type()
 
-	if ftt.Implements(ParseableType) { // 指针类型
+	if typ.Implements(ftt, func(Parser) {}) { // 指针类型
 		rv := reflect.New(ftt.Elem())
-		if err := rv.Interface().(Parseable).Parse(specValue); err != nil {
+		if err := rv.Interface().(Parser).Parse(specValue); err != nil {
 			return err
 		}
 
@@ -67,9 +68,9 @@ func setFieldSpec(fv reflect.Value, specMap map[string]string, name, defaultValu
 		return nil
 	}
 
-	if reflect.PtrTo(ftt).Implements(ParseableType) { // 非指针类型
+	if typ.PtrImplements(ftt, func(Parser) {}) { // 非指针类型
 		rv := reflect.New(ftt)
-		if err := rv.Interface().(Parseable).Parse(specValue); err != nil {
+		if err := rv.Interface().(Parser).Parse(specValue); err != nil {
 			return err
 		}
 
@@ -77,7 +78,7 @@ func setFieldSpec(fv reflect.Value, specMap map[string]string, name, defaultValu
 		return nil
 	}
 
-	if ftt.String() == "time.Duration" {
+	if typ.IsType(ftt, func(time.Duration) {}) {
 		d, err := timex.ParseDuration(specValue)
 		if err != nil {
 			return err

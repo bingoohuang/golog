@@ -249,6 +249,7 @@ func (rl *Rotate) unlinkAgedLogs(matches []string) {
 
 func gzipFiles(files []string) {
 	for _, path := range files {
+		fmt.Println("gzipped", path)
 		_ = compress.Gzip(path)
 	}
 }

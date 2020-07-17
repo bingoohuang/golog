@@ -62,9 +62,9 @@ func WithHandler(v Handler) OptionFn {
 	}
 }
 
-// WithRotatePostfixLayout creates a layout for the postfix of rotated file.
+// WithRotateLayout creates a layout for the postfix of rotated file.
 // eg. .2006-01-02 for daily rotation.
-func WithRotatePostfixLayout(v string) OptionFn {
+func WithRotateLayout(v string) OptionFn {
 	return func(r *Rotate) {
 		r.rotatePostfixLayout = v
 	}

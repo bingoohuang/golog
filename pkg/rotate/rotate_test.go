@@ -49,7 +49,7 @@ func TestLogRotate(t *testing.T) {
 		logfile,
 		rotate.WithClock(clock),
 		rotate.WithMaxAge(24*time.Hour),
-		rotate.WithRotatePostfixLayout(".20060102150405"),
+		rotate.WithRotateLayout(".20060102150405"),
 	)
 
 	if !assert.NoError(t, err, `rotate.New should succeed`) {
@@ -200,7 +200,7 @@ func TestRotationGenerationalNames(t *testing.T) {
 
 	t.Run("Rotate over unchanged pattern", func(t *testing.T) {
 		logfile := filepath.Join(dir, "unchanged-pattern.log")
-		rl, err := rotate.New(logfile, rotate.WithRotatePostfixLayout(""))
+		rl, err := rotate.New(logfile, rotate.WithRotateLayout(""))
 		if !assert.NoError(t, err, `rotate.New should succeed`) {
 			return
 		}
@@ -246,7 +246,7 @@ func TestRotationGenerationalNames(t *testing.T) {
 	t.Run("Rotate over pattern change over every second", func(t *testing.T) {
 		rl, err := rotate.New(
 			filepath.Join(dir, "every-second-pattern.log"),
-			rotate.WithRotatePostfixLayout(".20060102150405"),
+			rotate.WithRotateLayout(".20060102150405"),
 		)
 		if !assert.NoError(t, err, `rotate.New should succeed`) {
 			return
@@ -318,7 +318,7 @@ func TestGHIssue23(t *testing.T) {
 					rl, err := rotate.New(
 						filepath.Join(dir, template),
 						rotate.WithClock(test.Clock), // we're not using WithLocation, but it's the same thing
-						rotate.WithRotatePostfixLayout(".20060102"),
+						rotate.WithRotateLayout(".20060102"),
 					)
 					if !assert.NoError(t, err, "rotate.New should succeed") {
 						return

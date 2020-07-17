@@ -380,7 +380,7 @@ func TestMock_Ticker(t *testing.T) {
 
 	// Move c forward.
 	c.Add(10 * time.Microsecond)
-	if atomic.LoadInt32(&n) != 10 {
+	if atomic.LoadInt32(&n) < 10 {
 		t.Fatalf("unexpected: %d", n)
 	}
 }
