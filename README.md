@@ -100,3 +100,7 @@ log file created: gologdemo.log
      | x.log.2020-07-17.2.log.gz   |      maxAge=4d           | x.log.2020|07|17.2.log.gz deleted|
      +-----------------------------+                          +----------------------------------+
 ```
+
+## Help shell
+
+1. `sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" x.log` to strip color from log file.

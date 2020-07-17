@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/port"
+	"github.com/bingoohuang/golog/pkg/randx"
 	"github.com/sirupsen/logrus"
 )
 
@@ -15,7 +17,7 @@ func main() {
 		_, _ = w.Write([]byte("OK\n"))
 	})
 
-	golog.SetupLogrus(nil, "file=gologdemo.log")
+	golog.SetupLogrus(nil, "file=gologdemo.log,maxSize=1K,rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m")
 
 	for i := 0; i < 100; i++ {
 		i := i
@@ -27,10 +29,18 @@ func main() {
 	addr := port.FreeAddr()
 	fmt.Println("start to listen on", addr)
 
-	// Now you must write to apachelog library can create
-	// a http.Handler that only writes the appropriate logs for the request to the given handle
-	if err := http.ListenAndServe(addr, logRequest(mux)); err != nil {
-		panic(err)
+	go func() {
+		// Now you must write to apachelog library can create
+		// a http.Handler that only writes the appropriate logs for the request to the given handle
+		if err := http.ListenAndServe(addr, logRequest(mux)); err != nil {
+			panic(err)
+		}
+	}()
+
+	for {
+		time.Sleep((3 * time.Second))
+
+		http.Get("http://127.0.0.1" + addr)
 	}
 }
 
@@ -39,7 +49,7 @@ func logRequest(handler http.Handler) http.Handler {
 		logrus.
 			WithField("proto", r.Proto).
 			WithField("contentType", r.Header.Get("Content-Type")).
-			Infof("%s %s %s", r.RemoteAddr, r.Method, r.URL)
+			Infof("%s %s %s %s", r.RemoteAddr, r.Method, r.URL, randx.String(100))
 
 		handler.ServeHTTP(w, r)
 	})

@@ -24,4 +24,4 @@ _testmain.go
 access_log.*
 .DS_Store
 .idea
-gologdemo.log
+gologdemo.log*
