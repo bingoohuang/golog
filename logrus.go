@@ -1,8 +1,10 @@
-package log
+package golog
 
 import (
 	"flag"
 	"fmt"
+	"github.com/bingoohuang/golog/log"
+	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,7 +38,7 @@ func Flags() {
 	flag.Bool(LogrusKey, true, "enable log to file")
 }
 
-func LogrusSetup() io.Writer {
+func SetupLogrus(ll *logrus.Logger) io.Writer {
 	viper.SetDefault(LoglevelKey, "info")
 	viper.SetDefault(LogrusKey, true)
 
@@ -51,7 +53,7 @@ func LogrusSetup() io.Writer {
 	viper.SetDefault(LogDebugKey, false)
 	viper.SetDefault(LogTimeFormatKey, ".2006-01-02")
 
-	logrusOption := LogrusOption{
+	logrusOption := log.LogrusOption{
 		Level:               viper.GetString(LoglevelKey),
 		PrintColors:         true,
 		NoCaller:            false,
@@ -62,5 +64,5 @@ func LogrusSetup() io.Writer {
 
 	fmt.Println("log file created:", logrusOption.LogPath)
 
-	return logrusOption.Setup()
+	return logrusOption.Setup(ll)
 }

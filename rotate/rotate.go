@@ -165,6 +165,8 @@ func (rl *Rotate) openFile(filename string) error {
 		if err := os.Rename(rl.logfile, filename); err != nil {
 			return err
 		}
+
+		fmt.Println("log file renamed to ", filename)
 	}
 
 	// if we got here, then we need to create a file

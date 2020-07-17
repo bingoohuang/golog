@@ -45,13 +45,17 @@ func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 // Setup setup log parameters.
-func (o LogrusOption) Setup() io.Writer {
+func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
 	l, err := logrus.ParseLevel(o.Level)
 	if err != nil {
 		l = logrus.InfoLevel
 	}
 
-	logrus.SetLevel(l)
+	if ll == nil {
+		ll = logrus.StandardLogger()
+	}
+
+	ll.SetLevel(l)
 
 	// https://stackoverflow.com/a/48972299
 	formatter := &LogrusFormatter{
@@ -75,9 +79,11 @@ func (o LogrusOption) Setup() io.Writer {
 		writers = append(writers, r)
 	}
 
-	logrus.AddHook(NewHook(io.MultiWriter(writers...), formatter))
-	logrus.SetOutput(ioutil.Discard)
-	logrus.SetReportCaller(true)
+	writer := io.MultiWriter(writers...)
 
-	return os.Stdout
+	ll.AddHook(NewHook(writer, formatter))
+	ll.SetOutput(ioutil.Discard)
+	ll.SetReportCaller(true)
+
+	return writer
 }
