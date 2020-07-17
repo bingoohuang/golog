@@ -22,8 +22,7 @@ func New(format string) (*ApacheLog, error) {
 }
 
 // WriteLog generates a log line using the format associated with the
-// ApacheLog instance, using the values from ctx. The result is written
-// to dst
+// ApacheLog instance, using the values from ctx. The result is written to dst
 func (al *ApacheLog) WriteLog(dst io.Writer, ctx LogCtx) error {
 	buf := getLogBuffer()
 	defer releaseLogBuffer(buf)
@@ -43,8 +42,7 @@ func (al *ApacheLog) WriteLog(dst io.Writer, ctx LogCtx) error {
 	return nil
 }
 
-// Wrap creates a new http.Handler that logs a formatted log line
-// to dst.
+// Wrap creates a new http.Handler that logs a formatted log line to dst.
 func (al *ApacheLog) Wrap(h http.Handler, dst io.Writer) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := logctx.Get(r)
