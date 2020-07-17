@@ -9,3 +9,11 @@ func AnyOf(v string, any ...string) bool {
 
 	return false
 }
+
+func Or(a, b string) string {
+	if a == "" {
+		return b
+	}
+
+	return a
+}

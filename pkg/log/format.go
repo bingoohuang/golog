@@ -11,6 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/str"
+	"github.com/bingoohuang/golog/pkg/timex"
+
 	"github.com/bingoohuang/golog/pkg/caller"
 
 	"github.com/bingoohuang/golog/pkg/gid"
@@ -58,24 +61,13 @@ type Formatter struct {
 func (f Formatter) Format(e Entry) []byte {
 	b := bytes.Buffer{}
 
-	b.WriteString(OrNow(e.Time()).Format("2006-01-02 15:04:05.000") + " ")
+	b.WriteString(timex.OrNow(e.Time()).Format("2006-01-02 15:04:05.000") + " ")
 
-	level := strings.ToUpper(Or(e.Level(), "info"))
-
-	if f.PrintColor {
-		_, _ = fmt.Fprintf(&b, "\x1b[%dm", ColorByLevel(level))
-	}
-
-	// align the longest WARNING, which has the length of 7
-	b.WriteString(fmt.Sprintf("%7s ", level))
-
-	if f.PrintColor { // reset
-		b.WriteString("\x1b[0m")
-	}
+	f.printLevel(&b, e.Level())
 
 	b.WriteString(fmt.Sprintf("%d --- ", os.Getpid()))
 	b.WriteString(fmt.Sprintf("[%d] ", gid.CurGoroutineID().Uint64()))
-	b.WriteString(fmt.Sprintf("[%s] ", Or(e.TraceID(), "-")))
+	b.WriteString(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
 
 	c := e.Caller()
 	if c == nil && f.PrintCaller {
@@ -102,20 +94,19 @@ func (f Formatter) Format(e Entry) []byte {
 	return b.Bytes()
 }
 
-func OrNow(t time.Time) time.Time {
-	if t.IsZero() {
-		return time.Now()
+func (f Formatter) printLevel(b *bytes.Buffer, level string) {
+	level = strings.ToUpper(str.Or(level, "info"))
+
+	if f.PrintColor {
+		_, _ = fmt.Fprintf(b, "\x1b[%dm", ColorByLevel(level))
 	}
 
-	return t
-}
+	// align the longest WARNING, which has the length of 7
+	b.WriteString(fmt.Sprintf("%7s ", level))
 
-func Or(a, b string) string {
-	if a == "" {
-		return b
+	if f.PrintColor { // reset
+		b.WriteString("\x1b[0m")
 	}
-
-	return a
 }
 
 const (

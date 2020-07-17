@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/str"
+
 	"github.com/bingoohuang/golog/pkg/spec"
 
 	"github.com/bingoohuang/golog/pkg/log"
@@ -22,14 +24,9 @@ func SetupLogrus(ll *logrus.Logger, specification string) io.Writer {
 		panic(err)
 	}
 
-	logfile := logSpec.File
-	if logfile == "" {
-		logfile = "~/logs/" + filepath.Base(os.Args[0]) + ".log"
-	}
-
 	logrusOption := log.LogrusOption{
 		Level:       logSpec.Level,
-		LogPath:     logfile,
+		LogPath:     str.Or(logSpec.File, "~/logs/"+filepath.Base(os.Args[0])+".log"),
 		Rotate:      string(logSpec.Rotate),
 		MaxAge:      logSpec.MaxAge,
 		GzipAge:     logSpec.GzipAge,

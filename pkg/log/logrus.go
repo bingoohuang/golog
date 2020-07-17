@@ -2,7 +2,6 @@ package log
 
 import (
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"time"
@@ -89,9 +88,9 @@ func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
 
 	writer := io.MultiWriter(writers...)
 
-	ll.AddHook(NewHook(writer, formatter))
-	ll.SetOutput(ioutil.Discard)
-	ll.SetReportCaller(true)
+	ll.SetOutput(writer)
+	ll.SetFormatter(formatter)
+	ll.SetReportCaller(o.PrintCaller)
 
 	return writer
 }
