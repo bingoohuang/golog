@@ -47,7 +47,7 @@ func (e EntryItem) Caller() *runtime.Frame { return nil }
 
 type Formatter struct {
 	PrintColors bool
-	NoCaller    bool
+	PrintCaller bool
 }
 
 // Format formats the log output.
@@ -74,7 +74,7 @@ func (f Formatter) Format(e Entry) []byte {
 	b.WriteString(fmt.Sprintf("[%s] ", Or(e.TraceID(), "-")))
 
 	c := e.Caller()
-	if c == nil && !f.NoCaller {
+	if c == nil && f.PrintCaller {
 		c = GetCaller()
 	}
 

@@ -27,7 +27,7 @@ func (e LogrusEntry) Caller() *runtime.Frame { return e.Entry.Caller }
 type LogrusOption struct {
 	Level       string
 	PrintColors bool
-	NoCaller    bool
+	PrintCaller bool
 	Stdout      bool
 
 	LogPath             string
@@ -62,7 +62,7 @@ func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
 	formatter := &LogrusFormatter{
 		Formatter: Formatter{
 			PrintColors: o.PrintColors,
-			NoCaller:    o.NoCaller,
+			PrintCaller: o.PrintCaller,
 		},
 	}
 
