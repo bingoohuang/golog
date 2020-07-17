@@ -11,8 +11,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bingoohuang/golog/clock"
+
 	"github.com/bingoohuang/golog/rotate"
-	"github.com/jonboulle/clockwork"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
@@ -42,7 +43,7 @@ func TestLogRotate(t *testing.T) {
 	// Change current time, so we can safely purge old logs
 	dummyTime := time.Now().Add(-7 * 24 * time.Hour)
 	dummyTime = dummyTime.Add(time.Duration(-1 * dummyTime.Nanosecond()))
-	clock := clockwork.NewFakeClockAt(dummyTime)
+	clock := clock.NewMockAt(dummyTime)
 	logfile := filepath.Join(dir, "a.log")
 	rl, err := rotate.New(
 		logfile,
@@ -98,7 +99,7 @@ func TestLogRotate(t *testing.T) {
 		t.Errorf("Failed to chtime for %s (expected %s, got %s)", fn, fi.ModTime(), dummyTime)
 	}
 
-	clock.Advance(7 * 24 * time.Hour)
+	clock.Add(7 * 24 * time.Hour)
 
 	// This next Write() should trigger Rotate()
 	_, _ = rl.Write([]byte(str))
@@ -148,11 +149,7 @@ func TestLogSetOutput(t *testing.T) {
 	str := "Hello, World"
 	log.Print(str)
 
-	fn := rl.CurrentFileName()
-	if fn == "" {
-		t.Errorf("Could not get filename %s", fn)
-	}
-
+	fn := rl.LogFile()
 	content, err := ioutil.ReadFile(fn)
 	if err != nil {
 		t.Errorf("Failed to read file %s: %s", fn, err)
@@ -203,9 +200,7 @@ func TestRotationGenerationalNames(t *testing.T) {
 
 	t.Run("Rotate over unchanged pattern", func(t *testing.T) {
 		logfile := filepath.Join(dir, "unchanged-pattern.log")
-		rl, err := rotate.New(
-			logfile,
-		)
+		rl, err := rotate.New(logfile, rotate.WithRotatePostfixLayout(""))
 		if !assert.NoError(t, err, `rotate.New should succeed`) {
 			return
 		}
@@ -250,7 +245,8 @@ func TestRotationGenerationalNames(t *testing.T) {
 	})
 	t.Run("Rotate over pattern change over every second", func(t *testing.T) {
 		rl, err := rotate.New(
-			filepath.Join(dir, "every-second-pattern-%Y%m%d%H%M%S.log"),
+			filepath.Join(dir, "every-second-pattern.log"),
+			rotate.WithRotatePostfixLayout(".20060102150405"),
 		)
 		if !assert.NoError(t, err, `rotate.New should succeed`) {
 			return
@@ -264,7 +260,7 @@ func TestRotationGenerationalNames(t *testing.T) {
 			}
 
 			// because every new Write should yield a new logfile,
-			// every rorate should be create a filename ending with a .1
+			// every rotate should be create a filename ending with a .1
 			if !assert.True(t, strings.HasSuffix(rl.CurrentFileName(), ".1"), "log name should end with .1") {
 				return
 			}

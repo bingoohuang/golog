@@ -1,5 +1,5 @@
-// Package rotate is a port of File-RotateLogs from Perl
-// (https://metacpan.org/release/File-RotateLogs), and it allows
+// Package rotate is a port of File-Rotate from Perl
+// (https://metacpan.org/release/File-Rotate), and it allows
 // you to automatically rotate output files when you write to them
 // according to the filename pattern that you can specify.
 package rotate
@@ -9,15 +9,19 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
 )
 
-// New creates a new RotateLogs object. A log filename pattern
+// New creates a new Rotate object. A log filename pattern
 // must be passed. Optional `Option` parameters may be passed.
 func New(logfile string, options ...OptionFn) (*Rotate, error) {
+	logfile, err := Expand(logfile)
+	if err != nil {
+		return nil, err
+	}
+
 	r := &Rotate{
 		logfile:             logfile,
 		clock:               Local,
@@ -65,13 +69,12 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 
 // getWriterNolock must be locked during this operation.
 func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (io.Writer, error) {
-	previousFn := rl.curFn
 	// This filename contains the name of the "NEW" filename
 	// to log to, which may be newer than rl.currentFilename
-	filename := rl.genFilename()
+	fnBase := rl.genFilename()
 	generation := rl.generation
 
-	if filename != rl.curFn {
+	if fnBase != rl.curFnBase {
 		generation = 0
 	} else {
 		if !useGenerationalNames {
@@ -81,9 +84,9 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 		generation++
 	}
 
-	generation, filename = rl.tryGenerational(generation, filename)
+	generation, fn := rl.tryGenerational(generation, fnBase)
 
-	if err := rl.openFile(); err != nil {
+	if err := rl.openFile(fn); err != nil {
 		return nil, err
 	}
 
@@ -91,10 +94,12 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 		return nil, err
 	}
 
-	rl.curFn = filename
+	previousFn := rl.curFn
+	rl.curFn = fn
+	rl.curFnBase = fnBase
 	rl.generation = generation
 
-	rl.notifyFileRotateEvent(previousFn, filename)
+	rl.notifyFileRotateEvent(previousFn, fn)
 
 	return rl.outFh, nil
 }
@@ -114,15 +119,20 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 			name = fmt.Sprintf("%s.%d", filename, generation)
 		}
 
-		if _, err := os.Stat(name); err != nil {
-			return generation, name
+		if name == rl.curFn {
+			continue
 		}
+
+		if _, err := os.Stat(name); err == nil {
+			continue
+		}
+
+		return generation, name
 	}
 }
 
 func (rl *Rotate) doRotate(bailOnRotateFail bool) error {
 	err := rl.rotateNolock()
-
 	if err == nil {
 		return nil
 	}
@@ -149,10 +159,10 @@ func (rl *Rotate) doRotate(bailOnRotateFail bool) error {
 	return nil
 }
 
-func (rl *Rotate) openFile() error {
+func (rl *Rotate) openFile(filename string) error {
 	if rl.outFh != nil {
 		_ = rl.outFh.Close()
-		if err := os.Rename(rl.logfile, rl.curFn); err != nil {
+		if err := os.Rename(rl.logfile, filename); err != nil {
 			return err
 		}
 	}
@@ -177,8 +187,7 @@ func (rl *Rotate) notifyFileRotateEvent(previousFn string, filename string) {
 	}
 }
 
-// CurrentFileName returns the current file name that
-// the RotateLogs object is writing to.
+// CurrentFileName returns the current file name that the Rotate object is writing to.
 func (rl *Rotate) CurrentFileName() string {
 	rl.mutex.RLock()
 	defer rl.mutex.RUnlock()
@@ -186,21 +195,9 @@ func (rl *Rotate) CurrentFileName() string {
 	return rl.curFn
 }
 
-type cleanupGuard struct {
-	enable bool
-	fn     func()
-	mutex  sync.Mutex
-}
-
-func (g *cleanupGuard) Enable() {
-	g.mutex.Lock()
-	defer g.mutex.Unlock()
-
-	g.enable = true
-}
-
-func (g *cleanupGuard) Close() {
-	g.fn()
+// LogFile returns the current file name that the Rotate object is writing to.
+func (rl *Rotate) LogFile() string {
+	return rl.logfile
 }
 
 // Rotate forcefully rotates the log files. If the generated file name
@@ -221,20 +218,6 @@ func (rl *Rotate) Rotate() error {
 }
 
 func (rl *Rotate) rotateNolock() error {
-	lockfn := rl.logfile + `_lock`
-	fh, err := os.OpenFile(lockfn, os.O_CREATE|os.O_EXCL, 0o644)
-	if err != nil {
-		return err // Can't lock, just return
-	}
-
-	guard := cleanupGuard{
-		fn: func() {
-			_ = fh.Close()
-			_ = os.Remove(lockfn)
-		},
-	}
-	defer guard.Close()
-
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
 		return err
@@ -252,8 +235,6 @@ func (rl *Rotate) rotateNolock() error {
 	if len(toUnlink) == 0 {
 		return nil
 	}
-
-	guard.Enable()
 
 	// unlink files on a separate goroutine
 	go removeFiles(toUnlink)

@@ -1,9 +1,9 @@
-file-rotatelogs
+file-Rotate
 ==================
 
-Provide an `io.Writer` that periodically rotates log files from within the application. Port of [File::RotateLogs](https://metacpan.org/release/File-RotateLogs) from Perl to Go.
+Provide an `io.Writer` that periodically rotates log files from within the application. Port of [File::Rotate](https://metacpan.org/release/File-Rotate) from Perl to Go.
 
-[![Build Status](https://travis-ci.org/lestrrat-go/file-rotate.png?branch=master)](https://travis-ci.org/lestrrat-go/file-rotatelogs)
+[![Build Status](https://travis-ci.org/lestrrat-go/file-rotate.png?branch=master)](https://travis-ci.org/lestrrat-go/file-Rotate)
 
 
 # SYNOPSIS
@@ -14,7 +14,7 @@ import (
   "net/http"
 
   apachelog "github.com/lestrrat-go/apache-logformat"
-  rotatelogs "github.com/bingoohuang/golog"
+  Rotate "github.com/bingoohuang/golog"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
     rotate.WithRotationTime(time.Hour),
   )
   if err != nil {
-    log.Printf("failed to create rotatelogs: %s", err)
+    log.Printf("failed to create Rotate: %s", err)
     return
   }
 
@@ -167,7 +167,7 @@ Note: MaxAge should be disabled by specifing `WithMaxAge(-1)` explicitly.
 
 ## Handler (default: nil)
 
-Sets the event handler to receive event notifications from the RotateLogs
+Sets the event handler to receive event notifications from the Rotate
 object. Currently only supported event type is FiledRotated
 
 ```go

@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/bingoohuang/golog/strftime"
-	"github.com/lestrrat-go/envload"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,9 +44,6 @@ func TestInvalid(t *testing.T) {
 }
 
 func TestFormat(t *testing.T) {
-	l := envload.New()
-	defer assert.Nil(t, l.Restore())
-
 	assert.Nil(t, os.Setenv("LC_ALL", "C"))
 
 	s, err := strftime.Format(`%A %a %B %b %C %c %D %d %e %F %H %h %I %j %k `+
@@ -64,9 +60,6 @@ func TestFormat(t *testing.T) {
 }
 
 func TestFormatBlanks(t *testing.T) {
-	l := envload.New()
-	defer assert.Nil(t, l.Restore())
-
 	assert.Nil(t, os.Setenv("LC_ALL", "C"))
 
 	{
@@ -95,9 +88,6 @@ func TestFormatBlanks(t *testing.T) {
 
 // nolint:errcheck
 func TestFormatZeropad(t *testing.T) {
-	l := envload.New()
-	defer l.Restore()
-
 	os.Setenv("LC_ALL", "C")
 
 	{

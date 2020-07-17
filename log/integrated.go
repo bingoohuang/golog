@@ -9,7 +9,6 @@ import (
 
 	"github.com/spf13/viper"
 
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/pflag"
 )
 
@@ -47,8 +46,6 @@ func LogrusSetup() io.Writer {
 	if logdir == "" {
 		logdir = "~/logs/" + appName
 	}
-
-	logdir, _ = homedir.Expand(logdir)
 
 	viper.SetDefault(LogMaxBackupsDaysKey, 7)
 	viper.SetDefault(LogDebugKey, false)

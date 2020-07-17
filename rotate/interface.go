@@ -33,6 +33,7 @@ type FileRotatedEvent struct {
 type Rotate struct {
 	clock      Clock
 	curFn      string
+	curFnBase  string
 	generation int
 	maxAge     time.Duration
 	mutex      sync.RWMutex
@@ -72,7 +73,7 @@ func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 	return true
 }
 
-// Clock is the interface used by the RotateLogs
+// Clock is the interface used by the Rotate
 // object to determine the current time.
 type Clock interface {
 	Now() time.Time
@@ -96,7 +97,7 @@ var (
 	Local = clockFn(time.Now)
 )
 
-// Option is used to pass optional arguments to the RotateLogs constructor.
+// Option is used to pass optional arguments to the Rotate constructor.
 type Option interface {
 	Name() string
 	Value() interface{}

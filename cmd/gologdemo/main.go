@@ -23,7 +23,7 @@ func main() {
 		rotate.WithMaxAge(24*time.Hour),
 	)
 	if err != nil {
-		log.Printf("failed to create rotatelogs: %s", err)
+		log.Printf("failed to create Rotate: %s", err)
 		return
 	}
 

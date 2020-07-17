@@ -8,12 +8,12 @@ import (
 type OptionFn func(*Rotate)
 
 // WithClock creates a new Option that sets a clock
-// that the RotateLogs object will use to determine
+// that the Rotate object will use to determine
 // the current time.
 //
-// By default rotatelogs.Local, which returns the
+// By default Rotate.Local, which returns the
 // current time in the local time zone, is used. If you
-// would rather use UTC, use rotatelogs.UTC as the argument
+// would rather use UTC, use Rotate.UTC as the argument
 // to this option, and pass it to the constructor.
 func WithClock(c Clock) OptionFn {
 	return func(r *Rotate) {
@@ -22,7 +22,7 @@ func WithClock(c Clock) OptionFn {
 }
 
 // WithLocation creates a new Option that sets up a
-// "Clock" interface that the RotateLogs object will use
+// "Clock" interface that the Rotate object will use
 // to determine the current time.
 //
 // This option works by always returning the in the given location.
