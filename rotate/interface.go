@@ -39,9 +39,11 @@ type Rotate struct {
 	mutex      sync.RWMutex
 	handler    Handler
 	outFh      *os.File
+	outFhSize  int
 
 	logfile             string
 	rotatePostfixLayout string
+	rotateMaxSize       int
 }
 
 // HasAnySuffixes tests that string s has any of suffixes.

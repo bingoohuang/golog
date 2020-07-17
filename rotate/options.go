@@ -61,3 +61,17 @@ func WithRotatePostfixLayout(v string) OptionFn {
 		r.rotatePostfixLayout = v
 	}
 }
+
+const (
+	KiB = 1024
+	MiB = 1024 * KiB
+	GiB = 1024 * MiB
+)
+
+// WithMaxSize set how much max size should a log file be rotated.
+// eg. 100*rotate.MiB
+func WithMaxSize(v int) OptionFn {
+	return func(r *Rotate) {
+		r.rotateMaxSize = v
+	}
+}

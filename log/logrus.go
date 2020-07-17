@@ -32,6 +32,7 @@ type LogrusOption struct {
 
 	LogPath             string
 	RotatePostfixLayout string
+	MaxSize             int
 }
 
 type LogrusFormatter struct {
@@ -71,7 +72,10 @@ func (o LogrusOption) Setup(ll *logrus.Logger) io.Writer {
 	}
 
 	if o.LogPath != "" {
-		r, err := rotate.New(o.LogPath, rotate.WithRotatePostfixLayout(o.RotatePostfixLayout))
+		r, err := rotate.New(o.LogPath,
+			rotate.WithRotatePostfixLayout(o.RotatePostfixLayout),
+			rotate.WithMaxSize(o.MaxSize),
+		)
 		if err != nil {
 			panic(err)
 		}

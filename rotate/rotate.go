@@ -59,16 +59,22 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	rl.mutex.Lock()
 	defer rl.mutex.Unlock()
 
-	out, err := rl.getWriterNolock(false, false)
+	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize+len(p) > rl.rotateMaxSize
+
+	out, err := rl.getWriterNolock(forRotate)
 	if err != nil {
 		return 0, errors.Wrap(err, `failed to acquire target io.Writer`)
 	}
 
-	return out.Write(p)
+	n, err = out.Write(p)
+
+	rl.outFhSize += n
+
+	return n, err
 }
 
 // getWriterNolock must be locked during this operation.
-func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (io.Writer, error) {
+func (rl *Rotate) getWriterNolock(useGenerationalNames bool) (io.Writer, error) {
 	// This filename contains the name of the "NEW" filename
 	// to log to, which may be newer than rl.currentFilename
 	fnBase := rl.genFilename()
@@ -81,6 +87,7 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 			// nothing to do
 			return rl.outFh, nil
 		}
+
 		generation++
 	}
 
@@ -90,9 +97,7 @@ func (rl *Rotate) getWriterNolock(bailOnRotateFail, useGenerationalNames bool) (
 		return nil, err
 	}
 
-	if err := rl.doRotate(bailOnRotateFail); err != nil {
-		return nil, err
-	}
+	rl.rotateNolock()
 
 	previousFn := rl.curFn
 	rl.curFn = fn
@@ -131,34 +136,6 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 	}
 }
 
-func (rl *Rotate) doRotate(bailOnRotateFail bool) error {
-	err := rl.rotateNolock()
-	if err == nil {
-		return nil
-	}
-
-	err = errors.Wrap(err, "failed to rotate")
-
-	if bailOnRotateFail {
-		// Failure to rotate is a problem, but it's really not a great
-		// idea to stop your application just because you couldn't rename
-		// your log.
-		//
-		// We only return this error when explicitly needed (as specified by bailOnRotateFail)
-		//
-		// However, we *NEED* to close `fh` here
-		if rl.outFh != nil { // probably can't happen, but being paranoid
-			_ = rl.outFh.Close()
-		}
-
-		return err
-	}
-
-	_, _ = fmt.Fprintf(os.Stderr, "%s\n", err.Error())
-
-	return nil
-}
-
 func (rl *Rotate) openFile(filename string) error {
 	if rl.outFh != nil {
 		_ = rl.outFh.Close()
@@ -176,6 +153,7 @@ func (rl *Rotate) openFile(filename string) error {
 	}
 
 	rl.outFh = fh
+	rl.outFhSize = 0
 
 	return nil
 }
@@ -212,17 +190,19 @@ func (rl *Rotate) Rotate() error {
 	rl.mutex.Lock()
 	defer rl.mutex.Unlock()
 
-	if _, err := rl.getWriterNolock(true, true); err != nil {
+	if _, err := rl.getWriterNolock(true); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (rl *Rotate) rotateNolock() error {
-	matches, err := filepath.Glob(rl.logfile + "*")
+func (rl *Rotate) rotateNolock() {
+	pattern := rl.logfile + "*"
+	matches, err := filepath.Glob(pattern)
 	if err != nil {
-		return err
+		_, _ = fmt.Fprintf(os.Stderr, "fail to glob %v error %v\n", pattern, err)
+		return
 	}
 
 	cutoff := rl.clock.Now().Add(-1 * rl.maxAge)
@@ -234,14 +214,10 @@ func (rl *Rotate) rotateNolock() error {
 		}
 	}
 
-	if len(toUnlink) == 0 {
-		return nil
+	if len(toUnlink) > 0 {
+		// unlink files on a separate goroutine
+		go removeFiles(toUnlink)
 	}
-
-	// unlink files on a separate goroutine
-	go removeFiles(toUnlink)
-
-	return nil
 }
 
 func removeFiles(toUnlink []string) {
