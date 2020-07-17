@@ -12,8 +12,6 @@ func (l *Layout) Parse(s string) error {
 	s = strings.Replace(s, "hh", "03", -1)
 	s = strings.Replace(s, "HH", "15", -1)
 	s = strings.Replace(s, "mm", "04", -1)
-	s = strings.Replace(s, "ss", "05", -1)
-	s = strings.Replace(s, "SSS", "000", -1)
 
 	*l = Layout(s)
 	return nil

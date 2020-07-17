@@ -12,7 +12,7 @@ import (
 
 type logSpec struct {
 	Level      string        `spec:"level,info"`
-	Rotate     spec.Layout   `spec:"rotate,yyyy-MM-dd"`
+	Rotate     spec.Layout   `spec:"rotate,.yyyy-MM-dd"`
 	MaxAge     time.Duration `spec:"maxAge,30d"`
 	MaxSize    spec.Size     `spec:"maxSize,100M"`
 	PrintColor bool          `spec:"printColor,true"`
