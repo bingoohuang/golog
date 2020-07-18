@@ -62,10 +62,10 @@ func (rl *Rotate) genFilename() string {
 func (rl *Rotate) Write(p []byte) (n int, err error) {
 	defer rl.lock.Lock()()
 
-	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize > rl.rotateMaxSize
-	out, err := rl.getWriterNolock(forRotate)
+	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize >= rl.rotateMaxSize
+	out, err := rl.getWriter(forRotate)
 	if err != nil {
-		ErrorReport("Write getWriterNolock error %+v\n", err)
+		ErrorReport("Write getWriter error %+v\n", err)
 
 		return 0, errors.Wrap(err, `failed to acquire target io.Writer`)
 	}
@@ -81,7 +81,7 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	return n, err
 }
 
-func (rl *Rotate) getWriterNolock(forceRotate bool) (io.Writer, error) {
+func (rl *Rotate) getWriter(forceRotate bool) (io.Writer, error) {
 	fnBase := rl.genFilename()
 	generation := rl.generation
 
@@ -104,12 +104,11 @@ func (rl *Rotate) getWriterNolock(forceRotate bool) (io.Writer, error) {
 
 	go rl.maintain()
 
-	previousFn := rl.curFn
-	rl.curFn = fn
+	rl.notifyFileRotateEvent(rl.curFn, fn)
+
 	rl.curFnBase = fnBase
 	rl.generation = generation
-
-	rl.notifyFileRotateEvent(previousFn, fn)
+	rl.curFn = fn
 
 	return rl.outFh, nil
 }
@@ -180,7 +179,7 @@ func (rl *Rotate) rotateFile(filename string) error {
 	return nil
 }
 
-func (rl *Rotate) notifyFileRotateEvent(previousFn string, filename string) {
+func (rl *Rotate) notifyFileRotateEvent(previousFn, filename string) {
 	if h := rl.handler; h != nil {
 		go h.Handle(&FileRotatedEvent{PreviousFile: previousFn, CurrentFile: filename})
 	}
@@ -205,9 +204,9 @@ func (rl *Rotate) LogFile() string { return rl.logfile }
 func (rl *Rotate) Rotate() error {
 	defer rl.lock.Lock()()
 
-	_, err := rl.getWriterNolock(true)
+	_, err := rl.getWriter(true)
 	if err != nil {
-		ErrorReport("Rotate getWriterNolock error %+v\n", err)
+		ErrorReport("Rotate getWriter error %+v\n", err)
 	}
 
 	return err

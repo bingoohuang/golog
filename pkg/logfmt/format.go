@@ -57,15 +57,21 @@ type Formatter struct {
 	PrintCaller bool
 }
 
+var Pid = os.Getpid()
+
+const (
+	layout = "2006-01-02 15:04:05.000"
+)
+
 // Format formats the log output.
 func (f Formatter) Format(e Entry) []byte {
 	b := &bytes.Buffer{}
 
-	b.WriteString(timex.OrNow(e.Time()).Format("2006-01-02 15:04:05.000") + " ")
+	b.WriteString(timex.OrNow(e.Time()).Format(layout) + " ")
 
 	f.printLevel(b, e.Level())
 
-	b.WriteString(fmt.Sprintf("%d --- ", os.Getpid()))
+	b.WriteString(fmt.Sprintf("%d --- ", Pid))
 	b.WriteString(fmt.Sprintf("[%5d] ", gid.CurGoroutineID().Uint64()))
 	b.WriteString(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
 
