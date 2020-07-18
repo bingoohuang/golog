@@ -9,12 +9,12 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/bingoohuang/golog/pkg/lock"
 
 	"github.com/bingoohuang/golog/pkg/compress"
 	"github.com/bingoohuang/golog/pkg/homedir"
+	"github.com/bingoohuang/golog/pkg/iox"
 	"github.com/bingoohuang/golog/pkg/timex"
 
 	"github.com/pkg/errors"
@@ -65,7 +65,7 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize >= rl.rotateMaxSize
 	out, err := rl.getWriter(forRotate)
 	if err != nil {
-		ErrorReport("Write getWriter error %+v\n", err)
+		iox.ErrorReport("Write getWriter error %+v\n", err)
 
 		return 0, errors.Wrap(err, `failed to acquire target io.Writer`)
 	}
@@ -73,7 +73,7 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	n, err = out.Write(p)
 
 	if err != nil {
-		ErrorReport("Write error %+v\n", err)
+		iox.ErrorReport("Write error %+v\n", err)
 	}
 
 	rl.outFhSize += int64(n)
@@ -149,18 +149,18 @@ func (rl *Rotate) rotateFile(filename string) error {
 		rl.outFh = nil
 
 		if err := os.Rename(rl.logfile, filename); err != nil {
-			ErrorReport("Rename %s to %s error %+v\n", rl.logfile, filename, err)
+			iox.ErrorReport("Rename %s to %s error %+v\n", rl.logfile, filename, err)
 
 			return err
 		}
 
-		InfoReport("log file renamed to", filename)
+		iox.InfoReport("log file renamed to", filename)
 	}
 
 	// if we got here, then we need to create a file
 	fh, err := os.OpenFile(rl.logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
-		ErrorReport("OpenFile %s error %+v\n", rl.logfile, err)
+		iox.ErrorReport("OpenFile %s error %+v\n", rl.logfile, err)
 
 		return errors.Errorf("failed to open file %s: %s", rl.logfile, err)
 	}
@@ -173,7 +173,7 @@ func (rl *Rotate) rotateFile(filename string) error {
 		rl.outFhSize = stat.Size()
 	} else {
 		rl.outFhSize = 0
-		ErrorReport("Stat %s error %+v\n", rl.logfile, err)
+		iox.ErrorReport("Stat %s error %+v\n", rl.logfile, err)
 	}
 
 	return nil
@@ -206,19 +206,10 @@ func (rl *Rotate) Rotate() error {
 
 	_, err := rl.getWriter(true)
 	if err != nil {
-		ErrorReport("Rotate getWriter error %+v\n", err)
+		iox.ErrorReport("Rotate getWriter error %+v\n", err)
 	}
 
 	return err
-}
-
-func InfoReport(a ...interface{}) {
-	t := time.Now().Format("2006-01-02 15:04:05.000")
-	fmt.Println(append([]interface{}{t}, a...)...)
-}
-
-func ErrorReport(format string, a ...interface{}) {
-	_, _ = fmt.Fprintf(os.Stderr, format, a...)
 }
 
 func (rl *Rotate) maintain() {
@@ -234,7 +225,7 @@ func (rl *Rotate) maintain() {
 
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
-		ErrorReport("fail to glob %v error %+v\n", rl.logfile+"*", err)
+		iox.ErrorReport("fail to glob %v error %+v\n", rl.logfile+"*", err)
 
 		return
 	}
@@ -253,18 +244,18 @@ func (rl *Rotate) maintain() {
 }
 
 func (rl *Rotate) gzipFile(path string) {
-	InfoReport("gzipped by", rl.gzipAge, path)
+	iox.InfoReport("gzipped by", rl.gzipAge, path)
 
 	if err := compress.Gzip(path); err != nil {
-		ErrorReport("Gzip error %+v\n", err)
+		iox.ErrorReport("Gzip error %+v\n", err)
 	}
 }
 
 func (rl *Rotate) removeFile(path string) {
-	InfoReport("removed by", rl.maxAge, path)
+	iox.InfoReport("removed by", rl.maxAge, path)
 
 	if err := os.Remove(path); err != nil {
-		ErrorReport("Remove error %+v\n", err)
+		iox.ErrorReport("Remove error %+v\n", err)
 	}
 }
 
@@ -279,11 +270,11 @@ func (rl *Rotate) Close() error {
 
 	err := rl.outFh.Close()
 	if err != nil {
-		ErrorReport("Close outFh error %+v\n", err)
+		iox.ErrorReport("Close outFh error %+v\n", err)
 	}
 
 	rl.outFh = nil
-	InfoReport("outFh closed")
+	iox.InfoReport("outFh closed")
 
 	return err
 }
