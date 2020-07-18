@@ -4,7 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/bingoohuang/golog/pkg/spec"
 	"github.com/bingoohuang/golog/pkg/timex"
 	"github.com/stretchr/testify/assert"
@@ -27,7 +26,7 @@ func TestParseSpec(t *testing.T) {
 		Level:      "info",
 		Rotate:     ".2006-01-02",
 		MaxAge:     30 * timex.Day,
-		MaxSize:    110 * rotate.MiB,
+		MaxSize:    110 * spec.MiB,
 		PrintColor: false,
 	}, l)
 }

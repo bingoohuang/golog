@@ -13,6 +13,7 @@ import (
 
 	"github.com/bingoohuang/golog/pkg/compress"
 	"github.com/bingoohuang/golog/pkg/homedir"
+	"github.com/bingoohuang/golog/pkg/timex"
 
 	"github.com/pkg/errors"
 )
@@ -29,14 +30,11 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 		logfile:             logfile,
 		clock:               Local,
 		rotatePostfixLayout: ".2006-01-02",
+		maxAge:              timex.Week,
 	}
 
 	for _, o := range options {
 		o(r)
-	}
-
-	if r.maxAge <= 0 {
-		r.maxAge = 7 * 24 * time.Hour // nolint:gomnd
 	}
 
 	// make sure the dir is existed, eg:
@@ -59,10 +57,9 @@ func (rl *Rotate) genFilename() string {
 // automatically rotated, and also purged if necessary.
 func (rl *Rotate) Write(p []byte) (n int, err error) {
 	// Guard against concurrent writes
-	rl.mutex.Lock()
-	defer rl.mutex.Unlock()
+	defer rl.lock.Lock()()
 
-	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize+len(p) > rl.rotateMaxSize
+	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize > rl.rotateMaxSize
 
 	out, err := rl.getWriterNolock(forRotate)
 	if err != nil {
@@ -71,7 +68,7 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 
 	n, err = out.Write(p)
 
-	rl.outFhSize += n
+	rl.outFhSize += int64(n)
 
 	return n, err
 }
@@ -96,11 +93,11 @@ func (rl *Rotate) getWriterNolock(useGenerationalNames bool) (io.Writer, error) 
 
 	generation, fn := rl.tryGenerational(generation, fnBase)
 
-	if err := rl.openFile(fn); err != nil {
+	if err := rl.rotateFile(fn); err != nil {
 		return nil, err
 	}
 
-	rl.rotateNolock()
+	rl.maintainNolock()
 
 	previousFn := rl.curFn
 	rl.curFn = fn
@@ -139,14 +136,15 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 	}
 }
 
-func (rl *Rotate) openFile(filename string) error {
+func (rl *Rotate) rotateFile(filename string) error {
 	if rl.outFh != nil {
 		_ = rl.outFh.Close()
 		if err := os.Rename(rl.logfile, filename); err != nil {
 			return err
 		}
 
-		fmt.Println("log file renamed to ", filename)
+		t := time.Now().Format("2006-01-02 15:04:05.000")
+		fmt.Println(t, "log file renamed to ", filename)
 	}
 
 	// if we got here, then we need to create a file
@@ -157,6 +155,10 @@ func (rl *Rotate) openFile(filename string) error {
 
 	rl.outFh = fh
 	rl.outFhSize = 0
+
+	if stat, err := fh.Stat(); err == nil {
+		rl.outFhSize = stat.Size()
+	}
 
 	return nil
 }
@@ -172,16 +174,13 @@ func (rl *Rotate) notifyFileRotateEvent(previousFn string, filename string) {
 
 // CurrentFileName returns the current file name that the Rotate object is writing to.
 func (rl *Rotate) CurrentFileName() string {
-	rl.mutex.RLock()
-	defer rl.mutex.RUnlock()
+	defer rl.lock.RLock()()
 
 	return rl.curFn
 }
 
 // LogFile returns the current file name that the Rotate object is writing to.
-func (rl *Rotate) LogFile() string {
-	return rl.logfile
-}
+func (rl *Rotate) LogFile() string { return rl.logfile }
 
 // Rotate forcefully rotates the log files. If the generated file name
 // clash because file already exists, a numeric suffix of the form
@@ -190,8 +189,7 @@ func (rl *Rotate) LogFile() string {
 // This method can be used in conjunction with a signal handler so to
 // emulate servers that generate new log files when they receive a SIGHUP.
 func (rl *Rotate) Rotate() error {
-	rl.mutex.Lock()
-	defer rl.mutex.Unlock()
+	defer rl.lock.Lock()()
 
 	if _, err := rl.getWriterNolock(true); err != nil {
 		return err
@@ -200,23 +198,28 @@ func (rl *Rotate) Rotate() error {
 	return nil
 }
 
-func (rl *Rotate) rotateNolock() {
+func (rl *Rotate) maintainNolock() {
+	if rl.maxAge <= 0 && rl.gzipAge <= 0 {
+		return
+	}
+
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "fail to glob %v error %v\n", rl.logfile+"*", err)
 		return
 	}
 
-	rl.unlinkAgedLogs(matches)
-	rl.gzipAgedLogs(matches)
+	if rl.maxAge > 0 {
+		rl.unlinkAgedLogs(matches)
+	}
+
+	if rl.gzipAge > 0 {
+		rl.gzipAgedLogs(matches)
+	}
 }
 
 func (rl *Rotate) gzipAgedLogs(matches []string) {
-	if rl.gzipAge <= 0 {
-		return
-	}
-
-	cutoff := rl.clock.Now().Add(-1 * rl.gzipAge)
+	cutoff := rl.clock.Now().Add(-rl.gzipAge)
 	toGzipped := make([]string, 0, len(matches))
 
 	for _, path := range matches {
@@ -226,13 +229,12 @@ func (rl *Rotate) gzipAgedLogs(matches []string) {
 	}
 
 	if len(toGzipped) > 0 {
-		// unlink files on a separate goroutine
-		go gzipFiles(toGzipped)
+		go rl.gzipFiles(toGzipped)
 	}
 }
 
 func (rl *Rotate) unlinkAgedLogs(matches []string) {
-	cutoff := rl.clock.Now().Add(-1 * rl.maxAge)
+	cutoff := rl.clock.Now().Add(-rl.maxAge)
 	toUnlink := make([]string, 0, len(matches))
 
 	for _, path := range matches {
@@ -242,30 +244,31 @@ func (rl *Rotate) unlinkAgedLogs(matches []string) {
 	}
 
 	if len(toUnlink) > 0 {
-		// unlink files on a separate goroutine
-		go removeFiles(toUnlink)
+		go rl.removeFiles(toUnlink)
 	}
 }
 
-func gzipFiles(files []string) {
+func (rl *Rotate) gzipFiles(files []string) {
+	t := time.Now().Format("2006-01-02 15:04:05.000")
 	for _, path := range files {
-		fmt.Println("gzipped", path)
+		fmt.Println(t, "gzipped by", rl.gzipAge, path)
 		_ = compress.Gzip(path)
 	}
 }
 
-func removeFiles(files []string) {
+func (rl *Rotate) removeFiles(files []string) {
+	t := time.Now().Format("2006-01-02 15:04:05.000")
+
 	for _, path := range files {
+		fmt.Println(t, "removed by", rl.maxAge, path)
 		_ = os.Remove(path)
 	}
 }
 
 // Close satisfies the io.Closer interface. You must
-// call this method if you performed any writes to
-// the object.
+// call this method if you performed any writes to the object.
 func (rl *Rotate) Close() error {
-	rl.mutex.Lock()
-	defer rl.mutex.Unlock()
+	defer rl.lock.Lock()()
 
 	if rl.outFh == nil {
 		return nil

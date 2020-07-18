@@ -31,7 +31,7 @@ type LogrusOption struct {
 
 	LogPath string
 	Rotate  string
-	MaxSize int
+	MaxSize int64
 	MaxAge  time.Duration
 	GzipAge time.Duration
 }

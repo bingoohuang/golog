@@ -1,5 +1,5 @@
-.PHONY: default test
-all: default test
+.PHONY: default test install
+all: default test install
 
 gosec:
 	go get github.com/securego/gosec/cmd/gosec

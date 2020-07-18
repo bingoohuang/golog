@@ -17,13 +17,23 @@ func main() {
 		_, _ = w.Write([]byte("OK\n"))
 	})
 
-	golog.SetupLogrus(nil, "file=gologdemo.log,maxSize=1K,rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m")
+	golog.SetupLogrus(nil,
+		"file=gologdemo.log,maxSize=1M,stdout=false,"+
+			"rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m")
 
-	for i := 0; i < 100; i++ {
-		i := i
-		go func() {
-			logrus.Infof("go routine %d", i)
-		}()
+	logC := make(chan LogMessage, 100)
+	for i := 0; i < 1000; i++ {
+		go func(workerID int) {
+			for {
+				msg := <-logC
+				logrus.
+					WithField("workerID", workerID).
+					WithField("proto", msg.Proto).
+					WithField("contentType", msg.ContentType).
+					Infof("%s %s %s %s %s",
+						msg.Time, msg.RemoteAddr, msg.Method, msg.URL, randx.String(100))
+			}
+		}(i)
 	}
 
 	addr := port.FreeAddr()
@@ -32,23 +42,40 @@ func main() {
 	go func() {
 		// Now you must write to apachelog library can create
 		// a http.Handler that only writes the appropriate logs for the request to the given handle
-		if err := http.ListenAndServe(addr, logRequest(mux)); err != nil {
+		if err := http.ListenAndServe(addr, logRequest(mux, logC)); err != nil {
 			panic(err)
 		}
 	}()
 
 	for {
-		time.Sleep((3 * time.Second))
+		time.Sleep(3 * time.Second)
 		http.Get("http://127.0.0.1" + addr) // nolint:errcheck
 	}
 }
 
-func logRequest(handler http.Handler) http.Handler {
+type LogMessage struct {
+	Time        string
+	Proto       string
+	ContentType string
+	RemoteAddr  string
+	Method      string
+	URL         string
+}
+
+func logRequest(handler http.Handler, logC chan LogMessage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logrus.
-			WithField("proto", r.Proto).
-			WithField("contentType", r.Header.Get("Content-Type")).
-			Infof("%s %s %s %s", r.RemoteAddr, r.Method, r.URL, randx.String(100))
+		msg := LogMessage{
+			Time:        time.Now().Format("2006-01-02 15:04:05.000"),
+			Proto:       r.Proto,
+			ContentType: r.Header.Get("Content-Type"),
+			RemoteAddr:  r.RemoteAddr,
+			Method:      r.Method,
+			URL:         r.URL.String(),
+		}
+
+		for i := 0; i < 1000; i++ {
+			logC <- msg
+		}
 
 		handler.ServeHTTP(w, r)
 	})

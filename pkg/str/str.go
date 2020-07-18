@@ -1,5 +1,7 @@
 package str
 
+import "strings"
+
 func AnyOf(v string, any ...string) bool {
 	for _, s := range any {
 		if v == s {
@@ -16,4 +18,15 @@ func Or(a, b string) string {
 	}
 
 	return a
+}
+
+// HasSuffixes tests that string s has any of suffixes.
+func HasSuffixes(s string, suffixes ...string) bool {
+	for _, suffix := range suffixes {
+		if strings.HasSuffix(s, suffix) {
+			return true
+		}
+	}
+
+	return false
 }

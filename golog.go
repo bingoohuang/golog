@@ -37,7 +37,7 @@ func SetupLogrus(ll *logrus.Logger, specification string) *logfmt.Result {
 		Rotate:      string(logSpec.Rotate),
 		MaxAge:      logSpec.MaxAge,
 		GzipAge:     logSpec.GzipAge,
-		MaxSize:     int(logSpec.MaxSize),
+		MaxSize:     int64(logSpec.MaxSize),
 		PrintColor:  logSpec.PrintColor,
 		PrintCaller: logSpec.PrintCaller,
 		Stdout:      logSpec.Stdout,

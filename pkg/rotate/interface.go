@@ -2,9 +2,11 @@ package rotate
 
 import (
 	"os"
-	"strings"
-	"sync"
 	"time"
+
+	"github.com/bingoohuang/golog/pkg/lock"
+
+	"github.com/bingoohuang/golog/pkg/str"
 )
 
 // Handler defines the event handler interface.
@@ -37,25 +39,14 @@ type Rotate struct {
 	generation int
 	maxAge     time.Duration
 	gzipAge    time.Duration
-	mutex      sync.RWMutex
+	lock       lock.RWLock
 	handler    Handler
 	outFh      *os.File
-	outFhSize  int
+	outFhSize  int64
 
 	logfile             string
 	rotatePostfixLayout string
-	rotateMaxSize       int
-}
-
-// HasAnySuffixes tests that string s has any of suffixes.
-func HasAnySuffixes(s string, suffixes ...string) bool {
-	for _, suffix := range suffixes {
-		if strings.HasSuffix(s, suffix) {
-			return true
-		}
-	}
-
-	return false
+	rotateMaxSize       int64
 }
 
 func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
@@ -69,29 +60,23 @@ func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 		return false
 	}
 
-	if rl.maxAge > 0 && fi.ModTime().After(cutoff) {
-		return false
+	if str.HasSuffixes(path, ".gz") {
+		// justify the gzipped file time.
+		cutoff = cutoff.Add(-rl.gzipAge)
 	}
 
-	return true
+	return fi.ModTime().Before(cutoff)
 }
 
 func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
-	// Ignore original log file and lock files
-	if path == rl.logfile || HasAnySuffixes(path, ".gz") {
+	// Ignore original log file  files
+	if path == rl.logfile || str.HasSuffixes(path, ".gz") {
 		return false
 	}
 
 	fi, err := os.Stat(path)
-	if err != nil {
-		return false
-	}
 
-	if rl.maxAge > 0 && fi.ModTime().After(cutoff) {
-		return false
-	}
-
-	return true
+	return err == nil && fi.ModTime().Before(cutoff)
 }
 
 // Clock is the interface used by the Rotate
@@ -102,15 +87,12 @@ type Clock interface {
 
 type clockFn func() time.Time
 
-func (c clockFn) Now() time.Time {
-	return c()
-}
+func (c clockFn) Now() time.Time { return c() }
 
 // returns the current time in UTC.
 // nolint:gochecknoglobals
 var (
 	// UTC is an object satisfying the Clock interface, which
-
 	UTC = clockFn(func() time.Time { return time.Now().UTC() })
 
 	// Local is an object satisfying the Clock interface, which

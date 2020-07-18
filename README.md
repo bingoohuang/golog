@@ -53,13 +53,24 @@ stdout     | true             | print the log to stdout at the same time or not
 ```log
 $ go get github.com/bingoohuang/golog/gologdemo
 $ ADDR=":54264" gologdemo
-start to listen on :54264
 log file created: gologdemo.log
-2020-07-17 17:01:42.968    INFO 7002 --- [   19] [-]           main.go:34 : {"contemtType":"","proto":"HTTP/1.1"} [::1]:56946 GET /abc
-2020-07-17 17:01:45.974    INFO 7002 --- [   34] [-]           main.go:34 : {"contemtType":"","proto":"HTTP/1.1"} [::1]:56958 GET /abc
-2020-07-17 17:01:46.977    INFO 7002 --- [   21] [-]           main.go:34 : {"contemtType":"","proto":"HTTP/1.1"} [::1]:56963 GET /abc
-2020-07-17 17:01:47.900    INFO 7002 --- [    5] [-]           main.go:34 : {"contemtType":"","proto":"HTTP/1.1"} [::1]:56968 GET /abc
+start to listen on :54264
+2020-07-18 10:59:24.179 removed by 5m0s gologdemo.log.2020-07-18-10-48.1.gz
+2020-07-18 10:59:24.179 removed by 5m0s gologdemo.log.2020-07-18-10-48.2.gz
+2020-07-18 10:59:24.202 log file renamed to  gologdemo.log.2020-07-18-10-59.2
+2020-07-18 10:59:36.225 log file renamed to  gologdemo.log.2020-07-18-10-59.3
+2020-07-18 10:59:36.226 removed by 5m0s gologdemo.log.2020-07-18-10-48.3.gz
+2020-07-18 10:59:45.293 log file renamed to  gologdemo.log.2020-07-18-10-59.4
+2020-07-18 10:59:45.293 removed by 5m0s gologdemo.log.2020-07-18-10-48.4.gz
+2020-07-18 10:59:57.313 log file renamed to  gologdemo.log.2020-07-18-10-59.5
+2020-07-18 10:59:57.313 removed by 5m0s gologdemo.log.2020-07-18-10-48.5.gz
+2020-07-18 11:00:00.297 log file renamed to  gologdemo.log.2020-07-18-11-00
+2020-07-18 11:00:09.360 log file renamed to  gologdemo.log.2020-07-18-11-00.1
+2020-07-18 11:00:09.361 removed by 5m0s gologdemo.log.2020-07-18-10-49.gz
+2020-07-18 11:00:21.391 log file renamed to  gologdemo.log.2020-07-18-11-00.2
 ```
+
+watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologdemo.log*"`
 
 ## Log Creation Sequence
 
@@ -104,3 +115,5 @@ log file created: gologdemo.log
 ## Help shell
 
 1. `sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" x.log` to strip color from log file.
+1. [`tail -F x.log`](https://explainshell.com/explain?cmd=tail+-F+x.log) even if x.log recreated.
+
