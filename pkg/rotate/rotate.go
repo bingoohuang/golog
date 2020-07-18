@@ -102,7 +102,7 @@ func (rl *Rotate) getWriterNolock(useGenerationalNames bool) (io.Writer, error) 
 		return nil, err
 	}
 
-	rl.maintainNolock()
+	go rl.maintainNolock()
 
 	previousFn := rl.curFn
 	rl.curFn = fn
@@ -235,7 +235,7 @@ func (rl *Rotate) gzipAgedLogs(matches []string) {
 	}
 
 	if len(toGzipped) > 0 {
-		go rl.gzipFiles(toGzipped)
+		rl.gzipFiles(toGzipped)
 	}
 }
 
@@ -250,7 +250,7 @@ func (rl *Rotate) unlinkAgedLogs(matches []string) {
 	}
 
 	if len(toUnlink) > 0 {
-		go rl.removeFiles(toUnlink)
+		rl.removeFiles(toUnlink)
 	}
 }
 

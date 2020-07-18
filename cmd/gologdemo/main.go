@@ -34,14 +34,13 @@ func main() {
 	logC := make(chan LogMessage, ChannelSize)
 	for i := 0; i < ChannelSize; i++ {
 		go func(workerID int) {
-			for {
-				msg := <-logC
-				logrus.
-					WithField("workerID", workerID).
-					WithField("proto", msg.Proto).
-					WithField("contentType", msg.ContentType).
-					Infof("%s %s %s %s %s",
-						msg.Time, msg.RemoteAddr, msg.Method, msg.URL, randx.String(100))
+			for r := range logC {
+				logrus.WithFields(map[string]interface{}{
+					"workerID":    workerID,
+					"proto":       r.Proto,
+					"contentType": r.ContentType,
+				}).Infof("%s %s %s %s %s",
+					r.Time, r.RemoteAddr, r.Method, r.URL, randx.String(100))
 			}
 		}(i)
 	}
