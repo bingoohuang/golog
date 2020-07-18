@@ -46,6 +46,8 @@ func main() {
 	}()
 
 	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+
 	for range ticker.C {
 		restclient(urlAddr)
 	}
