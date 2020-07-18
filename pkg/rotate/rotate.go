@@ -18,7 +18,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-// New creates a new Rotate object. A log filename pattern
+// New creates a new Rotate object. A logfile filename
 // must be passed. Optional `Option` parameters may be passed.
 func New(logfile string, options ...OptionFn) (*Rotate, error) {
 	logfile, err := homedir.Expand(logfile)
@@ -59,10 +59,9 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	defer rl.lock.Lock()()
 
 	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize > rl.rotateMaxSize
-
 	out, err := rl.getWriterNolock(forRotate)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "getWriterNolock error %+v\n", err)
+		ErrorReport("Write getWriterNolock error %+v\n", err)
 
 		return 0, errors.Wrap(err, `failed to acquire target io.Writer`)
 	}
@@ -70,7 +69,7 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	n, err = out.Write(p)
 
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Write error %+v\n", err)
+		ErrorReport("Write error %+v\n", err)
 	}
 
 	rl.outFhSize += int64(n)
@@ -78,17 +77,14 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	return n, err
 }
 
-// getWriterNolock must be locked during this operation.
-func (rl *Rotate) getWriterNolock(useGenerationalNames bool) (io.Writer, error) {
-	// This filename contains the name of the "NEW" filename
-	// to log to, which may be newer than rl.currentFilename
+func (rl *Rotate) getWriterNolock(forceRotate bool) (io.Writer, error) {
 	fnBase := rl.genFilename()
 	generation := rl.generation
 
 	if fnBase != rl.curFnBase {
 		generation = 0
 	} else {
-		if !useGenerationalNames {
+		if !forceRotate {
 			// nothing to do
 			return rl.outFh, nil
 		}
@@ -120,7 +116,7 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 	}
 
 	// A new file has been requested. Instead of just using the
-	// regular strftime pattern, we create a new file name using
+	// regular go time format pattern, we create a new file name using
 	// generational names such as "foo.1", "foo.2", "foo.3", etc
 	name := filename
 
@@ -143,7 +139,10 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 
 func (rl *Rotate) rotateFile(filename string) error {
 	if rl.outFh != nil {
-		_ = rl.outFh.Close()
+		if err := rl.outFh.Close(); err != nil {
+			return err
+		}
+
 		if err := os.Rename(rl.logfile, filename); err != nil {
 			return err
 		}
@@ -159,10 +158,14 @@ func (rl *Rotate) rotateFile(filename string) error {
 	}
 
 	rl.outFh = fh
-	rl.outFhSize = 0
 
-	if stat, err := fh.Stat(); err == nil {
+	stat, err := fh.Stat()
+
+	if err == nil {
 		rl.outFhSize = stat.Size()
+	} else {
+		rl.outFhSize = 0
+		ErrorReport("Stat %s error %+v\n", rl.logfile, err)
 	}
 
 	return nil
@@ -170,10 +173,7 @@ func (rl *Rotate) rotateFile(filename string) error {
 
 func (rl *Rotate) notifyFileRotateEvent(previousFn string, filename string) {
 	if h := rl.handler; h != nil {
-		go h.Handle(&FileRotatedEvent{
-			PreviousFile: previousFn,
-			CurrentFile:  filename,
-		})
+		go h.Handle(&FileRotatedEvent{PreviousFile: previousFn, CurrentFile: filename})
 	}
 }
 
@@ -197,10 +197,16 @@ func (rl *Rotate) Rotate() error {
 	defer rl.lock.Lock()()
 
 	if _, err := rl.getWriterNolock(true); err != nil {
+		ErrorReport("Rotate getWriterNolock error %+v\n", err)
+
 		return err
 	}
 
 	return nil
+}
+
+func ErrorReport(format string, a ...interface{}) {
+	_, _ = fmt.Fprintf(os.Stderr, format, a...)
 }
 
 func (rl *Rotate) maintainNolock() {
@@ -210,7 +216,7 @@ func (rl *Rotate) maintainNolock() {
 
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "fail to glob %v error %+v\n", rl.logfile+"*", err)
+		ErrorReport("fail to glob %v error %+v\n", rl.logfile+"*", err)
 
 		return
 	}
@@ -226,52 +232,39 @@ func (rl *Rotate) maintainNolock() {
 
 func (rl *Rotate) gzipAgedLogs(matches []string) {
 	cutoff := rl.clock.Now().Add(-rl.gzipAge)
-	toGzipped := make([]string, 0, len(matches))
 
 	for _, path := range matches {
 		if rl.needToGzip(path, cutoff) {
-			toGzipped = append(toGzipped, path)
+			rl.gzipFile(path)
 		}
-	}
-
-	if len(toGzipped) > 0 {
-		rl.gzipFiles(toGzipped)
 	}
 }
 
 func (rl *Rotate) unlinkAgedLogs(matches []string) {
 	cutoff := rl.clock.Now().Add(-rl.maxAge)
-	toUnlink := make([]string, 0, len(matches))
 
 	for _, path := range matches {
 		if rl.needToUnlink(path, cutoff) {
-			toUnlink = append(toUnlink, path)
-		}
-	}
-
-	if len(toUnlink) > 0 {
-		rl.removeFiles(toUnlink)
-	}
-}
-
-func (rl *Rotate) gzipFiles(files []string) {
-	t := time.Now().Format("2006-01-02 15:04:05.000")
-	for _, path := range files {
-		fmt.Println(t, "gzipped by", rl.gzipAge, path)
-		if err := compress.Gzip(path); err != nil {
-			fmt.Fprintf(os.Stderr, "Gzip error %+v\n", err)
+			rl.removeFile(path)
 		}
 	}
 }
 
-func (rl *Rotate) removeFiles(files []string) {
+func (rl *Rotate) gzipFile(path string) {
 	t := time.Now().Format("2006-01-02 15:04:05.000")
+	fmt.Println(t, "gzipped by", rl.gzipAge, path)
 
-	for _, path := range files {
-		fmt.Println(t, "removed by", rl.maxAge, path)
-		if err := os.Remove(path); err != nil {
-			fmt.Fprintf(os.Stderr, "Remove error %+v\n", err)
-		}
+	if err := compress.Gzip(path); err != nil {
+		ErrorReport("Gzip error %+v\n", err)
+	}
+}
+
+func (rl *Rotate) removeFile(path string) {
+	t := time.Now().Format("2006-01-02 15:04:05.000")
+	fmt.Println(t, "removed by", rl.maxAge, path)
+
+	if err := os.Remove(path); err != nil {
+		ErrorReport("Remove error %+v\n", err)
 	}
 }
 
@@ -286,7 +279,7 @@ func (rl *Rotate) Close() error {
 
 	err := rl.outFh.Close()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "Close outFh error %+v\n", err)
+		ErrorReport("Close outFh error %+v\n", err)
 	}
 
 	rl.outFh = nil
