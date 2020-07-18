@@ -56,17 +56,22 @@ func (rl *Rotate) genFilename() string {
 // If we have reached rotation time, the target file gets
 // automatically rotated, and also purged if necessary.
 func (rl *Rotate) Write(p []byte) (n int, err error) {
-	// Guard against concurrent writes
 	defer rl.lock.Lock()()
 
 	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize > rl.rotateMaxSize
 
 	out, err := rl.getWriterNolock(forRotate)
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "getWriterNolock error %+v\n", err)
+
 		return 0, errors.Wrap(err, `failed to acquire target io.Writer`)
 	}
 
 	n, err = out.Write(p)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Write error %+v\n", err)
+	}
 
 	rl.outFhSize += int64(n)
 
@@ -205,7 +210,8 @@ func (rl *Rotate) maintainNolock() {
 
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
-		_, _ = fmt.Fprintf(os.Stderr, "fail to glob %v error %v\n", rl.logfile+"*", err)
+		fmt.Fprintf(os.Stderr, "fail to glob %v error %+v\n", rl.logfile+"*", err)
+
 		return
 	}
 
@@ -252,7 +258,9 @@ func (rl *Rotate) gzipFiles(files []string) {
 	t := time.Now().Format("2006-01-02 15:04:05.000")
 	for _, path := range files {
 		fmt.Println(t, "gzipped by", rl.gzipAge, path)
-		_ = compress.Gzip(path)
+		if err := compress.Gzip(path); err != nil {
+			fmt.Fprintf(os.Stderr, "Gzip error %+v\n", err)
+		}
 	}
 }
 
@@ -261,7 +269,9 @@ func (rl *Rotate) removeFiles(files []string) {
 
 	for _, path := range files {
 		fmt.Println(t, "removed by", rl.maxAge, path)
-		_ = os.Remove(path)
+		if err := os.Remove(path); err != nil {
+			fmt.Fprintf(os.Stderr, "Remove error %+v\n", err)
+		}
 	}
 }
 
@@ -275,6 +285,9 @@ func (rl *Rotate) Close() error {
 	}
 
 	err := rl.outFh.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Close outFh error %+v\n", err)
+	}
 
 	rl.outFh = nil
 
