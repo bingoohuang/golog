@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/bingoohuang/golog"
@@ -19,9 +20,16 @@ func main() {
 		_, _ = w.Write([]byte("OK\n"))
 	})
 
-	golog.SetupLogrus(nil,
-		"file=~/gologdemo.log,maxSize=1M,stdout=false,"+
-			"rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m")
+	spec := "file=~/gologdemo.log,maxSize=1M,stdout=false," +
+		"rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m"
+
+	if v := os.Getenv("SPEC"); v != "" {
+		spec = v
+	}
+
+	fmt.Println("golog spec:", spec)
+
+	golog.SetupLogrus(nil, spec)
 
 	logC := make(chan LogMessage, ChannelSize)
 	for i := 0; i < ChannelSize; i++ {
@@ -53,7 +61,7 @@ func main() {
 
 	for {
 		time.Sleep(3 * time.Second)
-		fmt.Println("invoke", urlAddr)
+		fmt.Println(time.Now().Format("2006-01-02 15:04:05.000"), "invoke", urlAddr)
 		http.Get(urlAddr) // nolint:errcheck
 	}
 }

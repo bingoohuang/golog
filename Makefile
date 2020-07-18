@@ -1,6 +1,8 @@
 .PHONY: default test install
 all: default test install
 
+app=gologdemo
+
 gosec:
 	go get github.com/securego/gosec/cmd/gosec
 sec:
@@ -25,6 +27,13 @@ fmt:
 
 install: init
 	go install -ldflags="-s -w" ./...
+	ls -lh ~/go/bin/${app}
+
+linux: init
+	GOOS=linux GOARCH=amd64 go install -ldflags="-s -w" ./...
+	ls -lh ~/go/bin/linux_amd64/${app}
+	upx ~/go/bin/linux_amd64/${app}
+	ls -lh ~/go/bin/linux_amd64/${app}
 
 test: init
 	#go test -v ./...
@@ -43,3 +52,15 @@ cover:
 coverview:
 	go tool cover -html=coverage.out
 
+# https://hub.docker.com/_/golang
+# docker run --rm -v "$PWD":/usr/src/myapp -v "$HOME/dockergo":/go -w /usr/src/myapp golang make docker
+# docker run --rm -it -v "$PWD":/usr/src/myapp -w /usr/src/myapp golang bash
+# 静态连接 glibc
+docker:
+	mkdir -f ~/dockergo
+	docker run --rm -v "$$PWD":/usr/src/myapp -v "$$HOME/dockergo":/go -w /usr/src/myapp golang make dockerinstall
+	#upx ~/dockergo/bin/${app}
+	gzip -f ~/dockergo/bin/${app}
+
+dockerinstall:
+	go install -v -x -a -ldflags '-extldflags "-static"' ./...
