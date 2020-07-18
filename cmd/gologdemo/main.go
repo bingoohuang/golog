@@ -11,6 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const ChannelSize = 100
+
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
@@ -21,8 +23,8 @@ func main() {
 		"file=gologdemo.log,maxSize=1M,stdout=false,"+
 			"rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m")
 
-	logC := make(chan LogMessage, 100)
-	for i := 0; i < 1000; i++ {
+	logC := make(chan LogMessage, ChannelSize)
+	for i := 0; i < ChannelSize; i++ {
 		go func(workerID int) {
 			for {
 				msg := <-logC
@@ -73,7 +75,7 @@ func logRequest(handler http.Handler, logC chan LogMessage) http.Handler {
 			URL:         r.URL.String(),
 		}
 
-		for i := 0; i < 1000; i++ {
+		for i := 0; i < ChannelSize; i++ {
 			logC <- msg
 		}
 
