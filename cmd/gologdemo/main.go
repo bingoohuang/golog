@@ -6,6 +6,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/rotate"
+
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/port"
 	"github.com/bingoohuang/golog/pkg/randx"
@@ -60,7 +62,7 @@ func main() {
 
 	for {
 		time.Sleep(3 * time.Second)
-		fmt.Println(time.Now().Format("2006-01-02 15:04:05.000"), "invoke", urlAddr)
+		rotate.InfoReport("invoke", urlAddr)
 		http.Get(urlAddr) // nolint:errcheck
 	}
 }

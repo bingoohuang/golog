@@ -11,6 +11,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/lock"
+
 	"github.com/bingoohuang/golog/pkg/compress"
 	"github.com/bingoohuang/golog/pkg/homedir"
 	"github.com/bingoohuang/golog/pkg/timex"
@@ -31,6 +33,7 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 		clock:               Local,
 		rotatePostfixLayout: ".2006-01-02",
 		maxAge:              timex.Week,
+		maintainLock:        lock.NewTry(),
 	}
 
 	for _, o := range options {
@@ -98,7 +101,7 @@ func (rl *Rotate) getWriterNolock(forceRotate bool) (io.Writer, error) {
 		return nil, err
 	}
 
-	go rl.maintainNolock()
+	go rl.maintain()
 
 	previousFn := rl.curFn
 	rl.curFn = fn
@@ -143,17 +146,22 @@ func (rl *Rotate) rotateFile(filename string) error {
 			return err
 		}
 
+		rl.outFh = nil
+
 		if err := os.Rename(rl.logfile, filename); err != nil {
+			ErrorReport("Rename %s to %s error %+v\n", rl.logfile, filename, err)
+
 			return err
 		}
 
-		t := time.Now().Format("2006-01-02 15:04:05.000")
-		fmt.Println(t, "log file renamed to ", filename)
+		InfoReport("log file renamed to", filename)
 	}
 
 	// if we got here, then we need to create a file
 	fh, err := os.OpenFile(rl.logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
+		ErrorReport("OpenFile %s error %+v\n", rl.logfile, err)
+
 		return errors.Errorf("failed to open file %s: %s", rl.logfile, err)
 	}
 
@@ -205,14 +213,25 @@ func (rl *Rotate) Rotate() error {
 	return nil
 }
 
+func InfoReport(a ...interface{}) {
+	t := time.Now().Format("2006-01-02 15:04:05.000")
+	fmt.Println(append([]interface{}{t}, a...)...)
+}
+
 func ErrorReport(format string, a ...interface{}) {
 	_, _ = fmt.Fprintf(os.Stderr, format, a...)
 }
 
-func (rl *Rotate) maintainNolock() {
+func (rl *Rotate) maintain() {
 	if rl.maxAge <= 0 && rl.gzipAge <= 0 {
 		return
 	}
+
+	if !rl.maintainLock.TryLock() {
+		return
+	}
+
+	defer rl.maintainLock.Unlock()
 
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
@@ -221,38 +240,20 @@ func (rl *Rotate) maintainNolock() {
 		return
 	}
 
-	if rl.maxAge > 0 {
-		rl.unlinkAgedLogs(matches)
-	}
-
-	if rl.gzipAge > 0 {
-		rl.gzipAgedLogs(matches)
-	}
-}
-
-func (rl *Rotate) gzipAgedLogs(matches []string) {
-	cutoff := rl.clock.Now().Add(-rl.gzipAge)
+	maxAgeCutoff := rl.clock.Now().Add(-rl.maxAge)
+	gzipAgeCutoff := rl.clock.Now().Add(-rl.gzipAge)
 
 	for _, path := range matches {
-		if rl.needToGzip(path, cutoff) {
+		if rl.maxAge > 0 && rl.needToUnlink(path, maxAgeCutoff) {
+			rl.removeFile(path)
+		} else if rl.gzipAge > 0 && rl.needToGzip(path, gzipAgeCutoff) {
 			rl.gzipFile(path)
 		}
 	}
 }
 
-func (rl *Rotate) unlinkAgedLogs(matches []string) {
-	cutoff := rl.clock.Now().Add(-rl.maxAge)
-
-	for _, path := range matches {
-		if rl.needToUnlink(path, cutoff) {
-			rl.removeFile(path)
-		}
-	}
-}
-
 func (rl *Rotate) gzipFile(path string) {
-	t := time.Now().Format("2006-01-02 15:04:05.000")
-	fmt.Println(t, "gzipped by", rl.gzipAge, path)
+	InfoReport("gzipped by", rl.gzipAge, path)
 
 	if err := compress.Gzip(path); err != nil {
 		ErrorReport("Gzip error %+v\n", err)
@@ -260,8 +261,7 @@ func (rl *Rotate) gzipFile(path string) {
 }
 
 func (rl *Rotate) removeFile(path string) {
-	t := time.Now().Format("2006-01-02 15:04:05.000")
-	fmt.Println(t, "removed by", rl.maxAge, path)
+	InfoReport("removed by", rl.maxAge, path)
 
 	if err := os.Remove(path); err != nil {
 		ErrorReport("Remove error %+v\n", err)
@@ -283,6 +283,7 @@ func (rl *Rotate) Close() error {
 	}
 
 	rl.outFh = nil
+	InfoReport("outFh closed")
 
 	return err
 }

@@ -47,6 +47,8 @@ type Rotate struct {
 	logfile             string
 	rotatePostfixLayout string
 	rotateMaxSize       int64
+
+	maintainLock *lock.Try
 }
 
 func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
