@@ -6,15 +6,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/bingoohuang/golog/pkg/rotate"
-
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/port"
 	"github.com/bingoohuang/golog/pkg/randx"
 	"github.com/sirupsen/logrus"
 )
 
-const ChannelSize = 100
+const ChannelSize = 1000
 
 func main() {
 	mux := http.NewServeMux()
@@ -58,12 +56,18 @@ func main() {
 		}
 	}()
 
-	urlAddr := "http://127.0.0.1" + addr
-
-	for {
+	for i := 0; ; i++ {
 		time.Sleep(3 * time.Second)
-		rotate.InfoReport("invoke", urlAddr)
-		http.Get(urlAddr) // nolint:errcheck
+
+		msg := LogMessage{
+			Time:        time.Now().Format("2006-01-02 15:04:05.000"),
+			Proto:       fmt.Sprintf("Proto%d", i),
+			ContentType: fmt.Sprintf("Content-Type%d", i),
+		}
+
+		for i := 0; i < ChannelSize; i++ {
+			logC <- msg
+		}
 	}
 }
 
@@ -78,17 +82,13 @@ type LogMessage struct {
 
 func logRequest(handler http.Handler, logC chan LogMessage) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		msg := LogMessage{
+		logC <- LogMessage{
 			Time:        time.Now().Format("2006-01-02 15:04:05.000"),
 			Proto:       r.Proto,
 			ContentType: r.Header.Get("Content-Type"),
 			RemoteAddr:  r.RemoteAddr,
 			Method:      r.Method,
 			URL:         r.URL.String(),
-		}
-
-		for i := 0; i < ChannelSize; i++ {
-			logC <- msg
 		}
 
 		handler.ServeHTTP(w, r)
