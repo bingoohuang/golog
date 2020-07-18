@@ -20,7 +20,7 @@ func main() {
 	})
 
 	golog.SetupLogrus(nil,
-		"file=gologdemo.log,maxSize=1M,stdout=false,"+
+		"file=~/gologdemo.log,maxSize=1M,stdout=false,"+
 			"rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m")
 
 	logC := make(chan LogMessage, ChannelSize)
@@ -49,9 +49,12 @@ func main() {
 		}
 	}()
 
+	urlAddr := "http://127.0.0.1" + addr
+
 	for {
 		time.Sleep(3 * time.Second)
-		http.Get("http://127.0.0.1" + addr) // nolint:errcheck
+		fmt.Println("invoke", urlAddr)
+		http.Get(urlAddr) // nolint:errcheck
 	}
 }
 
