@@ -49,6 +49,7 @@ type Rotate struct {
 	rotateMaxSize       int64
 
 	maintainLock *lock.Try
+	now          time.Time
 }
 
 func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {

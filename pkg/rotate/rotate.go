@@ -51,7 +51,8 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 }
 
 func (rl *Rotate) genFilename() string {
-	return rl.logfile + rl.clock.Now().Format(rl.rotatePostfixLayout)
+	rl.now = rl.clock.Now()
+	return rl.logfile + rl.now.Format(rl.rotatePostfixLayout)
 }
 
 // Write satisfies the io.Writer interface. It writes to the
@@ -204,13 +205,12 @@ func (rl *Rotate) LogFile() string { return rl.logfile }
 func (rl *Rotate) Rotate() error {
 	defer rl.lock.Lock()()
 
-	if _, err := rl.getWriterNolock(true); err != nil {
+	_, err := rl.getWriterNolock(true)
+	if err != nil {
 		ErrorReport("Rotate getWriterNolock error %+v\n", err)
-
-		return err
 	}
 
-	return nil
+	return err
 }
 
 func InfoReport(a ...interface{}) {
@@ -240,8 +240,8 @@ func (rl *Rotate) maintain() {
 		return
 	}
 
-	maxAgeCutoff := rl.clock.Now().Add(-rl.maxAge)
-	gzipAgeCutoff := rl.clock.Now().Add(-rl.gzipAge)
+	maxAgeCutoff := rl.now.Add(-rl.maxAge)
+	gzipAgeCutoff := rl.now.Add(-rl.gzipAge)
 
 	for _, path := range matches {
 		if rl.maxAge > 0 && rl.needToUnlink(path, maxAgeCutoff) {
