@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/bingoohuang/golog/pkg/lock"
 
@@ -36,9 +37,7 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 		maintainLock:        lock.NewTry(),
 	}
 
-	for _, o := range options {
-		o(r)
-	}
+	OptionFns(options).Apply(r)
 
 	// make sure the dir is existed, eg:
 	// ./foo/bar/baz/hello.log must make sure ./foo/bar/baz is existed
@@ -50,9 +49,9 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 	return r, nil
 }
 
-func (rl *Rotate) genFilename() string {
+func (rl *Rotate) GenBaseFilename() (string, time.Time) {
 	now := rl.clock.Now()
-	return rl.logfile + now.Format(rl.rotatePostfixLayout)
+	return rl.logfile + now.Format(rl.rotatePostfixLayout), now
 }
 
 // Write satisfies the io.Writer interface. It writes to the
@@ -82,7 +81,7 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 }
 
 func (rl *Rotate) getWriter(forceRotate bool) (io.Writer, error) {
-	fnBase := rl.genFilename()
+	fnBase, now := rl.GenBaseFilename()
 	generation := rl.generation
 
 	if fnBase != rl.curFnBase {
@@ -102,7 +101,9 @@ func (rl *Rotate) getWriter(forceRotate bool) (io.Writer, error) {
 		return nil, err
 	}
 
-	go rl.maintain()
+	if (rl.maxAge > 0 || rl.gzipAge > 0) && rl.maintainLock.TryLock() {
+		go rl.maintain(now)
+	}
 
 	rl.notifyFileRotateEvent(rl.curFn, fn)
 
@@ -212,15 +213,7 @@ func (rl *Rotate) Rotate() error {
 	return err
 }
 
-func (rl *Rotate) maintain() {
-	if rl.maxAge <= 0 && rl.gzipAge <= 0 {
-		return
-	}
-
-	if !rl.maintainLock.TryLock() {
-		return
-	}
-
+func (rl *Rotate) maintain(now time.Time) {
 	defer rl.maintainLock.Unlock()
 
 	matches, err := filepath.Glob(rl.logfile + "*")
@@ -230,14 +223,13 @@ func (rl *Rotate) maintain() {
 		return
 	}
 
-	now := rl.clock.Now()
 	maxAgeCutoff := now.Add(-rl.maxAge)
 	gzipAgeCutoff := now.Add(-rl.gzipAge)
 
 	for _, path := range matches {
-		if rl.maxAge > 0 && rl.needToUnlink(path, maxAgeCutoff) {
+		if rl.needToUnlink(path, maxAgeCutoff) {
 			rl.removeFile(path)
-		} else if rl.gzipAge > 0 && rl.needToGzip(path, gzipAgeCutoff) {
+		} else if rl.needToGzip(path, gzipAgeCutoff) {
 			rl.gzipFile(path)
 		}
 	}

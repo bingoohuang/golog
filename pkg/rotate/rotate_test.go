@@ -11,12 +11,36 @@ import (
 	"testing"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/timex"
+
 	"github.com/bingoohuang/golog/pkg/clock"
 
 	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
+
+func TestGenFilename(t *testing.T) {
+	ts := []time.Time{{}, (time.Time{}).Add(24 * time.Hour)} // Mock time
+
+	for _, xt := range ts {
+		rl, err := rotate.New("a.log",
+			rotate.WithClock(clock.NewMockAt(xt)),
+			rotate.WithRotateLayout(".20060102"))
+		if !assert.NoError(t, err, "New should succeed") {
+			return
+		}
+
+		fn, _ := rl.GenBaseFilename()
+		expected := fmt.Sprintf("a.log.%04d%02d%02d", xt.Year(), xt.Month(), xt.Day())
+
+		_ = rl.Close()
+
+		if !assert.Equal(t, expected, fn) {
+			return
+		}
+	}
+}
 
 func TestSatisfiesIOWriter(t *testing.T) {
 	var w io.Writer
@@ -26,7 +50,7 @@ func TestSatisfiesIOWriter(t *testing.T) {
 
 func TestSatisfiesIOCloser(t *testing.T) {
 	var c io.Closer
-	c, _ = rotate.New("/foo/bar")
+	c, _ = rotate.New("./foo/bar")
 	_ = c
 }
 
@@ -43,11 +67,11 @@ func TestLogRotate(t *testing.T) {
 	// Change current time, so we can safely purge old logs
 	dummyTime := time.Now().Add(-7 * 24 * time.Hour)
 	dummyTime = dummyTime.Add(time.Duration(-1 * dummyTime.Nanosecond()))
-	clock := clock.NewMockAt(dummyTime)
+	cl := clock.NewMockAt(dummyTime)
 	logfile := filepath.Join(dir, "a.log")
 	rl, err := rotate.New(
 		logfile,
-		rotate.WithClock(clock),
+		rotate.WithClock(cl),
 		rotate.WithMaxAge(24*time.Hour),
 		rotate.WithRotateLayout(".20060102150405"),
 	)
@@ -99,7 +123,7 @@ func TestLogRotate(t *testing.T) {
 		t.Errorf("Failed to chtime for %s (expected %s, got %s)", fn, fi.ModTime(), dummyTime)
 	}
 
-	clock.Add(7 * 24 * time.Hour)
+	cl.Add(timex.Week)
 
 	// This next Write() should trigger Rotate()
 	_, _ = rl.Write([]byte(str))

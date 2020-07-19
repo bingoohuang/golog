@@ -54,7 +54,7 @@ type Rotate struct {
 
 func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 	// Ignore original log file and lock files
-	if path == rl.logfile {
+	if rl.maxAge <= 0 || path == rl.logfile {
 		return false
 	}
 
@@ -75,7 +75,7 @@ func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 
 func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
 	// Ignore original log file  files
-	if path == rl.logfile || str.HasSuffixes(path, ".gz") {
+	if rl.gzipAge <= 0 || path == rl.logfile || str.HasSuffixes(path, ".gz") {
 		return false
 	}
 
@@ -91,8 +91,7 @@ func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
 	return fi.ModTime().Before(cutoff)
 }
 
-// Clock is the interface used by the Rotate
-// object to determine the current time.
+// Clock is the interface used by the Rotate object to determine the current time.
 type Clock interface {
 	Now() time.Time
 }
@@ -101,19 +100,13 @@ type clockFn func() time.Time
 
 func (c clockFn) Now() time.Time { return c() }
 
-// returns the current time in UTC.
 // nolint:gochecknoglobals
 var (
 	// UTC is an object satisfying the Clock interface, which
+	// returns the current time in UTC.
 	UTC = clockFn(func() time.Time { return time.Now().UTC() })
 
 	// Local is an object satisfying the Clock interface, which
 	// returns the current time in the local timezone.
 	Local = clockFn(time.Now)
 )
-
-// Option is used to pass optional arguments to the Rotate constructor.
-type Option interface {
-	Name() string
-	Value() interface{}
-}

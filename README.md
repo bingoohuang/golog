@@ -39,13 +39,13 @@ func init() {
 name       | default value    | description
 -----------|------------------|-------------------------------------------------------------
 level      | info             | log level to record (debug/info/warn/error)
-file       | ~/logs/{bin}.log | base log file
-rotate     | .yyyy-MM-dd      | time rotate pattern(yyyy-MM-dd HH:mm)
-maxAge     | 30d              | max age to keep log files (unit s/m/h/d/w)
+file       | ~/logs/{bin}.log | base log file name
+rotate     | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)
+maxAge     | 30d              | max age to keep log files (unit m/h/d/w)
 gzipAge    | 3d               | gzip aged log files (unit m/h/d/w)
-maxSize    | 100M             | max size to rotate log files (unit K/M/K)
+maxSize    | 100M             | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
 printColor | true             | print color on the log level or not
-printCall  | true             | print caller file and line number  or not (performance slow)
+printCall  | true             | print caller file:line or not (performance slow)
 stdout     | true             | print the log to stdout at the same time or not
 
 ## Demonstration
@@ -68,6 +68,18 @@ start to listen on :54264
 2020-07-18 11:00:09.360 log file renamed to  gologdemo.log.2020-07-18-11-00.1
 2020-07-18 11:00:09.361 removed by 5m0s gologdemo.log.2020-07-18-10-49.gz
 2020-07-18 11:00:21.391 log file renamed to  gologdemo.log.2020-07-18-11-00.2
+```
+
+demo log file content:
+
+```log
+2020-07-19 10:33:17.673    INFO 65173 --- [  919] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":912} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / zvHRlswV
+2020-07-19 10:33:17.673    INFO 65173 --- [  291] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":284} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / MISchLeG
+2020-07-19 10:33:17.673    INFO 65173 --- [  792] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":785} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / OREZhOeE
+2020-07-19 10:33:17.674    INFO 65173 --- [  420] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":413} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / TWdyyaCD
+2020-07-19 10:33:17.668    INFO 65173 --- [   46] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":39} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / QyTMRRTnj
+2020-07-19 10:33:17.668    INFO 65173 --- [  280] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":273} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / PmNwXQWr
+2020-07-19 10:33:17.665    INFO 65173 --- [  958] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":951} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / WeTxLriT
 ```
 
 watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologdemo.log*"`
@@ -117,3 +129,11 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
 1. `sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" x.log` to strip color from log file.
 1. [`tail -F x.log`](https://explainshell.com/explain?cmd=tail+-F+x.log) even if x.log recreated.
 
+## Thanks to the giant shoulders:
+
+1. [lestrrat-go/file-rotatelogs](https://github.com/lestrrat-go/file-rotatelogs)
+1. [benbjohnson/clock](https://github.com/benbjohnson/clock)
+1. [rifflock/lfshook A local file system hook for golang logrus logger](https://github.com/rifflock/lfshook)
+1. [mzky/utils 一个工具集，包括文件组件，日志组件](https://github.com/mzky/utils)
+1. [Lumberjack writing logs to rolling files.](https://github.com/natefinch/lumberjack)
+1. [应用程序日志规范](https://github.com/bingoohuang/blog/issues/151)

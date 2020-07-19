@@ -1,12 +1,10 @@
-clock [![Build Status](https://drone.io/github.com/benbjohnson/clock/status.png)](https://drone.io/github.com/benbjohnson/clock/latest) [![Coverage Status](https://coveralls.io/repos/benbjohnson/clock/badge.png?branch=master)](https://coveralls.io/r/benbjohnson/clock?branch=master) [![GoDoc](https://godoc.org/github.com/benbjohnson/clock?status.png)](https://godoc.org/github.com/benbjohnson/clock) ![Project status](http://img.shields.io/status/experimental.png?color=red)
-=====
+# clock
 
 Clock is a small library for mocking time in Go. It provides an interface
 around the standard library's [`time`][time] package so that the application
 can use the realtime clock while tests can use the mock clock.
 
 [time]: http://golang.org/pkg/time/
-
 
 ## Usage
 
@@ -28,7 +26,6 @@ You could initialize it to use the realtime clock like this:
 ```go
 var app Application
 app.Clock = clock.New()
-...
 ```
 
 Then all timers and time-related functionality should be performed from the
@@ -40,12 +37,6 @@ Then all timers and time-related functionality should be performed from the
 In your tests, you will want to use a `Mock` clock:
 
 ```go
-import (
-	"testing"
-
-	"github.com/benbjohnson/clock"
-)
-
 func TestApplication_DoSomething(t *testing.T) {
 	mock := clock.NewMock()
 	app := Application{Clock: mock}
@@ -78,7 +69,7 @@ mock.Now().UTC() // 1970-01-01 02:00:00 +0000 UTC
 ```
 
 Timers and Tickers are also controlled by this same mock clock. They will only
-execute when the clock is moved forward:
+execute when the clock is moving forward:
 
 ```
 mock := clock.NewMock()
@@ -100,5 +91,3 @@ mock.Add(10 * time.Second)
 // This prints 10.
 fmt.Println(count)
 ```
-
-

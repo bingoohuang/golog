@@ -4,8 +4,28 @@ import (
 	"time"
 )
 
+// Option defines the option interface.
+type Option interface {
+	Apply(r *Rotate)
+}
+
 // OptionFn is the option function prototype.
 type OptionFn func(*Rotate)
+
+// Apply applies the option.
+func (f OptionFn) Apply(r *Rotate) {
+	f(r)
+}
+
+// OptionFns is the slice of option.
+type OptionFns []OptionFn
+
+// Apply applies the options.
+func (o OptionFns) Apply(r *Rotate) {
+	for _, fn := range o {
+		fn(r)
+	}
+}
 
 // WithClock creates a new Option that sets a clock
 // that the Rotate object will use to determine
