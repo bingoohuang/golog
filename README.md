@@ -133,6 +133,7 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
 The solution：
 use gin.New() Don't use gin.Default()
 because Default() exist Logger(), New() not print log
+```go
 // Default returns an Engine instance with the Logger and Recovery middleware already attached.
 func Default() *Engine {
 	debugPrintWARNINGDefault()
@@ -140,6 +141,7 @@ func Default() *Engine {
 	engine.Use(Logger(), Recovery())
 	return engine
 }
+```
 
 ## Thanks to the giant shoulders:
 
