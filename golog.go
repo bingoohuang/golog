@@ -41,6 +41,7 @@ func SetupLogrus(ll *logrus.Logger, specification string) *logfmt.Result {
 		PrintColor:  logSpec.PrintColor,
 		PrintCaller: logSpec.PrintCaller,
 		Stdout:      logSpec.Stdout,
+		Simple:      logSpec.Simple,
 	}
 
 	fmt.Println("log file created:", logrusOption.LogPath)
@@ -59,4 +60,5 @@ type LogSpec struct {
 	PrintColor  bool          `spec:"printColor,true"`
 	PrintCaller bool          `spec:"printCall,true"`
 	Stdout      bool          `spec:"stdout,true"`
+	Simple      bool          `spec:"simple,false"`
 }

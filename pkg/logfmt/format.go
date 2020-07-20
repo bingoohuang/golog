@@ -55,6 +55,7 @@ func (e EntryItem) Caller() *runtime.Frame { return nil }
 type Formatter struct {
 	PrintColor  bool
 	PrintCaller bool
+	Simple      bool
 }
 
 var Pid = os.Getpid()
@@ -71,9 +72,11 @@ func (f Formatter) Format(e Entry) []byte {
 
 	f.printLevel(b, e.Level())
 
-	b.WriteString(fmt.Sprintf("%d --- ", Pid))
-	b.WriteString(fmt.Sprintf("[%5d] ", gid.CurGoroutineID().Uint64()))
-	b.WriteString(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
+	if !f.Simple {
+		b.WriteString(fmt.Sprintf("%d --- ", Pid))
+		b.WriteString(fmt.Sprintf("[%5d] ", gid.CurGoroutineID().Uint64()))
+		b.WriteString(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
+	}
 
 	f.printCaller(b, e.Caller())
 
@@ -111,7 +114,10 @@ func (f Formatter) printLevel(b *bytes.Buffer, level string) {
 	}
 
 	// align the longest WARNING, which has the length of 7
-	b.WriteString(fmt.Sprintf("%7s ", level))
+	if level == "WARNING" {
+		level = "WARN"
+	}
+	b.WriteString(fmt.Sprintf("%5s ", level))
 
 	if f.PrintColor { // reset
 		b.WriteString("\x1b[0m")

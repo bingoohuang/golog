@@ -28,6 +28,7 @@ type LogrusOption struct {
 	PrintColor  bool
 	PrintCaller bool
 	Stdout      bool
+	Simple      bool
 
 	LogPath string
 	Rotate  string
@@ -68,6 +69,7 @@ func (o LogrusOption) Setup(ll *logrus.Logger) *Result {
 				Formatter: Formatter{
 					PrintColor:  o.PrintColor,
 					PrintCaller: o.PrintCaller,
+					Simple:      o.Simple,
 				},
 			},
 		})
@@ -96,6 +98,7 @@ func (o LogrusOption) Setup(ll *logrus.Logger) *Result {
 				Formatter: Formatter{
 					PrintColor:  false,
 					PrintCaller: o.PrintCaller,
+					Simple:      o.Simple,
 				},
 			},
 		})

@@ -47,6 +47,7 @@ maxSize    | 100M             | max size to rotate log files (unit K/M/K/KiB/MiB
 printColor | true             | print color on the log level or not, only for stdout=true
 printCall  | true             | print caller file:line or not (performance slow)
 stdout     | true             | print the log to stdout at the same time or not
+simple     | false            | simple to print log (not print [PID --- ThreadID TraceID])
 
 ## Demonstration
 
