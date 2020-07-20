@@ -40,7 +40,7 @@ name       | default value    | description
 -----------|------------------|-------------------------------------------------------------
 level      | info             | log level to record (debug/info/warn/error)
 file       | ~/logs/{bin}.log | base log file name
-rotate     | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)
+rotate     | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit]
 maxAge     | 30d              | max age to keep log files (unit m/h/d/w)
 gzipAge    | 3d               | gzip aged log files (unit m/h/d/w)
 maxSize    | 100M             | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
