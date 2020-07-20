@@ -1,7 +1,7 @@
 package logfmt
 
 import (
-	"io"
+	"io/ioutil"
 	"os"
 	"runtime"
 	"time"
@@ -59,17 +59,18 @@ func (o LogrusOption) Setup(ll *logrus.Logger) *Result {
 
 	ll.SetLevel(l)
 
-	// https://stackoverflow.com/a/48972299
-	formatter := &LogrusFormatter{
-		Formatter: Formatter{
-			PrintColor:  o.PrintColor,
-			PrintCaller: o.PrintCaller,
-		},
-	}
+	writers := make([]WriterFormatter, 0, 2)
 
-	writers := make([]io.Writer, 0)
 	if o.Stdout {
-		writers = append(writers, os.Stdout)
+		writers = append(writers, WriterFormatter{
+			Writer: os.Stdout,
+			Formatter: &LogrusFormatter{
+				Formatter: Formatter{
+					PrintColor:  o.PrintColor,
+					PrintCaller: o.PrintCaller,
+				},
+			},
+		})
 	}
 
 	g := &Result{
@@ -89,13 +90,19 @@ func (o LogrusOption) Setup(ll *logrus.Logger) *Result {
 
 		g.Rotate = r
 
-		writers = append(writers, r)
+		writers = append(writers, WriterFormatter{
+			Writer: r,
+			Formatter: &LogrusFormatter{
+				Formatter: Formatter{
+					PrintColor:  false,
+					PrintCaller: o.PrintCaller,
+				},
+			},
+		})
 	}
 
-	g.Writer = io.MultiWriter(writers...)
-
-	ll.SetOutput(g.Writer)
-	ll.SetFormatter(formatter)
+	ll.AddHook(NewHook(writers))
+	ll.SetOutput(ioutil.Discard)
 	ll.SetReportCaller(o.PrintCaller)
 
 	return g

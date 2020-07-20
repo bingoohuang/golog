@@ -44,7 +44,7 @@ rotate     | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:
 maxAge     | 30d              | max age to keep log files (unit m/h/d/w)
 gzipAge    | 3d               | gzip aged log files (unit m/h/d/w)
 maxSize    | 100M             | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
-printColor | true             | print color on the log level or not
+printColor | true             | print color on the log level or not, only for stdout=true
 printCall  | true             | print caller file:line or not (performance slow)
 stdout     | true             | print the log to stdout at the same time or not
 

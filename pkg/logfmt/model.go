@@ -2,7 +2,6 @@ package logfmt
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"os/signal"
 
@@ -10,7 +9,6 @@ import (
 )
 
 type Result struct {
-	Writer io.Writer
 	Rotate *rotate.Rotate
 	Option LogrusOption
 }
