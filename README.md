@@ -129,7 +129,7 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
 
 1. `sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" x.log` to strip color from log file.
 1. [`tail -F x.log`](https://explainshell.com/explain?cmd=tail+-F+x.log) even if x.log recreated.
-1. use gin extra logs will be printed?
+1. use GIN framework extra logs will be printed?
 The solution：
 use gin.New() Don't use gin.Default()
 because Default() exist Logger(), New() not print log
