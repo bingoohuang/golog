@@ -133,9 +133,9 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
 
 The solution：
 
-use gin.New() Don't use gin.Default()
+Use gin.New() instead of gin.Default()
 
-because Default() exist Logger(), New() not print log
+Because gin.Default() exist Logger(), gin.New() not print logs
 
 ```go
 // Default returns an Engine instance with the Logger and Recovery middleware already attached.
