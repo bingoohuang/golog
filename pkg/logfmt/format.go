@@ -74,7 +74,7 @@ func (f Formatter) Format(e Entry) []byte {
 
 	if !f.Simple {
 		b.WriteString(fmt.Sprintf("%d --- ", Pid))
-		b.WriteString(fmt.Sprintf("[%5d] ", gid.CurGoroutineID().Uint64()))
+		b.WriteString(fmt.Sprintf("%-5d ", gid.CurGoroutineID().Uint64()))
 		b.WriteString(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
 	}
 
@@ -99,10 +99,11 @@ func (f Formatter) printCaller(b *bytes.Buffer, c *runtime.Frame) {
 	if c == nil && f.PrintCaller {
 		c = caller.GetCaller()
 	}
-
+	//参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
+	//统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
 	if c != nil {
-		fileLine := fmt.Sprintf("%s:%d", filepath.Base(c.File), c.Line)
-		b.WriteString(fmt.Sprintf("%20s", fileLine))
+		fileLine := fmt.Sprintf("%s#%d", filepath.Base(c.File), c.Line)
+		b.WriteString(fmt.Sprintf("%-20s", fileLine))
 	}
 }
 
@@ -117,7 +118,7 @@ func (f Formatter) printLevel(b *bytes.Buffer, level string) {
 	if level == "WARNING" {
 		level = "WARN"
 	}
-	b.WriteString(fmt.Sprintf("%5s ", level))
+	b.WriteString(fmt.Sprintf("[%-5s] ", level))
 
 	if f.PrintColor { // reset
 		b.WriteString("\x1b[0m")
