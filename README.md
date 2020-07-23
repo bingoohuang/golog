@@ -40,7 +40,7 @@ name       | default value    | description
 -----------|------------------|-------------------------------------------------------------
 level      | info             | log level to record (debug/info/warn/error)
 file       | ~/logs/{bin}.log | base log file name
-rotate     | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)
+rotate     | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit]
 maxAge     | 30d              | max age to keep log files (unit m/h/d/w)
 gzipAge    | 3d               | gzip aged log files (unit m/h/d/w)
 maxSize    | 100M             | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
@@ -125,10 +125,28 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
      +-----------------------------+                          +----------------------------------+
 ```
 
-## Help shell
+## Help
 
 1. `sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" x.log` to strip color from log file.
 1. [`tail -F x.log`](https://explainshell.com/explain?cmd=tail+-F+x.log) even if x.log recreated.
+1. use GIN framework extra logs will be printed?
+
+The solution：
+
+Use gin.New() instead of gin.Default()
+
+Because gin.Default() exist Logger(), gin.New() not print logs
+
+```go
+// Default returns an Engine instance with the Logger and Recovery middleware already attached.
+func Default() *Engine {
+	debugPrintWARNINGDefault()
+	engine := New()
+	engine.Use(Logger(), Recovery())
+	return engine
+}
+```
+
 
 ## Thanks to the giant shoulders:
 
