@@ -74,13 +74,15 @@ start to listen on :54264
 demo log file content:
 
 ```log
-2020-07-19 10:33:17.673    INFO 65173 --- [  919] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":912} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / zvHRlswV
-2020-07-19 10:33:17.673    INFO 65173 --- [  291] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":284} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / MISchLeG
-2020-07-19 10:33:17.673    INFO 65173 --- [  792] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":785} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / OREZhOeE
-2020-07-19 10:33:17.674    INFO 65173 --- [  420] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":413} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / TWdyyaCD
-2020-07-19 10:33:17.668    INFO 65173 --- [   46] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":39} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / QyTMRRTnj
-2020-07-19 10:33:17.668    INFO 65173 --- [  280] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":273} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / PmNwXQWr
-2020-07-19 10:33:17.665    INFO 65173 --- [  958] [-]           main.go:45 : {"contentType":"","proto":"HTTP/1.1","workerID":951} 2020-07-19 10:33:17.665 127.0.0.1:65007 GET / WeTxLriT
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 214   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":207} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / dkNTliprMVGmkfLaOPqIDEwZBHUVBeukHOmAEsTDFRsGbqcuwcnhUNOQZGyGZazNwxFfOumzuUSdnzCOvIUASPlddzWhZsjyEbhU
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 669   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":662} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / FMVACHSBfekZuLPiGrjPOrMfsImGEWTIcLiBbcHlTJWpuVMzhDRyvBThyOUBOllxUEPJlMGGhXhyLHZknzcNaJycUysJuBFhdQjJ
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 379   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":372} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / cQbUXmEQUrJXouDNlMyDBFhykLOjCaNRbwDEdTjsUlZTCIWHsycwhnGitpRDfICIwTKeGlAMPVyMWnLQXUHFIcPtLLudqiGtfkvH
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 119   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":112} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / uMAaQDwxDPlBEtrFiGbhyFNFJPDHNdQFcYzNvXgsrtBcjZQDCIDYBnDaasJKNVQSbaQPUmzCFRCCqppwIGGgzSIrBvFVopVvSZHL
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 244   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":237} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / OPBsKeflLHELLpymnBqxaGrvEyAjCStmMUAKzXUPFrJQOepHQzfARmStzkTmzWJnZmEJqEjiPQxCKhnicomhYBKiOXoyimKMPipp
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 368   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":361} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / vlnikHYVmbSqimicIgfpUBImaKRmPuxZnljbgbhEUONUUtAKjxsaBbTUJTdYjMVWxDkcbjWDgzUFENhfyBAHqHCLDOLjQXkYFocm
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 910   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":903} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / ggcnhxToaBYtsMRWJCJEHpZViQphaRTwSMhUytFjdPzKltmjHRSReYfswPSbcrCSsUybGIibQPCRavxvwKMyQoOjelNPacinPYFK
+2020-07-23 12:26:33.110 [INFO ] 9019 --- 660   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":653} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / DcXihdRvktitsFKQmAGIpiFsDYslqnPQebbmQrqUGZGTdHAkGHvoUmCMiejCYEzfEriLFlcTjPiHDOxMaOdhyLyPaHyYmwqMCnok
+2020-07-23 12:26:33.110 [INFO ] 9019 --- 440   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":433} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / GkbfwhOuBvinWDBIdKrVWTbtKJsSDtCeJirgIoiUovmUALuCfHPdjYccdNZyGsWXFTlpmsBpbIJLlPVWuzuNxpcTAFcRQXGmOtjt
 ```
 
 watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologdemo.log*"`
