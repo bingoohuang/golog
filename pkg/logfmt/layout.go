@@ -13,6 +13,7 @@ import (
 	"github.com/bingoohuang/golog/pkg/spec"
 	"github.com/bingoohuang/golog/pkg/str"
 	"github.com/bingoohuang/golog/pkg/timex"
+	"github.com/sirupsen/logrus"
 )
 
 // Layout describes the parsed layout of expression.
@@ -186,9 +187,16 @@ func parseFields(minus bool, digits string, options string) (Part, error) {
 
 type CallerPart struct {
 	Digits string
+	Level  logrus.Level
+	Sep    string
 }
 
 func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
+	ll, _ := logrus.ParseLevel(e.Level())
+	if ll > p.Level {
+		return
+	}
+
 	fileLine := "-"
 	c := e.Caller()
 	if c == nil {
@@ -196,14 +204,45 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 	}
 
 	if c != nil {
-		fileLine = fmt.Sprintf("%s:%d", filepath.Base(c.File), c.Line)
+		fileLine = fmt.Sprintf("%s%s%d", filepath.Base(c.File), p.Sep, c.Line)
 	}
 
 	b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
 }
 
 func parseCaller(minus bool, digits string, options string) (Part, error) {
-	return &CallerPart{Digits: compositeDigits(minus, digits, "20")}, nil
+	c := &CallerPart{Digits: compositeDigits(minus, digits, "")}
+
+	fields := strings.FieldsFunc(options, func(c rune) bool {
+		return unicode.IsSpace(c) || c == ','
+	})
+
+	level := ""
+
+	for _, f := range fields {
+		parts := strings.SplitN(f, "=", 2)
+		k := ""
+		v := ""
+		if len(parts) > 0 {
+			k = strings.ToLower(parts[0])
+		}
+
+		if len(parts) > 1 {
+			v = parts[1]
+		}
+
+		switch k {
+		case "level":
+			level = v
+		case "sep":
+			c.Sep = v
+		}
+	}
+
+	c.Level, _ = logrus.ParseLevel(str.Or(level, "warn"))
+	c.Sep = str.Or(c.Sep, ":")
+
+	return c, nil
 }
 
 type TracePart struct {
