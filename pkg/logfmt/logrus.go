@@ -1,6 +1,7 @@
 package logfmt
 
 import (
+	"io"
 	"io/ioutil"
 	"os"
 	"runtime"
@@ -29,6 +30,7 @@ type LogrusOption struct {
 	PrintCaller bool
 	Stdout      bool
 	Simple      bool
+	Layout      string
 
 	LogPath string
 	Rotate  string
@@ -48,7 +50,7 @@ func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 // Setup setup log parameters.
-func (o LogrusOption) Setup(ll *logrus.Logger) *Result {
+func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 	l, err := logrus.ParseLevel(o.Level)
 	if err != nil {
 		l = logrus.InfoLevel
@@ -60,16 +62,25 @@ func (o LogrusOption) Setup(ll *logrus.Logger) *Result {
 
 	ll.SetLevel(l)
 
-	writers := make([]WriterFormatter, 0, 2)
+	var layout *Layout = nil
+
+	if o.Layout != "" {
+		if layout, err = NewLayout(o.Layout); err != nil {
+			return nil, err
+		}
+	}
+
+	writers := make([]*WriterFormatter, 0, 2)
 
 	if o.Stdout {
-		writers = append(writers, WriterFormatter{
+		writers = append(writers, &WriterFormatter{
 			Writer: os.Stdout,
 			Formatter: &LogrusFormatter{
 				Formatter: Formatter{
 					PrintColor:  o.PrintColor,
 					PrintCaller: o.PrintCaller,
 					Simple:      o.Simple,
+					Layout:      layout,
 				},
 			},
 		})
@@ -92,21 +103,30 @@ func (o LogrusOption) Setup(ll *logrus.Logger) *Result {
 
 		g.Rotate = r
 
-		writers = append(writers, WriterFormatter{
+		writers = append(writers, &WriterFormatter{
 			Writer: r,
 			Formatter: &LogrusFormatter{
 				Formatter: Formatter{
 					PrintColor:  false,
 					PrintCaller: o.PrintCaller,
 					Simple:      o.Simple,
+					Layout:      layout,
 				},
 			},
 		})
 	}
 
+	var ws []io.Writer
+
+	for _, w := range writers {
+		ws = append(ws, w)
+	}
+
+	g.Writer = io.MultiWriter(ws...)
+
 	ll.AddHook(NewHook(writers))
 	ll.SetOutput(ioutil.Discard)
 	ll.SetReportCaller(o.PrintCaller)
 
-	return g
+	return g, nil
 }

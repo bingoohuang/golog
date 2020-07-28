@@ -36,10 +36,17 @@ func main() {
 		spec = v
 	}
 
+	layout := `%t{HH:mm:ss.SSS} %5l{length=1} PID=%pid --- [GID=%gid] [%trace] %20caller : %fields %msg%n`
+	if v := os.Getenv("LAYOUT"); v != "" {
+		layout = v
+	}
+
 	fmt.Println("golog spec:", spec)
 
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
-	golog.SetupLogrus(nil, spec)
+	if _, err := golog.SetupLogrus(nil, spec, layout); err != nil {
+		panic(err)
+	}
 
 	logC := make(chan LogMessage, channelSize)
 	for i := 0; i < channelSize; i++ {

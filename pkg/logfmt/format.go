@@ -56,6 +56,7 @@ type Formatter struct {
 	PrintColor  bool
 	PrintCaller bool
 	Simple      bool
+	Layout      *Layout
 }
 
 var Pid = os.Getpid()
@@ -68,13 +69,18 @@ const (
 func (f Formatter) Format(e Entry) []byte {
 	b := &bytes.Buffer{}
 
+	if f.Layout != nil {
+		f.Layout.Append(b, e)
+		return b.Bytes()
+	}
+
 	b.WriteString(timex.OrNow(e.Time()).Format(layout) + " ")
 
 	f.printLevel(b, e.Level())
 
 	if !f.Simple {
 		b.WriteString(fmt.Sprintf("%d --- ", Pid))
-		b.WriteString(fmt.Sprintf("[%5d] ", gid.CurGoroutineID().Uint64()))
+		b.WriteString(fmt.Sprintf("[%5s] ", gid.CurGoroutineID()))
 		b.WriteString(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
 	}
 

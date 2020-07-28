@@ -10,19 +10,19 @@ import (
 // WriterFormatter is map for mapping a log level to an io.Writer.
 // Multiple levels may share a writer, but multiple writers may not be used for one level.
 type WriterFormatter struct {
-	Writer    io.Writer
+	io.Writer
 	Formatter logrus.Formatter
 }
 
 // Hook is a hook to handle writing to local log files.
 type Hook struct {
-	Writers []WriterFormatter
+	Writers []*WriterFormatter
 }
 
 // NewHook returns new LFS hook.
 // Output can be a string, io.Writer, WriterMap or PathMap.
 // If using io.Writer or WriterMap, user is responsible for closing the used io.Writer.
-func NewHook(writers []WriterFormatter) *Hook {
+func NewHook(writers []*WriterFormatter) *Hook {
 	return &Hook{Writers: writers}
 }
 
@@ -36,7 +36,7 @@ func (hook *Hook) Fire(entry *logrus.Entry) error {
 			return err
 		}
 
-		if _, err := writer.Writer.Write(msg); err != nil {
+		if _, err := writer.Write(msg); err != nil {
 			return err
 		}
 	}

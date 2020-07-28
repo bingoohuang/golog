@@ -22,7 +22,7 @@ Use default settings:
 
 ```go
 func init() {
-    golog.SetupLogrus(nil, "")
+    golog.SetupLogrus(nil, "", "")
 }
 ```
 
@@ -30,24 +30,43 @@ Customize the settings:
 
 ```go
 func init() {
-    golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d")
+    golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d","")
 }
 ```
 
 ## Specifications
 
-name       | default value    | description
------------|------------------|-------------------------------------------------------------
-level      | info             | log level to record (debug/info/warn/error)
-file       | ~/logs/{bin}.log | base log file name
-rotate     | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit]
-maxAge     | 30d              | max age to keep log files (unit m/h/d/w)
-gzipAge    | 3d               | gzip aged log files (unit m/h/d/w)
-maxSize    | 100M             | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
-printColor | true             | print color on the log level or not, only for stdout=true
-printCall  | true             | print caller file:line or not (performance slow)
-stdout     | true             | print the log to stdout at the same time or not
-simple     | false            | simple to print log (not print [PID --- ThreadID TraceID])
+name       | prerequisite    | default value    | description
+-----------|-----------------|------------------|-----------------------------------------------------------------------------------------------------
+level      | -               | info             | log level to record (debug/info/warn/error)
+file       | -               | ~/logs/{bin}.log | base log file name
+rotate     | -               | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit]
+maxAge     | -               | 30d              | max age to keep log files (unit m/h/d/w)
+gzipAge    | -               | 3d               | gzip aged log files (unit m/h/d/w)
+maxSize    | -               | 100M             | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
+stdout     | -               | true             | print the log to stdout at the same time or not
+printColor | layout is empty | true             | print color on the log level or not, only for stdout=true
+printCall  | layout is empty | true             | print caller file:line or not (performance slow)
+simple     | layout is empty | false            | simple to print log (not print `PID --- [GID] [TraceID]`)
+layout     | -               | (empty)          | log line layout customization, like `%t %5l %pid --- [%5gid] [%trace] %20caller : %fields %msg%n`
+
+## Layout pattern
+
+patter                 | remark
+-----------------------|-----------------------------------------------------------------------
+`%time`  `%t`          | `%time` same with `%time{yyyy-MM-dd HH:mm:ss.SSS}`
+`%level`  `%l`         | `%level` same with `%level{printColor=false lowerCase=false length=0}`
+`%pid`                 | process ID
+`%gid`                 | go routine ID
+`%08gid`               | go routine ID, Pad with leading zeroes(width 8)
+`%5gid`                | go routine ID, Pad with spaces (width 5, right justified)
+`%-10trace`            | trace ID, Pad with spaces (width 10, left justified)
+`%caller`              | caller information
+`%fields`              | fields JSON
+`%message` `%msg` `%m` | log detail message
+`%n`                   | new line
+
+### %pid
 
 ## Demonstration
 
@@ -156,3 +175,5 @@ func Default() *Engine {
 1. [mzky/utils 一个工具集，包括文件组件，日志组件](https://github.com/mzky/utils)
 1. [Lumberjack writing logs to rolling files.](https://github.com/natefinch/lumberjack)
 1. [应用程序日志规范](https://github.com/bingoohuang/blog/issues/151)
+1. [op/go-logging format](https://github.com/op/go-logging/blob/master/format.go)
+1. [log4j layout](https://logging.apache.org/log4j/2.x/manual/layouts.html)

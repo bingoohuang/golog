@@ -24,7 +24,7 @@ func SetupLog(ll *log.Logger, specification string) *logfmt.Result {
 
 // SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
-func SetupLogrus(ll *logrus.Logger, specification string) *logfmt.Result {
+func SetupLogrus(ll *logrus.Logger, specification, layout string) (*logfmt.Result, error) {
 	logSpec := &LogSpec{}
 
 	if err := spec.ParseSpec(specification, "spec", logSpec); err != nil {
@@ -42,6 +42,7 @@ func SetupLogrus(ll *logrus.Logger, specification string) *logfmt.Result {
 		PrintCaller: logSpec.PrintCaller,
 		Stdout:      logSpec.Stdout,
 		Simple:      logSpec.Simple,
+		Layout:      layout,
 	}
 
 	fmt.Println("log file created:", logrusOption.LogPath)

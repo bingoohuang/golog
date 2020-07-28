@@ -1,6 +1,9 @@
 package str
 
-import "strings"
+import (
+	"strconv"
+	"strings"
+)
 
 func AnyOf(v string, any ...string) bool {
 	for _, s := range any {
@@ -29,4 +32,24 @@ func HasSuffixes(s string, suffixes ...string) bool {
 	}
 
 	return false
+}
+
+func ParseInt(s string, defaultValue int) int {
+	i, err := strconv.ParseInt(s, 10, 64)
+	if err != nil {
+		return defaultValue
+	}
+
+	return int(i)
+}
+
+func ParseBool(s string, defaultValue bool) bool {
+	switch strings.ToLower(s) {
+	case "true", "t", "yes", "y", "on", "1":
+		return true
+	case "false", "f", "no", "n", "off", "0":
+		return false
+	}
+
+	return defaultValue
 }

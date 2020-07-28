@@ -2,6 +2,7 @@ package logfmt
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 
@@ -11,6 +12,8 @@ import (
 type Result struct {
 	Rotate *rotate.Rotate
 	Option LogrusOption
+
+	io.Writer
 }
 
 // RegisterSignalRotate register a signal like syscall.SIGHUP to rotate the log file.
