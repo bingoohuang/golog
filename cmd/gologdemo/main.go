@@ -7,6 +7,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/bingoohuang/ginx/pkg/ginpprof"
+
 	"github.com/bingoohuang/golog/pkg/httpx"
 	"github.com/bingoohuang/golog/pkg/iox"
 
@@ -30,6 +32,8 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK\n")) })
+
+	ginpprof.Wrap(mux)
 
 	spec := "file=~/gologdemo.log,maxSize=1M,stdout=false,rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m"
 	if v := os.Getenv("SPEC"); v != "" {
