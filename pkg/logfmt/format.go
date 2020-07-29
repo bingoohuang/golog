@@ -106,7 +106,8 @@ func (f Formatter) Format(e Entry) []byte {
 	}
 
 	// indent multiple lines log
-	b.WriteString(strings.Replace(e.Message(), "\n", `\n `, -1))
+	msg := strings.TrimRight(e.Message(), "\r\n")
+	b.WriteString(strings.Replace(msg, "\n", `\n `, -1))
 	b.WriteString("\n")
 
 	return b.Bytes()
