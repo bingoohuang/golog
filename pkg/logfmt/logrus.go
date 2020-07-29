@@ -39,6 +39,13 @@ type LogrusOption struct {
 	GzipAge time.Duration
 }
 
+type DiscardFormatter struct {
+}
+
+func (f DiscardFormatter) Format(_ *logrus.Entry) ([]byte, error) {
+	return nil, nil
+}
+
 type LogrusFormatter struct {
 	Formatter
 }
@@ -124,6 +131,7 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 
 	g.Writer = io.MultiWriter(ws...)
 
+	ll.SetFormatter(&DiscardFormatter{})
 	ll.AddHook(NewHook(writers))
 	ll.SetOutput(ioutil.Discard)
 	ll.SetReportCaller(o.PrintCaller)

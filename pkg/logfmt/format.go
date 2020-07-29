@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -19,8 +18,6 @@ import (
 
 	"github.com/bingoohuang/golog/pkg/gid"
 )
-
-var reNewLines = regexp.MustCompile(`\r?\n`) // nolint
 
 // Fields type, used to pass to `WithFields`.
 type Fields map[string]interface{}
@@ -109,7 +106,8 @@ func (f Formatter) Format(e Entry) []byte {
 	}
 
 	// indent multiple lines log
-	b.WriteString(reNewLines.ReplaceAllString(e.Message(), "\n ") + "\n")
+	b.WriteString(strings.Replace(e.Message(), "\n", `\n `, -1))
+	b.WriteString("\n")
 
 	return b.Bytes()
 }

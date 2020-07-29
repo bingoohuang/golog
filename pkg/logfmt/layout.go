@@ -136,7 +136,8 @@ func (p MessagePart) Append(b *bytes.Buffer, e Entry) {
 	// indent multiple lines log
 	msg := e.Message()
 	if p.SingleLine {
-		msg = reNewLines.ReplaceAllString(e.Message(), `\n `)
+		// indent multiple lines log
+		msg = strings.Replace(e.Message(), "\n", `\n `, -1)
 	}
 
 	b.WriteString(msg)
