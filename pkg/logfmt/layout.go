@@ -135,16 +135,18 @@ type MessagePart struct {
 func (p MessagePart) Append(b *bytes.Buffer, e Entry) {
 	// indent multiple lines log
 	msg := e.Message()
+	msg = strings.TrimRight(msg, "\r\n")
+
 	if p.SingleLine {
 		// indent multiple lines log
-		msg = strings.Replace(e.Message(), "\n", `\n `, -1)
+		b.WriteString(strings.Replace(msg, "\n", `\n `, -1))
+	} else {
+		b.WriteString(msg)
 	}
-
-	b.WriteString(msg)
 }
 
 func parseMessage(minus bool, digits string, options string) (Part, error) {
-	p := &MessagePart{}
+	p := &MessagePart{SingleLine: true}
 
 	fields := strings.FieldsFunc(options, func(c rune) bool {
 		return unicode.IsSpace(c) || c == ','

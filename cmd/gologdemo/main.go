@@ -40,7 +40,8 @@ func main() {
 		spec = v
 	}
 
-	layout := `%t{HH:mm:ss.SSS} %5l{length=1} PID=%pid --- [GID=%gid] [%trace] %20caller : %fields %msg%n`
+	layout := ``
+	layout = `%t{HH:mm:ss.SSS} %5l{length=1} PID=%pid --- [GID=%gid] [%trace] %20caller : %fields %msg%n`
 	if v := os.Getenv("LAYOUT"); v != "" {
 		layout = v
 	}
@@ -109,7 +110,7 @@ func log(logC <-chan LogMessage, workerID int) {
 			"workerID":    workerID,
 			"proto":       r.Proto,
 			"contentType": r.ContentType,
-		}).Infof("%s %s %s %s %s", r.Time, r.RemoteAddr, r.Method, r.URL, randx.String(100))
+		}).Infof("%s %s %s %s %s\r\n\n", r.Time, r.RemoteAddr, r.Method, r.URL, randx.String(100))
 	}
 }
 
