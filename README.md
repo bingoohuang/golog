@@ -61,10 +61,11 @@ patter                 | remark
 `%08gid`               | go routine ID, Pad with leading zeroes(width 8)
 `%5gid`                | go routine ID, Pad with spaces (width 5, right justified)
 `%-10trace`            | trace ID, Pad with spaces (width 10, left justified)
-`%caller`              | caller information
+`%caller`              | caller information, `%caller{sep=:,level=warn}`, `sep` defines the separator between filename and line number, `level` defines the lowest level to print caller information.
 `%fields`              | fields JSON
-`%message` `%msg` `%m` | log detail message
+`%message` `%msg` `%m` | log detail message, `%m{singleLine=true}`, `singleLine` indicates whether the message should mergred into a single line when there are multiple newlines in the message.
 `%n`                   | new line
+`%%`                   | escape percent sign
 
 ### %pid
 
