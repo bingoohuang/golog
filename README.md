@@ -63,11 +63,9 @@ patter                 | remark
 `%-10trace`            | trace ID, Pad with spaces (width 10, left justified)
 `%caller`              | caller information, `%caller{sep=:,level=warn}`, `sep` defines the separator between filename and line number, `level` defines the lowest level to print caller information.
 `%fields`              | fields JSON
-`%message` `%msg` `%m` | log detail message, `%m{singleLine=true}`, `singleLine` indicates whether the message should mergred into a single line when there are multiple newlines in the message.
+`%message` `%msg` `%m` | log detail message, `%m{singleLine=true}`, `singleLine` indicates whether the message should merged into a single line when there are multiple newlines in the message.
 `%n`                   | new line
 `%%`                   | escape percent sign
-
-### %pid
 
 ## Demonstration
 
@@ -94,15 +92,15 @@ start to listen on :54264
 demo log file content:
 
 ```log
-2020-07-23 12:26:33.144 [INFO ] 9019 --- 214   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":207} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / dkNTliprMVGmkfLaOPqIDEwZBHUVBeukHOmAEsTDFRsGbqcuwcnhUNOQZGyGZazNwxFfOumzuUSdnzCOvIUASPlddzWhZsjyEbhU
-2020-07-23 12:26:33.144 [INFO ] 9019 --- 669   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":662} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / FMVACHSBfekZuLPiGrjPOrMfsImGEWTIcLiBbcHlTJWpuVMzhDRyvBThyOUBOllxUEPJlMGGhXhyLHZknzcNaJycUysJuBFhdQjJ
-2020-07-23 12:26:33.144 [INFO ] 9019 --- 379   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":372} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / cQbUXmEQUrJXouDNlMyDBFhykLOjCaNRbwDEdTjsUlZTCIWHsycwhnGitpRDfICIwTKeGlAMPVyMWnLQXUHFIcPtLLudqiGtfkvH
-2020-07-23 12:26:33.144 [INFO ] 9019 --- 119   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":112} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / uMAaQDwxDPlBEtrFiGbhyFNFJPDHNdQFcYzNvXgsrtBcjZQDCIDYBnDaasJKNVQSbaQPUmzCFRCCqppwIGGgzSIrBvFVopVvSZHL
-2020-07-23 12:26:33.144 [INFO ] 9019 --- 244   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":237} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / OPBsKeflLHELLpymnBqxaGrvEyAjCStmMUAKzXUPFrJQOepHQzfARmStzkTmzWJnZmEJqEjiPQxCKhnicomhYBKiOXoyimKMPipp
-2020-07-23 12:26:33.144 [INFO ] 9019 --- 368   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":361} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / vlnikHYVmbSqimicIgfpUBImaKRmPuxZnljbgbhEUONUUtAKjxsaBbTUJTdYjMVWxDkcbjWDgzUFENhfyBAHqHCLDOLjQXkYFocm
-2020-07-23 12:26:33.144 [INFO ] 9019 --- 910   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":903} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / ggcnhxToaBYtsMRWJCJEHpZViQphaRTwSMhUytFjdPzKltmjHRSReYfswPSbcrCSsUybGIibQPCRavxvwKMyQoOjelNPacinPYFK
-2020-07-23 12:26:33.110 [INFO ] 9019 --- 660   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":653} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / DcXihdRvktitsFKQmAGIpiFsDYslqnPQebbmQrqUGZGTdHAkGHvoUmCMiejCYEzfEriLFlcTjPiHDOxMaOdhyLyPaHyYmwqMCnok
-2020-07-23 12:26:33.110 [INFO ] 9019 --- 440   [-] main.go#101          : {"contentType":"","proto":"HTTP/1.1","workerID":433} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / GkbfwhOuBvinWDBIdKrVWTbtKJsSDtCeJirgIoiUovmUALuCfHPdjYccdNZyGsWXFTlpmsBpbIJLlPVWuzuNxpcTAFcRQXGmOtjt
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 214   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":207} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / dkNTliprMVGmkfLaOPqIDEwZBHUVBeukHOmAEsTDFRsGbqcuwcnhUNOQZGyGZazNwxFfOumzuUSdnzCOvIUASPlddzWhZsjyEbhU
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 669   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":662} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / FMVACHSBfekZuLPiGrjPOrMfsImGEWTIcLiBbcHlTJWpuVMzhDRyvBThyOUBOllxUEPJlMGGhXhyLHZknzcNaJycUysJuBFhdQjJ
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 379   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":372} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / cQbUXmEQUrJXouDNlMyDBFhykLOjCaNRbwDEdTjsUlZTCIWHsycwhnGitpRDfICIwTKeGlAMPVyMWnLQXUHFIcPtLLudqiGtfkvH
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 119   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":112} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / uMAaQDwxDPlBEtrFiGbhyFNFJPDHNdQFcYzNvXgsrtBcjZQDCIDYBnDaasJKNVQSbaQPUmzCFRCCqppwIGGgzSIrBvFVopVvSZHL
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 244   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":237} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / OPBsKeflLHELLpymnBqxaGrvEyAjCStmMUAKzXUPFrJQOepHQzfARmStzkTmzWJnZmEJqEjiPQxCKhnicomhYBKiOXoyimKMPipp
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 368   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":361} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / vlnikHYVmbSqimicIgfpUBImaKRmPuxZnljbgbhEUONUUtAKjxsaBbTUJTdYjMVWxDkcbjWDgzUFENhfyBAHqHCLDOLjQXkYFocm
+2020-07-23 12:26:33.144 [INFO ] 9019 --- 910   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":903} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / ggcnhxToaBYtsMRWJCJEHpZViQphaRTwSMhUytFjdPzKltmjHRSReYfswPSbcrCSsUybGIibQPCRavxvwKMyQoOjelNPacinPYFK
+2020-07-23 12:26:33.110 [INFO ] 9019 --- 660   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":653} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / DcXihdRvktitsFKQmAGIpiFsDYslqnPQebbmQrqUGZGTdHAkGHvoUmCMiejCYEzfEriLFlcTjPiHDOxMaOdhyLyPaHyYmwqMCnok
+2020-07-23 12:26:33.110 [INFO ] 9019 --- 440   [-] main.go:101          : {"contentType":"","proto":"HTTP/1.1","workerID":433} 2020-07-23 12:26:33.098 127.0.0.1:34458 GET / GkbfwhOuBvinWDBIdKrVWTbtKJsSDtCeJirgIoiUovmUALuCfHPdjYccdNZyGsWXFTlpmsBpbIJLlPVWuzuNxpcTAFcRQXGmOtjt
 ```
 
 watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologdemo.log*"`
@@ -151,24 +149,21 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
 
 1. `sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" x.log` to strip color from log file.
 1. [`tail -F x.log`](https://explainshell.com/explain?cmd=tail+-F+x.log) even if x.log recreated.
-1. use GIN framework extra logs will be printed?
-
-The solution：
-
-Use gin.New() instead of gin.Default()
-
-Because gin.Default() exist Logger(), gin.New() not print logs
-
-```go
-// Default returns an Engine instance with the Logger and Recovery middleware already attached.
-func Default() *Engine {
-	debugPrintWARNINGDefault()
-	engine := New()
-	engine.Use(Logger(), Recovery())
-	return engine
-}
-```
-
+1. GIN framework extra logs will be printed?
+    1. Use gin.New() instead of gin.Default()
+    1. Because gin.Default() exist Logger(), gin.New() not print logs
+    
+    ```go
+        gin.SetMode(gin.ReleaseMode)
+        golog.SetupLogrus(nil, "", "")
+    
+        r := gin.New()
+        r.Use(ginlogrus.Logger(nil), gin.Recovery())
+    ```
+    
+    ```
+    2020-07-31 11:49:08.287 [INFO ] 12341 --- [34   ] [-] ginlogrus.go:40      : 127.0.0.1 GET /ping [200] 18  Go-http-client/1.1 (106.286µs)
+    ```
 
 ## Thanks to the giant shoulders:
 
