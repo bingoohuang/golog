@@ -21,16 +21,20 @@ golog，支持:
 Use default settings:
 
 ```go
+import "github.com/bingoohuang/golog"
+
 func init() {
-    golog.SetupLogrus(nil, "", "")
+	golog.SetupLogrus(nil, "", "")
 }
 ```
 
 Customize the settings:
 
 ```go
+import "github.com/bingoohuang/golog"
+
 func init() {
-    golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d","")
+	golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d","")
 }
 ```
 
@@ -149,16 +153,25 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
 
 1. `sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" x.log` to strip color from log file.
 1. [`tail -F x.log`](https://explainshell.com/explain?cmd=tail+-F+x.log) even if x.log recreated.
-1. GIN framework extra logs will be printed?
+1. [GIN](https://github.com/gin-gonic/gin) framework extra logs will be printed?
     1. Use gin.New() instead of gin.Default()
     1. Because gin.Default() exist Logger(), gin.New() not print logs
     
     ```go
-        gin.SetMode(gin.ReleaseMode)
-        golog.SetupLogrus(nil, "", "")
+    import (
+    	"github.com/bingoohuang/golog"
+    	"github.com/bingoohuang/golog/pkg/ginlogrus"
+    	"github.com/gin-gonic/gin"
+    )
+   
+    func main() {
+    	gin.SetMode(gin.ReleaseMode)
+    	golog.SetupLogrus(nil, "", "")
     
-        r := gin.New()
-        r.Use(ginlogrus.Logger(nil), gin.Recovery())
+    	r := gin.New()
+    	r.Use(ginlogrus.Logger(nil), gin.Recovery())
+        // ...
+    }
     ```
     
     ```

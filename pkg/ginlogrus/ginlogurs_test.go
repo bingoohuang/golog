@@ -3,10 +3,10 @@ package ginlogrus_test
 import (
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/ginlogrus"
+	"github.com/gin-gonic/gin"
 	"net/http"
 	"testing"
 )
-import "github.com/gin-gonic/gin"
 
 func TestGinlogrus(t *testing.T) {
 	gin.SetMode(gin.ReleaseMode)

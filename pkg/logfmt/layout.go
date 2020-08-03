@@ -58,7 +58,7 @@ func NewLayout(layout string) (*Layout, error) {
 		}
 
 		if percentPos > 0 {
-			l.addLiteralPart(layout[:percentPos])
+			l.addLiteralPart(strings.TrimSpace(layout[:percentPos]))
 		}
 
 		layout = layout[percentPos+1:]
@@ -73,7 +73,6 @@ func NewLayout(layout string) (*Layout, error) {
 		digits := ""
 		indicator := ""
 		options := ""
-
 		var err error
 
 		layout, minus = parseMinus(layout)
@@ -110,7 +109,6 @@ func NewLayout(layout string) (*Layout, error) {
 		if err != nil {
 			return nil, err
 		}
-
 		l.addPart(p)
 	}
 
@@ -139,9 +137,9 @@ func (p MessagePart) Append(b *bytes.Buffer, e Entry) {
 
 	if p.SingleLine {
 		// indent multiple lines log
-		b.WriteString(strings.Replace(msg, "\n", `\n `, -1))
+		b.WriteString(" " + strings.Replace(msg, "\n", `\n`, -1))
 	} else {
-		b.WriteString(msg)
+		b.WriteString(" " + msg)
 	}
 }
 
@@ -210,7 +208,7 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 		fileLine = fmt.Sprintf("%s%s%d", filepath.Base(c.File), p.Sep, c.Line)
 	}
 
-	b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
+	b.WriteString(fmt.Sprintf(" %"+p.Digits+"s", fileLine))
 }
 
 func parseCaller(minus bool, digits string, options string) (Part, error) {
@@ -253,7 +251,7 @@ type TracePart struct {
 }
 
 func (t TracePart) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(fmt.Sprintf("%"+t.Digits+"s", e.TraceID()))
+	b.WriteString(fmt.Sprintf(" %"+t.Digits+"s", e.TraceID()))
 }
 
 func parseTrace(minus bool, digits string, options string) (Part, error) {
@@ -281,7 +279,7 @@ type PidPart struct {
 }
 
 func (p PidPart) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(fmt.Sprintf("%d ", Pid))
+	b.WriteString(fmt.Sprintf(" %d ", Pid))
 }
 
 func parsePid(minus bool, digits string, options string) (Part, error) {
@@ -373,7 +371,7 @@ type Time struct {
 }
 
 func (t Time) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(timex.OrNow(e.Time()).Format(t.Format))
+	b.WriteString(timex.OrNow(e.Time()).Format(t.Format) + " ")
 }
 
 func parseTime(minus bool, digits string, options string) (Part, error) {
