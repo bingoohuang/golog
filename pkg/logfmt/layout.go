@@ -109,6 +109,7 @@ func NewLayout(layout string) (*Layout, error) {
 		if err != nil {
 			return nil, err
 		}
+
 		l.addPart(p)
 	}
 
