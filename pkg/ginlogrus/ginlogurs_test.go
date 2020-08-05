@@ -1,11 +1,12 @@
 package ginlogrus_test
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/ginlogrus"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"testing"
 )
 
 func TestGinlogrus(t *testing.T) {
@@ -13,7 +14,7 @@ func TestGinlogrus(t *testing.T) {
 	golog.SetupLogrus(nil, "", "")
 
 	r := gin.New()
-	r.Use(ginlogrus.Logger(nil), gin.Recovery())
+	r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{"message": "pong"})
@@ -25,8 +26,8 @@ func TestGinlogrus(t *testing.T) {
 		server.ListenAndServe()
 	}()
 
-	rsp, _ := http.Get("http://127.0.0.1:12345/ping")
-	rsp.Body.Close()
+	_, _ = http.Get("http://127.0.0.1:12345/ping")
+	//rsp.Body.Close()
 
 	server.Close()
 }
