@@ -209,7 +209,7 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 		fileLine = fmt.Sprintf("%s%s%d", filepath.Base(c.File), p.Sep, c.Line)
 	}
 
-	b.WriteString(fmt.Sprintf(" %"+p.Digits+"s ", fileLine))
+	b.WriteString(fmt.Sprintf(" %"+p.Digits+"s", fileLine))
 }
 
 func parseCaller(minus bool, digits string, options string) (Part, error) {
