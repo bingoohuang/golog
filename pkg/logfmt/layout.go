@@ -46,9 +46,10 @@ func (l *Layout) addPart(p Part) {
 }
 
 // NewLayout creates a new layout from string expression.
-func NewLayout(layout string) (*Layout, error) {
+func NewLayout(lo LogrusOption) (*Layout, error) {
 	l := &Layout{}
 	percentPos := 0
+	layout := lo.Layout
 
 	for layout != "" && percentPos >= 0 {
 		percentPos = strings.Index(layout, "%")
@@ -89,7 +90,7 @@ func NewLayout(layout string) (*Layout, error) {
 		case "t", "time":
 			p, err = parseTime(minus, digits, options)
 		case "l", "level":
-			p, err = parseLevel(minus, digits, options)
+			p, err = lo.parseLevel(minus, digits, options)
 		case "pid":
 			p, err = parsePid(minus, digits, options)
 		case "gid":
@@ -290,8 +291,7 @@ func parsePid(minus bool, digits string, options string) (Part, error) {
 }
 
 type LevelPart struct {
-	Digits string
-
+	Digits     string
 	PrintColor bool
 	LowerCase  bool
 	Length     int
@@ -323,8 +323,8 @@ func (l LevelPart) Append(b *bytes.Buffer, e Entry) {
 	}
 }
 
-func parseLevel(minus bool, digits string, options string) (Part, error) {
-	l := &LevelPart{Digits: compositeDigits(minus, digits, "5")}
+func (lo LogrusOption) parseLevel(minus bool, digits string, options string) (Part, error) {
+	l := &LevelPart{Digits: compositeDigits(minus, digits, "5"), PrintColor: lo.PrintColor}
 
 	fields := strings.FieldsFunc(options, func(c rune) bool {
 		return unicode.IsSpace(c) || c == ','
@@ -343,8 +343,8 @@ func parseLevel(minus bool, digits string, options string) (Part, error) {
 		}
 
 		switch k {
-		case "printcolor":
-			l.PrintColor = str.ParseBool(v, false)
+		//case "printcolor":
+		//	l.PrintColor = str.ParseBool(v, false)
 		case "lowercase":
 			l.LowerCase = str.ParseBool(v, false)
 		case "length":
