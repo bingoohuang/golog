@@ -13,7 +13,7 @@ var staticReg = regexp.MustCompile(".(js|jpg|jpeg|ico|css|woff2|html|woff|ttf|sv
 
 // Logger is the logrus logger handler
 // Filter static when true
-func Logger(l logrus.FieldLogger, b bool) gin.HandlerFunc {
+func Logger(l logrus.FieldLogger, filter bool) gin.HandlerFunc {
 	if l == nil {
 		l = logrus.StandardLogger()
 	}
@@ -33,18 +33,18 @@ func Logger(l logrus.FieldLogger, b bool) gin.HandlerFunc {
 			return
 		}
 
-		if b && !staticReg.MatchString(path) {
-			msg := fmt.Sprintf("%s %s %s [%d] %d %s %s (%s)",
-				c.ClientIP(), c.Request.Method, path, statusCode,
-				c.Writer.Size(), c.Request.Referer(), c.Request.UserAgent(), stop)
-
-			if statusCode > 499 {
-				l.Error(msg)
-			} else if statusCode > 399 {
-				l.Warn(msg)
-			} else {
-				l.Info(msg)
-			}
+		if filter && staticReg.MatchString(path) {
+			return
+		}
+		msg := fmt.Sprintf("%s %s %s [%d] %d %s %s (%s)",
+			c.ClientIP(), c.Request.Method, path, statusCode,
+			c.Writer.Size(), c.Request.Referer(), c.Request.UserAgent(), stop)
+		if statusCode > 499 {
+			l.Error(msg)
+		} else if statusCode > 399 {
+			l.Warn(msg)
+		} else {
+			l.Info(msg)
 		}
 	}
 }
