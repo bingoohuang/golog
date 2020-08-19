@@ -9,7 +9,7 @@ import (
 )
 
 func TestSetupLogrus(t *testing.T) {
-	golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-mm-dd-HH-mm-ss,maxAge=5s,gzipAge=3s", "")
+	_, _ = golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-mm-dd-HH-mm-ss,maxAge=5s,gzipAge=3s", "")
 
 	for i := 0; i < 10; i++ {
 		logrus.Warnf("这是警告信息 %d", i)
@@ -22,7 +22,7 @@ func TestSetupLogrus(t *testing.T) {
 
 func TestSetupLogrusLayout(t *testing.T) {
 	layout := `%t{HH:mm:ss.SSS} %5l{length=5} %pid --- [GID=%gid] [%trace] %-20caller : %fields %msg%n`
-	golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-mm-dd-HH-mm", layout)
+	_, _ = golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-mm-dd-HH-mm", layout)
 
 	for i := 0; i < 10; i++ {
 		logrus.Warnf("这是警告信息 %d", i)

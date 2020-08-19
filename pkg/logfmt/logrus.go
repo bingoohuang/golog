@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/local"
+
 	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/sirupsen/logrus"
 )
@@ -50,9 +52,19 @@ type LogrusFormatter struct {
 	Formatter
 }
 
+const traceID = "TRACE_ID"
+
 func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
+	traceID, ok := entry.Data[traceID].(string)
+	if ok {
+		delete(entry.Data, traceID)
+	} else {
+		traceID = local.String(local.TraceId)
+	}
+
 	return f.Formatter.Format(&LogrusEntry{
-		Entry: entry,
+		Entry:        entry,
+		EntryTraceID: traceID,
 	}), nil
 }
 

@@ -1,32 +1,36 @@
 package ginlogrus_test
 
 import (
+	"net/http"
+	"testing"
+
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/ginlogrus"
 	"github.com/gin-gonic/gin"
-	"net/http"
-	"testing"
+	"github.com/sirupsen/logrus"
 )
 
 func TestGinlogrus(t *testing.T) {
 	gin.SetMode(gin.ReleaseMode)
-	golog.SetupLogrus(nil, "", "")
+	_, _ = golog.SetupLogrus(nil, "", "")
 
 	r := gin.New()
 	r.Use(ginlogrus.Logger(nil), gin.Recovery())
 
 	r.GET("/ping", func(c *gin.Context) {
+		ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
+		logrus.Info("pinged2")
 		c.JSON(200, gin.H{"message": "pong"})
 	})
 
 	server := &http.Server{Addr: ":12345", Handler: r}
 
 	go func() {
-		server.ListenAndServe()
+		_ = server.ListenAndServe()
 	}()
 
 	rsp, _ := http.Get("http://127.0.0.1:12345/ping")
-	rsp.Body.Close()
+	_ = rsp.Body.Close()
 
-	server.Close()
+	_ = server.Close()
 }

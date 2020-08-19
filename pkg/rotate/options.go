@@ -1,8 +1,9 @@
 package rotate
 
 import (
-	"github.com/bingoohuang/golog/pkg/spec"
 	"time"
+
+	"github.com/bingoohuang/golog/pkg/spec"
 )
 
 // Option defines the option interface.

@@ -31,7 +31,9 @@ func main() {
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("OK\n")) })
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("OK\n"))
+	})
 
 	ginpprof.Wrap(mux)
 
@@ -40,8 +42,7 @@ func main() {
 		spec = v
 	}
 
-	layout := ``
-	layout = `%t{HH:mm:ss.SSS} %5l{length=1} PID=%pid --- [GID=%gid] [%trace] %20caller : %fields %msg%n`
+	layout := `%t{HH:mm:ss.SSS} %5l{length=1} PID=%pid --- [GID=%gid] [%trace] %20caller : %fields %msg%n`
 	if v := os.Getenv("LAYOUT"); v != "" {
 		layout = v
 	}
