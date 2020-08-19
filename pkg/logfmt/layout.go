@@ -343,7 +343,7 @@ func (lo LogrusOption) parseLevel(minus bool, digits string, options string) (Pa
 		}
 
 		switch k {
-		//case "printcolor":
+		// case "printcolor":
 		//	l.PrintColor = str.ParseBool(v, false)
 		case "lowercase":
 			l.LowerCase = str.ParseBool(v, false)

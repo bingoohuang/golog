@@ -2,10 +2,10 @@ package ginlogrus
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/local"
-	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"

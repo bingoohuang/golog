@@ -95,7 +95,7 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 			Writer: os.Stdout,
 			Formatter: &LogrusFormatter{
 				Formatter: Formatter{
-					//PrintColor:  o.PrintColor,
+					// PrintColor:  o.PrintColor,
 					PrintCaller: o.PrintCaller,
 					Simple:      o.Simple,
 					Layout:      layout,
@@ -130,7 +130,7 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 			Writer: r,
 			Formatter: &LogrusFormatter{
 				Formatter: Formatter{
-					//PrintColor:  false,
+					// PrintColor:  false,
 					PrintCaller: o.PrintCaller,
 					Simple:      o.Simple,
 					Layout:      layout,
