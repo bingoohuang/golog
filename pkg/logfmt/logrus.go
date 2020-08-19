@@ -84,19 +84,18 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 	var layout *Layout = nil
 
 	if o.Layout != "" {
-		if layout, err = NewLayout(o.Layout); err != nil {
+		if layout, err = NewLayout(o); err != nil {
 			return nil, err
 		}
 	}
 
 	writers := make([]*WriterFormatter, 0, 2)
-
 	if o.Stdout {
 		writers = append(writers, &WriterFormatter{
 			Writer: os.Stdout,
 			Formatter: &LogrusFormatter{
 				Formatter: Formatter{
-					PrintColor:  o.PrintColor,
+					//PrintColor:  o.PrintColor,
 					PrintCaller: o.PrintCaller,
 					Simple:      o.Simple,
 					Layout:      layout,
@@ -120,13 +119,18 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 			panic(err)
 		}
 
+		if o.Layout != "" {
+			o.PrintColor = false
+			if layout, err = NewLayout(o); err != nil {
+				return nil, err
+			}
+		}
 		g.Rotate = r
-
 		writers = append(writers, &WriterFormatter{
 			Writer: r,
 			Formatter: &LogrusFormatter{
 				Formatter: Formatter{
-					PrintColor:  false,
+					//PrintColor:  false,
 					PrintCaller: o.PrintCaller,
 					Simple:      o.Simple,
 					Layout:      layout,

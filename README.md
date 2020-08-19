@@ -169,7 +169,7 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
     	golog.SetupLogrus(nil, "", "")
     
     	r := gin.New()
-    	r.Use(ginlogrus.Logger(nil), gin.Recovery())
+    	r.Use(ginlogrus.Logger(nil,true), gin.Recovery())
         // ...
     }
     ```

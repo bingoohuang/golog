@@ -46,9 +46,10 @@ func (l *Layout) addPart(p Part) {
 }
 
 // NewLayout creates a new layout from string expression.
-func NewLayout(layout string) (*Layout, error) {
+func NewLayout(lo LogrusOption) (*Layout, error) {
 	l := &Layout{}
 	percentPos := 0
+	layout := lo.Layout
 
 	for layout != "" && percentPos >= 0 {
 		percentPos = strings.Index(layout, "%")
@@ -58,7 +59,7 @@ func NewLayout(layout string) (*Layout, error) {
 		}
 
 		if percentPos > 0 {
-			l.addLiteralPart(layout[:percentPos])
+			l.addLiteralPart(strings.TrimSpace(layout[:percentPos]))
 		}
 
 		layout = layout[percentPos+1:]
@@ -73,7 +74,6 @@ func NewLayout(layout string) (*Layout, error) {
 		digits := ""
 		indicator := ""
 		options := ""
-
 		var err error
 
 		layout, minus = parseMinus(layout)
@@ -90,7 +90,7 @@ func NewLayout(layout string) (*Layout, error) {
 		case "t", "time":
 			p, err = parseTime(minus, digits, options)
 		case "l", "level":
-			p, err = parseLevel(minus, digits, options)
+			p, err = lo.parseLevel(minus, digits, options)
 		case "pid":
 			p, err = parsePid(minus, digits, options)
 		case "gid":
@@ -139,9 +139,9 @@ func (p MessagePart) Append(b *bytes.Buffer, e Entry) {
 
 	if p.SingleLine {
 		// indent multiple lines log
-		b.WriteString(strings.Replace(msg, "\n", `\n `, -1))
+		b.WriteString(" " + strings.Replace(msg, "\n", `\n`, -1))
 	} else {
-		b.WriteString(msg)
+		b.WriteString(" " + msg)
 	}
 }
 
@@ -210,7 +210,7 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 		fileLine = fmt.Sprintf("%s%s%d", filepath.Base(c.File), p.Sep, c.Line)
 	}
 
-	b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
+	b.WriteString(fmt.Sprintf(" %"+p.Digits+"s", fileLine))
 }
 
 func parseCaller(minus bool, digits string, options string) (Part, error) {
@@ -253,7 +253,7 @@ type TracePart struct {
 }
 
 func (t TracePart) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(fmt.Sprintf("%"+t.Digits+"s", e.TraceID()))
+	b.WriteString(fmt.Sprintf(" %"+t.Digits+"s", e.TraceID()))
 }
 
 func parseTrace(minus bool, digits string, options string) (Part, error) {
@@ -281,7 +281,7 @@ type PidPart struct {
 }
 
 func (p PidPart) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(fmt.Sprintf("%d ", Pid))
+	b.WriteString(fmt.Sprintf(" %d ", Pid))
 }
 
 func parsePid(minus bool, digits string, options string) (Part, error) {
@@ -291,8 +291,7 @@ func parsePid(minus bool, digits string, options string) (Part, error) {
 }
 
 type LevelPart struct {
-	Digits string
-
+	Digits     string
 	PrintColor bool
 	LowerCase  bool
 	Length     int
@@ -324,8 +323,8 @@ func (l LevelPart) Append(b *bytes.Buffer, e Entry) {
 	}
 }
 
-func parseLevel(minus bool, digits string, options string) (Part, error) {
-	l := &LevelPart{Digits: compositeDigits(minus, digits, "5")}
+func (lo LogrusOption) parseLevel(minus bool, digits string, options string) (Part, error) {
+	l := &LevelPart{Digits: compositeDigits(minus, digits, "5"), PrintColor: lo.PrintColor}
 
 	fields := strings.FieldsFunc(options, func(c rune) bool {
 		return unicode.IsSpace(c) || c == ','
@@ -344,8 +343,8 @@ func parseLevel(minus bool, digits string, options string) (Part, error) {
 		}
 
 		switch k {
-		case "printcolor":
-			l.PrintColor = str.ParseBool(v, false)
+		//case "printcolor":
+		//	l.PrintColor = str.ParseBool(v, false)
 		case "lowercase":
 			l.LowerCase = str.ParseBool(v, false)
 		case "length":
@@ -373,7 +372,7 @@ type Time struct {
 }
 
 func (t Time) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(timex.OrNow(e.Time()).Format(t.Format))
+	b.WriteString(timex.OrNow(e.Time()).Format(t.Format) + " ")
 }
 
 func parseTime(minus bool, digits string, options string) (Part, error) {

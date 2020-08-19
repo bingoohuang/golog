@@ -5,17 +5,29 @@ import (
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/local"
+	"regexp"
+
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
+var staticReg = regexp.MustCompile(".(js|jpg|jpeg|ico|css|woff2|html|woff|ttf|svg|png|eot|map)$") //nolint
+
 // Logger is the logrus logger handler
-func Logger(l logrus.FieldLogger) gin.HandlerFunc {
+// Filter static when true
+func Logger(l logrus.FieldLogger, filter bool) gin.HandlerFunc {
 	if l == nil {
 		l = logrus.StandardLogger()
 	}
 
 	return func(c *gin.Context) {
+		// other handler can change c.Path so:
+		path := c.Request.URL.Path
+		if filter && staticReg.MatchString(path) {
+			c.Next()
+			return
+		}
+
 		traceID := c.GetHeader(HTTPHeaderNamTraceID)
 		ctx := AttachTraceID(c.Request.Context(), traceID)
 		traceID = GetTraceID(ctx)
@@ -25,7 +37,6 @@ func Logger(l logrus.FieldLogger) gin.HandlerFunc {
 		c.Request = c.Request.WithContext(ctx)
 
 		// other handler can change c.Path so:
-		path := c.Request.URL.Path
 		start := time.Now()
 
 		c.Next()
@@ -40,7 +51,7 @@ func Logger(l logrus.FieldLogger) gin.HandlerFunc {
 			return
 		}
 
-		msg := fmt.Sprintf("ClientIP: %s %s %s [%d] %d %s %s (%s)",
+		msg := fmt.Sprintf("%s %s %s [%d] %d %s %s (%s)",
 			c.ClientIP(), c.Request.Method, path, statusCode,
 			c.Writer.Size(), c.Request.Referer(), c.Request.UserAgent(), stop)
 

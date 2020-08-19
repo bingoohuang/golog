@@ -12,15 +12,23 @@ import (
 
 func TestGinlogrus(t *testing.T) {
 	gin.SetMode(gin.ReleaseMode)
-	_, _ = golog.SetupLogrus(nil, "", "")
+	golog.SetupLogrus(nil, "file=~/gologdemo.log,level=debug", "")
 
 	r := gin.New()
-	r.Use(ginlogrus.Logger(nil), gin.Recovery())
+	r.Use(ginlogrus.Logger(nil, true))
 
 	r.GET("/ping", func(c *gin.Context) {
 		ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
 		logrus.Info("pinged2")
 		c.JSON(200, gin.H{"message": "pong"})
+	})
+
+	r.GET("/t.html", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "test"})
+	})
+
+	r.GET("/t.jpeg", func(c *gin.Context) {
+		c.JSON(200, gin.H{"message": "test"})
 	})
 
 	server := &http.Server{Addr: ":12345", Handler: r}
@@ -30,7 +38,11 @@ func TestGinlogrus(t *testing.T) {
 	}()
 
 	rsp, _ := http.Get("http://127.0.0.1:12345/ping")
-	_ = rsp.Body.Close()
+	rsp.Body.Close()
+	rsp, _ = http.Get("http://127.0.0.1:12345/t.jpeg")
+	rsp.Body.Close()
+	rsp, _ = http.Get("http://127.0.0.1:12345/t.html")
+	rsp.Body.Close()
 
-	_ = server.Close()
+	server.Close()
 }

@@ -21,7 +21,7 @@ func TestSetupLogrus(t *testing.T) {
 }
 
 func TestSetupLogrusLayout(t *testing.T) {
-	layout := `%t{HH:mm:ss.SSS} %5l{length=5} %pid --- [GID=%gid] [%trace] %-20caller : %fields %msg%n`
+	layout := `%t{HH:mm:ss.SSS} %5l{length=5} %pid --- [GID=%gid] [%trace] %caller : %fields %msg%n`
 	_, _ = golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-mm-dd-HH-mm", layout)
 
 	for i := 0; i < 10; i++ {
