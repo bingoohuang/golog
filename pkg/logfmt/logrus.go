@@ -52,13 +52,14 @@ type LogrusFormatter struct {
 	Formatter
 }
 
-const traceID = "TRACE_ID"
+const traceIDKey = "TRACE_ID"
 
 func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	traceID, ok := entry.Data[traceID].(string)
+	traceID, ok := entry.Data[traceIDKey].(string)
 	if ok {
-		delete(entry.Data, traceID)
+		delete(entry.Data, traceIDKey)
 	} else {
+		// caution: should use local.TraceId.
 		traceID = local.String(local.TraceId)
 	}
 
