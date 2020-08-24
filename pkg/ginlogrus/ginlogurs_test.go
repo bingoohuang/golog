@@ -12,7 +12,7 @@ import (
 
 func TestGinlogrus(t *testing.T) {
 	gin.SetMode(gin.ReleaseMode)
-	golog.SetupLogrus(nil, "file=~/gologdemo.log,level=debug", "")
+	_, _ = golog.SetupLogrus(nil, "file=~/gologdemo.log,level=debug", "")
 
 	r := gin.New()
 	r.Use(ginlogrus.Logger(nil, true))
@@ -21,6 +21,8 @@ func TestGinlogrus(t *testing.T) {
 		ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
 		logrus.Info("pinged2")
 		c.JSON(200, gin.H{"message": "pong"})
+
+		logrus.Info("trace id:", ginlogrus.GetTraceIDGin(c))
 	})
 
 	r.GET("/t.html", func(c *gin.Context) {

@@ -156,27 +156,39 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
 1. [GIN](https://github.com/gin-gonic/gin) framework extra logs will be printed?
     1. Use gin.New() instead of gin.Default()
     1. Because gin.Default() exist Logger(), gin.New() not print logs
+
+## golog gin with trace ID
+
+```go
+import (
+	"github.com/bingoohuang/golog"
+	"github.com/bingoohuang/golog/pkg/ginlogrus"
+	"github.com/gin-gonic/gin"
+)
+
+func main() {
+	gin.SetMode(gin.ReleaseMode)
+	golog.SetupLogrus(nil, "", "")
+
+	r := gin.New()
+	r.Use(ginlogrus.Logger(nil,true), gin.Recovery())
+
+	r.GET("/ping", func(c *gin.Context) {
+		ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
+		logrus.Info("pinged2")
+		c.JSON(200, gin.H{"message": "pong"})
     
-    ```go
-    import (
-    	"github.com/bingoohuang/golog"
-    	"github.com/bingoohuang/golog/pkg/ginlogrus"
-    	"github.com/gin-gonic/gin"
-    )
-   
-    func main() {
-    	gin.SetMode(gin.ReleaseMode)
-    	golog.SetupLogrus(nil, "", "")
-    
-    	r := gin.New()
-    	r.Use(ginlogrus.Logger(nil,true), gin.Recovery())
-        // ...
-    }
-    ```
-    
-    ```
-    2020-07-31 11:49:08.287 [INFO ] 12341 --- [34   ] [-] ginlogrus.go:40      : 127.0.0.1 GET /ping [200] 18  Go-http-client/1.1 (106.286µs)
-    ```
+        fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
+
+	})
+    // ...
+}
+```
+
+```
+2020-08-24 09:47:30.530 [INFO ] 68880 --- [24   ] [87513ae4-10d4-43f3-be5e-f8a11e636f4b] ginlogurs_test.go:21 : pinged1
+2020-08-24 09:47:30.531 [INFO ] 68880 --- [24   ] [87513ae4-10d4-43f3-be5e-f8a11e636f4b] ginlogurs_test.go:22 : pinged2
+2020-08-24 09:47:30.531 [INFO ] 68880 --- [24   ] [87513ae4-10d4-43f3-be5e-f8a11e636f4b] ginlogrus.go:64      : 127.0.0.1 GET /ping [200] 18  Go-http-client/1.1 (746.916µs)```
 
 ## Thanks to the giant shoulders:
 

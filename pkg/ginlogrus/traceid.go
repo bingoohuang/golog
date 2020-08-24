@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 
+	"github.com/gin-gonic/gin"
+
 	"github.com/bingoohuang/golog/pkg/local"
 
 	"github.com/google/uuid"
@@ -19,6 +21,11 @@ const (
 	// HTTPHeaderNamTraceID has the name of the header for trace ID.
 	HTTPHeaderNamTraceID = "X-TRACE-ID"
 )
+
+// GetTraceIDGin will get reqID from a http request and return it as a string.
+func GetTraceIDGin(c *gin.Context) string {
+	return GetTraceID(c.Request.Context())
+}
 
 // GetTraceID will get reqID from a http request and return it as a string.
 func GetTraceID(ctx context.Context) string {

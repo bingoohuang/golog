@@ -70,8 +70,8 @@ func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 // Setup setup log parameters.
-func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
-	l, err := logrus.ParseLevel(o.Level)
+func (lo LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
+	l, err := logrus.ParseLevel(lo.Level)
 	if err != nil {
 		l = logrus.InfoLevel
 	}
@@ -84,21 +84,21 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 
 	var layout *Layout = nil
 
-	if o.Layout != "" {
-		if layout, err = NewLayout(o); err != nil {
+	if lo.Layout != "" {
+		if layout, err = NewLayout(lo); err != nil {
 			return nil, err
 		}
 	}
 
 	writers := make([]*WriterFormatter, 0, 2)
-	if o.Stdout {
+	if lo.Stdout {
 		writers = append(writers, &WriterFormatter{
 			Writer: os.Stdout,
 			Formatter: &LogrusFormatter{
 				Formatter: Formatter{
 					// PrintColor:  o.PrintColor,
-					PrintCaller: o.PrintCaller,
-					Simple:      o.Simple,
+					PrintCaller: lo.PrintCaller,
+					Simple:      lo.Simple,
 					Layout:      layout,
 				},
 			},
@@ -106,23 +106,23 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 	}
 
 	g := &Result{
-		Option: o,
+		Option: lo,
 	}
 
-	if o.LogPath != "" {
-		r, err := rotate.New(o.LogPath,
-			rotate.WithRotateLayout(o.Rotate),
-			rotate.WithMaxSize(o.MaxSize),
-			rotate.WithMaxAge(o.MaxAge),
-			rotate.WithGzipAge(o.GzipAge),
+	if lo.LogPath != "" {
+		r, err := rotate.New(lo.LogPath,
+			rotate.WithRotateLayout(lo.Rotate),
+			rotate.WithMaxSize(lo.MaxSize),
+			rotate.WithMaxAge(lo.MaxAge),
+			rotate.WithGzipAge(lo.GzipAge),
 		)
 		if err != nil {
 			panic(err)
 		}
 
-		if o.Layout != "" {
-			o.PrintColor = false
-			if layout, err = NewLayout(o); err != nil {
+		if lo.Layout != "" {
+			lo.PrintColor = false
+			if layout, err = NewLayout(lo); err != nil {
 				return nil, err
 			}
 		}
@@ -132,8 +132,8 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 			Formatter: &LogrusFormatter{
 				Formatter: Formatter{
 					// PrintColor:  false,
-					PrintCaller: o.PrintCaller,
-					Simple:      o.Simple,
+					PrintCaller: lo.PrintCaller,
+					Simple:      lo.Simple,
 					Layout:      layout,
 				},
 			},
@@ -151,7 +151,7 @@ func (o LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 	ll.SetFormatter(&DiscardFormatter{})
 	ll.AddHook(NewHook(writers))
 	ll.SetOutput(ioutil.Discard)
-	ll.SetReportCaller(o.PrintCaller)
+	ll.SetReportCaller(lo.PrintCaller)
 
 	return g, nil
 }
