@@ -5,15 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/caller"
 	"github.com/bingoohuang/golog/pkg/str"
 	"github.com/bingoohuang/golog/pkg/timex"
-
-	"github.com/bingoohuang/golog/pkg/caller"
 
 	"github.com/bingoohuang/golog/pkg/gid"
 )
@@ -118,7 +118,8 @@ func (f Formatter) printCaller(b *bytes.Buffer, c *runtime.Frame) {
 	}
 
 	if c != nil {
-		fileLine := fmt.Sprintf("%s:%d", c.File, c.Line) // 全路径避免重名go文件
+		// show function
+		fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(c.Function), filepath.Base(c.File), c.Line)
 		b.WriteString(fmt.Sprintf("%-20s", fileLine))
 	}
 }

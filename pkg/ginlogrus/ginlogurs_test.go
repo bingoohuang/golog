@@ -3,6 +3,7 @@ package ginlogrus_test
 import (
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/ginlogrus"
@@ -39,12 +40,16 @@ func TestGinlogrus(t *testing.T) {
 		_ = server.ListenAndServe()
 	}()
 
-	rsp, _ := http.Get("http://127.0.0.1:12345/ping")
-	rsp.Body.Close()
-	rsp, _ = http.Get("http://127.0.0.1:12345/t.jpeg")
-	rsp.Body.Close()
-	rsp, _ = http.Get("http://127.0.0.1:12345/t.html")
-	rsp.Body.Close()
+	go func() {
+		time.Sleep(3 * time.Second)
+		rsp, _ := http.Get("http://127.0.0.1:12345/ping")
+		rsp.Body.Close()
+		rsp, _ = http.Get("http://127.0.0.1:12345/t.jpeg")
+		rsp.Body.Close()
+		rsp, _ = http.Get("http://127.0.0.1:12345/t.html")
+		rsp.Body.Close()
 
-	server.Close()
+		server.Close()
+	}()
+
 }
