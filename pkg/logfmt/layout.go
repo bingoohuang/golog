@@ -207,7 +207,8 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 	}
 
 	if c != nil {
-		fileLine = fmt.Sprintf("%s%s%d", filepath.Base(c.File), p.Sep, c.Line)
+		// show function
+		fileLine = fmt.Sprintf("%s %s%s%d", filepath.Base(c.Function), filepath.Base(c.File), p.Sep, c.Line)
 	}
 
 	b.WriteString(fmt.Sprintf(" %"+p.Digits+"s", fileLine))

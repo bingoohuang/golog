@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/bingoohuang/ginx/pkg/ginpprof"
-
 	"github.com/bingoohuang/golog/pkg/httpx"
 	"github.com/bingoohuang/golog/pkg/iox"
 
@@ -21,6 +20,9 @@ import (
 const channelSize = 1000
 
 func main() {
+
+	custom()
+
 	help := flag.Bool("help", false,
 		`SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./gologdemo`)
 	flag.Parse()
@@ -141,4 +143,17 @@ func logRequest(handler http.Handler, logC chan LogMessage) http.Handler {
 
 		handler.ServeHTTP(w, r)
 	})
+}
+
+func custom() {
+	spec := "file=~/gologdemo.log,maxSize=1M,stdout=true,rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m"
+	layout := `%t{yyyy-MM-dd HH:mm:ss.SSS} [%-5l{length=5}] %caller %fields %msg%n`
+	golog.SetupLogrus(nil, spec, layout)
+	golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-mm-dd-HH-mm-ss", "")
+
+	//golog.SetupLogrus(nil, spec, layout)
+
+	logrus.Error("error")
+	logrus.Warn("warn")
+
 }

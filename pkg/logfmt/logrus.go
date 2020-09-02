@@ -149,9 +149,9 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 	g.Writer = io.MultiWriter(ws...)
 
 	ll.SetFormatter(&DiscardFormatter{})
-	ll.AddHook(NewHook(writers))
 	ll.SetOutput(ioutil.Discard)
 	ll.SetReportCaller(lo.PrintCaller)
+	ll.AddHook(NewHook(writers))
 
 	return g, nil
 }
