@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -117,10 +116,9 @@ func (f Formatter) printCaller(b *bytes.Buffer, c *runtime.Frame) {
 	if c == nil && f.PrintCaller {
 		c = caller.GetCaller()
 	}
-	// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
-	// 统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
+
 	if c != nil {
-		fileLine := fmt.Sprintf("%s:%d", filepath.Base(c.File), c.Line)
+		fileLine := fmt.Sprintf("%s:%d", c.File, c.Line) // 全路径避免重名go文件
 		b.WriteString(fmt.Sprintf("%-20s", fileLine))
 	}
 }
