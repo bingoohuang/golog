@@ -200,3 +200,4 @@ func main() {
 1. [应用程序日志规范](https://github.com/bingoohuang/blog/issues/151)
 1. [op/go-logging format](https://github.com/op/go-logging/blob/master/format.go)
 1. [log4j layout](https://logging.apache.org/log4j/2.x/manual/layouts.html)
+1. [CLI 控制台颜色渲染工具库, 拥有简洁的使用API，支持16色，256色，RGB色彩渲染输出](https://github.com/gookit/color)

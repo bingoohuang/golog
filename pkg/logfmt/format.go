@@ -120,6 +120,8 @@ func (f Formatter) printCaller(b *bytes.Buffer, c *runtime.Frame) {
 	if c != nil {
 		// show function
 		fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(c.Function), filepath.Base(c.File), c.Line)
+		// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
+		// 统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
 		b.WriteString(fmt.Sprintf("%-20s", fileLine))
 	}
 }
