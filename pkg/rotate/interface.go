@@ -46,6 +46,7 @@ type Rotate struct {
 	outFhSize  int64
 
 	logfile             string
+	rotateLayout        string
 	rotatePostfixLayout string
 	rotateMaxSize       int64
 

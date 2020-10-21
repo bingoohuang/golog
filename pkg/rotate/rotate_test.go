@@ -42,6 +42,29 @@ func TestGenFilename(t *testing.T) {
 	}
 }
 
+func TestGenPathFilename(t *testing.T) {
+	ts := []time.Time{{}, (time.Time{}).Add(24 * time.Hour)} // Mock time
+
+	for _, xt := range ts {
+		rl, err := rotate.New("host011_zone011_app01.log",
+			rotate.WithClock(clock.NewMockAt(xt)),
+			rotate.WithRotateLayout(""),
+			rotate.WithRotateFullLayout("app01/20060102/host011_zone011_app01.log"))
+		if !assert.NoError(t, err, "New should succeed") {
+			return
+		}
+
+		fn, _ := rl.GenBaseFilename()
+		expected := fmt.Sprintf("app01/%04d%02d%02d/host011_zone011_app01.log", xt.Year(), xt.Month(), xt.Day())
+
+		_ = rl.Close()
+
+		if !assert.Equal(t, expected, fn) {
+			return
+		}
+	}
+}
+
 func TestSatisfiesIOWriter(t *testing.T) {
 	var w io.Writer
 	w, _ = rotate.New("/foo/bar")
@@ -73,7 +96,7 @@ func TestLogRotate(t *testing.T) {
 		logfile,
 		rotate.WithClock(cl),
 		rotate.WithMaxAge(24*time.Hour),
-		rotate.WithRotateLayout(".20060102150405"),
+		rotate.WithRotateFullLayout(".20060102150405"),
 	)
 
 	if !assert.NoError(t, err, `rotate.New should succeed`) {

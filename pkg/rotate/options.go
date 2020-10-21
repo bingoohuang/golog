@@ -71,6 +71,12 @@ func WithRotateLayout(v string) OptionFn {
 	return func(r *Rotate) { r.rotatePostfixLayout = spec.ConvertTimeLayout(v) }
 }
 
+// WithRotateFullLayout creates a layout of the final rotated file.
+// eg. log/2006-01-02/file.log for daily rotation layout.
+func WithRotateFullLayout(v string) OptionFn {
+	return func(r *Rotate) { r.rotateLayout = spec.ConvertTimeLayout(v) }
+}
+
 // WithMaxSize set how much max size should a log file be rotated.
 // eg. 100*spec.MiB
 func WithMaxSize(v int64) OptionFn {

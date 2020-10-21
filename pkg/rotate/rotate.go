@@ -32,6 +32,7 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 	r := &Rotate{
 		logfile:             logfile,
 		clock:               Local,
+		rotateLayout:        "",
 		rotatePostfixLayout: ".2006-01-02",
 		maxAge:              timex.Week,
 		maintainLock:        lock.NewTry(),
@@ -51,6 +52,10 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 
 func (rl *Rotate) GenBaseFilename() (string, time.Time) {
 	now := rl.clock.Now()
+	if rl.rotateLayout != "" {
+		return now.Format(rl.rotateLayout + rl.rotatePostfixLayout), now
+	}
+
 	return rl.logfile + now.Format(rl.rotatePostfixLayout), now
 }
 
