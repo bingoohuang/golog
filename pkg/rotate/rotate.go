@@ -9,6 +9,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/lock"
@@ -46,6 +47,10 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 	if err := os.MkdirAll(dirname, 0755); err != nil {
 		return nil, errors.Wrapf(err, "failed to create directory %s", dirname)
 	}
+
+	runtime.SetFinalizer(r, func(r *Rotate) {
+		r.Close()
+	})
 
 	return r, nil
 }
