@@ -51,5 +51,4 @@ func TestGinlogrus(t *testing.T) {
 
 		server.Close()
 	}()
-
 }

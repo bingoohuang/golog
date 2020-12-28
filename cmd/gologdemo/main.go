@@ -20,7 +20,6 @@ import (
 const channelSize = 1000
 
 func main() {
-
 	custom()
 
 	help := flag.Bool("help", false,
@@ -151,9 +150,8 @@ func custom() {
 	golog.SetupLogrus(nil, spec, layout)
 	golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-mm-dd-HH-mm-ss", "")
 
-	//golog.SetupLogrus(nil, spec, layout)
+	// golog.SetupLogrus(nil, spec, layout)
 
 	logrus.Error("error")
 	logrus.Warn("warn")
-
 }

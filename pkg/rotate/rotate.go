@@ -48,9 +48,7 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 		return nil, errors.Wrapf(err, "failed to create directory %s", dirname)
 	}
 
-	runtime.SetFinalizer(r, func(r *Rotate) {
-		r.Close()
-	})
+	runtime.SetFinalizer(r, func(r *Rotate) { r.Close() })
 
 	return r, nil
 }
@@ -80,7 +78,6 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	}
 
 	n, err = out.Write(p)
-
 	if err != nil {
 		iox.ErrorReport("Write error %+v\n", err)
 	}
@@ -106,7 +103,6 @@ func (rl *Rotate) getWriter(forceRotate bool) (io.Writer, error) {
 	}
 
 	generation, fn := rl.tryGenerational(generation, fnBase)
-
 	if err := rl.rotateFile(fn); err != nil {
 		return nil, err
 	}
@@ -133,7 +129,6 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 	// regular go time format pattern, we create a new file name using
 	// generational names such as "foo.1", "foo.2", "foo.3", etc
 	name := filename
-
 	for ; ; generation++ {
 		if generation > 0 {
 			name = fmt.Sprintf("%s.%d", filename, generation)
@@ -178,9 +173,7 @@ func (rl *Rotate) rotateFile(filename string) error {
 
 	rl.outFh = fh
 
-	stat, err := fh.Stat()
-
-	if err == nil {
+	if stat, err := fh.Stat(); err == nil {
 		rl.outFhSize = stat.Size()
 	} else {
 		rl.outFhSize = 0

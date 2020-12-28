@@ -83,24 +83,26 @@ func (f Formatter) Format(e Entry) []byte {
 		return b.Bytes()
 	}
 
-	b.WriteString(timex.OrNow(e.Time()).Format(layout) + " ")
+	w := func(s string) { b.WriteString(s) }
+
+	w(timex.OrNow(e.Time()).Format(layout) + " ")
 
 	f.printLevel(b, e.Level())
 
 	if !f.Simple {
-		b.WriteString(fmt.Sprintf("%d --- ", Pid))
-		b.WriteString(fmt.Sprintf("[%-5s] ", gid.CurGoroutineID()))
-		b.WriteString(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
+		w(fmt.Sprintf("%d --- ", Pid))
+		w(fmt.Sprintf("[%-5s] ", gid.CurGoroutineID()))
+		w(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
 	}
 
 	f.printCaller(b, e.Caller())
 
-	b.WriteString(" : ")
+	w(" : ")
 
 	if fields := e.Fields(); len(fields) > 0 {
 		if v, err := json.Marshal(fields); err == nil {
 			b.Write(v)
-			b.WriteString(" ")
+			w(" ")
 		}
 	}
 
@@ -108,8 +110,8 @@ func (f Formatter) Format(e Entry) []byte {
 	msg := strings.TrimRight(e.Message(), "\r\n")
 	msg = strings.Replace(msg, "\n", `\n`, -1)
 	msg = strings.Replace(msg, "\r", `\r`, -1)
-	b.WriteString(msg)
-	b.WriteString("\n")
+	w(msg)
+	w("\n")
 
 	return b.Bytes()
 }
