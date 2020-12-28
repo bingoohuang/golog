@@ -2,6 +2,7 @@ package logfmt
 
 import (
 	"log"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -19,31 +20,18 @@ func (w WriterWrapper) Write(p []byte) (n int, err error) {
 	return 0, nil
 }
 
+var (
+	r        = regexp.MustCompile(`(?i)[TDIWEFP]!`)
+	levelMap = map[string]logrus.Level{
+		"T!": logrus.TraceLevel, "D!": logrus.DebugLevel, "I!": logrus.InfoLevel, "W!": logrus.WarnLevel,
+		"E!": logrus.ErrorLevel, "F!": logrus.FatalLevel, "P!": logrus.PanicLevel}
+)
+
 func parseLevelFromMsg(msg string) (logrus.Level, string) {
-	f := func(pos int) string {
-		return strings.TrimRightFunc(msg[:pos], unicode.IsSpace) +
-			strings.TrimLeftFunc(msg[pos+2:], unicode.IsSpace)
-	}
-	if pos := strings.Index(msg, "T!"); pos >= 0 {
-		return logrus.TraceLevel, f(pos)
-	}
-	if pos := strings.Index(msg, "D!"); pos >= 0 {
-		return logrus.DebugLevel, f(pos)
-	}
-	if pos := strings.Index(msg, "I!"); pos >= 0 {
-		return logrus.InfoLevel, f(pos)
-	}
-	if pos := strings.Index(msg, "W!"); pos >= 0 {
-		return logrus.WarnLevel, f(pos)
-	}
-	if pos := strings.Index(msg, "E!"); pos >= 0 {
-		return logrus.ErrorLevel, f(pos)
-	}
-	if pos := strings.Index(msg, "F!"); pos >= 0 {
-		return logrus.FatalLevel, f(pos)
-	}
-	if pos := strings.Index(msg, "P!"); pos >= 0 {
-		return logrus.PanicLevel, f(pos)
+	if l := r.FindStringIndex(msg); len(l) > 0 {
+		x, y := l[0], l[1]
+		return levelMap[strings.ToUpper(msg[x:y])], strings.TrimRightFunc(msg[:x], unicode.IsSpace) +
+			strings.TrimLeftFunc(msg[y:], unicode.IsSpace)
 	}
 
 	return logrus.InfoLevel, msg

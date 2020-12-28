@@ -9,7 +9,6 @@ import (
 
 	"github.com/bingoohuang/ginx/pkg/ginpprof"
 	"github.com/bingoohuang/golog/pkg/httpx"
-	"github.com/bingoohuang/golog/pkg/iox"
 
 	"github.com/bingoohuang/golog"
 	"github.com/bingoohuang/golog/pkg/port"
@@ -20,7 +19,7 @@ import (
 const channelSize = 1000
 
 func main() {
-	fixlog := flag.Bool("fixlog", false, "fix log.Print...")
+	std := flag.Bool("std", false, "fix log.Print...")
 	help := flag.Bool("help", false,
 		`SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./gologdemo`)
 	flag.Parse()
@@ -30,18 +29,17 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *fixlog {
+	if *std {
 		golog.SetupLogrus(nil, "", "")
 
-		for i := 0; i < 10; i++ {
-			time.Sleep(10 * time.Millisecond)
-			log.Printf("W! Hello, this message is logged by std log, #%d", i)
-		}
+		log.Printf("Hello, this message is logged by std log, #%d", 1)
+		log.Printf("T! Hello, this message is logged by std log, #%d", 2)
+		log.Printf("D! Hello, this message is logged by std log, #%d", 3)
+		log.Printf("I! Hello, this message is logged by std log, #%d", 4)
+		log.Printf("W! Hello, this message is logged by std log, #%d", 5)
+		log.Printf("F! Hello, this message is logged by std log, #%d", 6)
 
-		for i := 0; i < 10; i++ {
-			time.Sleep(10 * time.Millisecond)
-			logrus.Infof("Hello, this message is logged by std log, #%d", i)
-		}
+		logrus.Infof("Hello, this message is logged by std log, #%d", 7)
 
 		return
 	}
@@ -58,15 +56,15 @@ func main() {
 		spec = v
 	}
 
-	layout := `%t{HH:mm:ss.SSS} %5l{length=4} PID=%pid --- [GID=%gid] [%trace] %20caller{level=info} : %fields %msg%n`
+	layout := `%t{yyyy-MM-dd HH:mm:ss.SSS} [%5l{length=4}] PID=%pid --- [GID=%5gid] [%trace] %20caller{level=info} : %fields %msg%n`
 	if v := os.Getenv("LAYOUT"); v != "" {
 		layout = v
 	}
 
-	log.Println("golog spec:", spec)
-
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
 	_ = golog.SetupLogrus(nil, spec, layout)
+
+	log.Println("golog spec:", spec)
 
 	logC := make(chan LogMessage, channelSize)
 	for i := 0; i < channelSize; i++ {
@@ -79,7 +77,7 @@ func main() {
 	log.Println("start to listen on", addr)
 
 	go func() {
-		iox.ErrorReport("ListenAndServe error %+v", http.ListenAndServe(addr, logRequest(mux, logC)))
+		log.Printf("W! ListenAndServe error %+v", http.ListenAndServe(addr, logRequest(mux, logC)))
 	}()
 
 	ticker := time.NewTicker(3 * time.Second)
@@ -91,7 +89,7 @@ func main() {
 }
 
 func restclient(urlAddr string) {
-	iox.InfoReport("invoke", urlAddr)
+	log.Printf("I! invoke %s", urlAddr)
 	rsp, _ := http.Get(urlAddr)
 	// 这里我要写一段注释，记录一下，因为下面这行代码的缺失，花了我半天纠结的问题
 	// 我写这个demo，本意就是要观察，启动1000个协程并发去写日志
@@ -125,7 +123,7 @@ func logging(logC <-chan LogMessage, workerID int) {
 			"workerID":    workerID,
 			"proto":       r.Proto,
 			"contentType": r.ContentType,
-		}).Infof("%s %s %s %s %s\r\n\n", r.Time, r.RemoteAddr, r.Method, r.URL, randx.String(100))
+		}).Infof("%s %s %s %s %s", r.Time, r.RemoteAddr, r.Method, r.URL, randx.String(100))
 	}
 }
 

@@ -1,7 +1,7 @@
 package caller
 
 import (
-	"fmt"
+	"log"
 	"runtime"
 	"strings"
 	"sync"
@@ -9,7 +9,8 @@ import (
 
 const (
 	maximumCallerDepth = 25
-	CallerSkip         = "_CallerSkip"
+	// CallerSkip is the key to set/get call skip value.
+	CallerSkip = "_CallerSkip"
 )
 
 var (
@@ -58,13 +59,14 @@ func GetCaller(skip int, terminalPkg string) *runtime.Frame {
 	return nil
 }
 
-func printStack() {
-	for c := 0; c < 25; c++ {
+// PrintStack prints stack information.
+func PrintStack(max int) {
+	for c := 0; c < max; c++ {
 		pc, file, line, ok := runtime.Caller(c)
 		if !ok {
 			break
 		}
-		fmt.Println(c, pc, file, line)
+		log.Println(c, pc, file, line)
 	}
 }
 

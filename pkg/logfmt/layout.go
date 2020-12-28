@@ -21,10 +21,27 @@ type Layout struct {
 	Parts []Part
 }
 
+func (l *Layout) ResetForLogFile() *Layout {
+	ps := make([]Part, len(l.Parts))
+	for i, p := range l.Parts {
+		if v, ok := p.(LogFileReset); ok {
+			ps[i] = v.ResetForLogFile()
+		} else {
+			ps[i] = p
+		}
+	}
+
+	return &Layout{Parts: ps}
+}
+
 func (l Layout) Append(b *bytes.Buffer, e Entry) {
 	for _, p := range l.Parts {
 		p.Append(b, e)
 	}
+}
+
+type LogFileReset interface {
+	ResetForLogFile() Part
 }
 
 type Part interface {
@@ -131,7 +148,7 @@ func (n NewLinePart) Append(b *bytes.Buffer, e Entry) {
 }
 
 func parseNewLine(minus bool, digits string, options string) (Part, error) {
-	return &NewLinePart{}, nil
+	return NewLinePart{}, nil
 }
 
 type MessagePart struct {
@@ -152,7 +169,7 @@ func (p MessagePart) Append(b *bytes.Buffer, e Entry) {
 }
 
 func parseMessage(minus bool, digits string, options string) (Part, error) {
-	p := &MessagePart{SingleLine: true}
+	p := MessagePart{SingleLine: true}
 
 	fields := strings.FieldsFunc(options, func(c rune) bool {
 		return unicode.IsSpace(c) || c == ','
@@ -191,7 +208,7 @@ func (p FieldsPart) Append(b *bytes.Buffer, e Entry) {
 }
 
 func parseFields(minus bool, digits string, options string) (Part, error) {
-	return &FieldsPart{}, nil
+	return FieldsPart{}, nil
 }
 
 type CallerPart struct {
@@ -223,7 +240,7 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 }
 
 func parseCaller(minus bool, digits string, options string) (Part, error) {
-	c := &CallerPart{Digits: compositeDigits(minus, digits, "")}
+	c := CallerPart{Digits: compositeDigits(minus, digits, "")}
 
 	fields := strings.FieldsFunc(options, func(c rune) bool {
 		return unicode.IsSpace(c) || c == ','
@@ -266,9 +283,7 @@ func (t TracePart) Append(b *bytes.Buffer, e Entry) {
 }
 
 func parseTrace(minus bool, digits string, options string) (Part, error) {
-	p := &TracePart{Digits: compositeDigits(minus, digits, "")}
-
-	return p, nil
+	return TracePart{Digits: compositeDigits(minus, digits, "")}, nil
 }
 
 type GidPart struct {
@@ -280,9 +295,7 @@ func (p GidPart) Append(b *bytes.Buffer, e Entry) {
 }
 
 func parseGid(minus bool, digits string, options string) (Part, error) {
-	p := &GidPart{Digits: compositeDigits(minus, digits, "")}
-
-	return p, nil
+	return GidPart{Digits: compositeDigits(minus, digits, "")}, nil
 }
 
 type PidPart struct {
@@ -294,9 +307,7 @@ func (p PidPart) Append(b *bytes.Buffer, e Entry) {
 }
 
 func parsePid(minus bool, digits string, options string) (Part, error) {
-	p := &PidPart{Digits: compositeDigits(minus, digits, "")}
-
-	return p, nil
+	return PidPart{Digits: compositeDigits(minus, digits, "")}, nil
 }
 
 type LevelPart struct {
@@ -304,6 +315,11 @@ type LevelPart struct {
 	PrintColor bool
 	LowerCase  bool
 	Length     int
+}
+
+func (l LevelPart) ResetForLogFile() Part {
+	l.PrintColor = false
+	return l
 }
 
 func (l LevelPart) Append(b *bytes.Buffer, e Entry) {
@@ -333,7 +349,7 @@ func (l LevelPart) Append(b *bytes.Buffer, e Entry) {
 }
 
 func (lo LogrusOption) parseLevel(minus bool, digits string, options string) (Part, error) {
-	l := &LevelPart{Digits: compositeDigits(minus, digits, "5"), PrintColor: lo.PrintColor}
+	l := LevelPart{Digits: compositeDigits(minus, digits, "5"), PrintColor: lo.PrintColor}
 
 	fields := strings.FieldsFunc(options, func(c rune) bool {
 		return unicode.IsSpace(c) || c == ','
@@ -385,8 +401,7 @@ func (t Time) Append(b *bytes.Buffer, e Entry) {
 }
 
 func parseTime(minus bool, digits string, options string) (Part, error) {
-	format := spec.ConvertTimeLayout(str.Or(options, "2006-01-02 15:04:05.000"))
-	return &Time{Format: format}, nil
+	return Time{Format: spec.ConvertTimeLayout(str.Or(options, "2006-01-02 15:04:05.000"))}, nil
 }
 
 func parseMinus(layout string) (string, bool) {

@@ -1,7 +1,6 @@
 package golog
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"time"
@@ -38,8 +37,6 @@ func SetupLogrus(ll *logrus.Logger, specification, layout string) *logfmt.Result
 		Layout:      layout,
 		FixStd:      logSpec.FixStd,
 	}
-
-	fmt.Println("log file created:", logrusOption.LogPath)
 
 	return logrusOption.Setup(ll)
 }

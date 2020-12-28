@@ -17,7 +17,7 @@ func TestCurGoroutineID(t *testing.T) {
 		go func() {
 			goroutineID := gid.CurGoroutineID()
 
-			t.Logf("goroutineID:%s\n", goroutineID)
+			t.Logf("goroutineID:%s", goroutineID)
 
 			it.True(goroutineID.Uint64() > 0)
 

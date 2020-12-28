@@ -1,10 +1,10 @@
 package rotate
 
 import (
+	"log"
 	"os"
 	"time"
 
-	"github.com/bingoohuang/golog/pkg/iox"
 	"github.com/bingoohuang/golog/pkg/lock"
 
 	"github.com/bingoohuang/golog/pkg/str"
@@ -61,7 +61,7 @@ func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 
 	fi, err := os.Stat(path)
 	if err != nil {
-		iox.ErrorReport("Stat %s error %+v\n", path, err)
+		log.Printf("E! Stat %s error %+v", path, err)
 
 		return false
 	}
@@ -83,7 +83,7 @@ func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
 	fi, err := os.Stat(path)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			iox.ErrorReport("Stat %s error %+v\n", path, err)
+			log.Printf("E! Stat %s error %+v", path, err)
 		}
 
 		return false

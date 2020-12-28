@@ -96,7 +96,7 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 		g.Rotate = r
 		writers = append(writers, &WriterFormatter{
 			Writer:    r,
-			Formatter: formatter,
+			Formatter: resetPrintColor(formatter),
 		})
 	}
 
@@ -118,7 +118,20 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 		fixStd(ll)
 	}
 
+	logrus.Infof("log file created:%s", lo.LogPath)
+
 	return g
+}
+
+func resetPrintColor(formatter *LogrusFormatter) *LogrusFormatter {
+	f1 := *formatter
+	f1.PrintColor = false
+
+	if f1.Layout != nil {
+		f1.Layout = f1.Layout.ResetForLogFile()
+	}
+
+	return &f1
 }
 
 func (lo LogrusOption) createFormatter() *LogrusFormatter {
@@ -128,13 +141,12 @@ func (lo LogrusOption) createFormatter() *LogrusFormatter {
 		layout, _ = NewLayout(lo)
 	}
 
-	formatter := &LogrusFormatter{Formatter: Formatter{
+	return &LogrusFormatter{Formatter: Formatter{
 		PrintColor:  lo.PrintColor,
 		PrintCaller: lo.PrintCaller,
 		Simple:      lo.Simple,
 		Layout:      layout,
 	}}
-	return formatter
 }
 
 func (lo LogrusOption) setLoggerLevel(ll *logrus.Logger) *logrus.Logger {
