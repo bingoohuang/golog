@@ -17,7 +17,7 @@ import (
 
 // SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
-func SetupLogrus(ll *logrus.Logger, specification, layout string) (*logfmt.Result, error) {
+func SetupLogrus(ll *logrus.Logger, specification, layout string) *logfmt.Result {
 	logSpec := &LogSpec{}
 
 	if err := spec.ParseSpec(specification, "spec", logSpec); err != nil {

@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/local"
-	"github.com/pkg/errors"
-
 	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/sirupsen/logrus"
 )
@@ -69,18 +67,10 @@ func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 }
 
 // Setup setup log parameters.
-func (lo LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
-	ll, err := lo.setLoggerLevel(ll)
-	if err != nil {
-		return nil, err
-	}
-
-	formatter, err := lo.createFormatter()
-	if err != nil {
-		return nil, err
-	}
-
+func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
+	formatter := lo.createFormatter()
 	writers := make([]*WriterFormatter, 0, 2)
+
 	if lo.Stdout {
 		writers = append(writers, &WriterFormatter{
 			Writer:    os.Stdout,
@@ -117,33 +107,27 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 
 	g.Writer = io.MultiWriter(ws...)
 
+	ll = lo.setLoggerLevel(ll)
 	ll.SetFormatter(&DiscardFormatter{})
 	ll.SetOutput(ioutil.Discard)
-	ll.AddHook(&FlagHook{})
+
+	ll.Hooks = make(logrus.LevelHooks)
 	ll.AddHook(NewHook(writers))
 
 	if lo.FixStd {
 		fixStd(ll)
 	}
 
-	return g, nil
+	return g
 }
 
-type FlagHook struct{}
-
-func (h *FlagHook) Levels() []logrus.Level   { return logrus.AllLevels }
-func (h *FlagHook) Fire(*logrus.Entry) error { return nil }
-
-func (lo LogrusOption) createFormatter() (*LogrusFormatter, error) {
+func (lo LogrusOption) createFormatter() *LogrusFormatter {
 	var (
-		err    error
 		layout *Layout
 	)
 
 	if lo.Layout != "" {
-		if layout, err = NewLayout(lo); err != nil {
-			return nil, err
-		}
+		layout, _ = NewLayout(lo)
 	}
 
 	formatter := &LogrusFormatter{Formatter: Formatter{
@@ -152,10 +136,10 @@ func (lo LogrusOption) createFormatter() (*LogrusFormatter, error) {
 		Simple:      lo.Simple,
 		Layout:      layout,
 	}}
-	return formatter, nil
+	return formatter
 }
 
-func (lo LogrusOption) setLoggerLevel(ll *logrus.Logger) (*logrus.Logger, error) {
+func (lo LogrusOption) setLoggerLevel(ll *logrus.Logger) *logrus.Logger {
 	l, err := logrus.ParseLevel(lo.Level)
 	if err != nil {
 		l = logrus.InfoLevel
@@ -165,14 +149,6 @@ func (lo LogrusOption) setLoggerLevel(ll *logrus.Logger) (*logrus.Logger, error)
 		ll = logrus.StandardLogger()
 	}
 
-	for _, vv := range ll.Hooks {
-		for _, h := range vv {
-			if _, ok := h.(*FlagHook); ok {
-				return nil, errors.New("already setup for logurs")
-			}
-		}
-	}
-
 	ll.SetLevel(l)
-	return ll, err
+	return ll
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -64,12 +63,10 @@ func main() {
 		layout = v
 	}
 
-	fmt.Println("golog spec:", spec)
+	log.Println("golog spec:", spec)
 
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
-	if _, err := golog.SetupLogrus(nil, spec, layout); err != nil {
-		panic(err)
-	}
+	_ = golog.SetupLogrus(nil, spec, layout)
 
 	logC := make(chan LogMessage, channelSize)
 	for i := 0; i < channelSize; i++ {
@@ -79,7 +76,7 @@ func main() {
 	addr := port.FreeAddr()
 	urlAddr := "http://127.0.0.1" + addr
 
-	fmt.Println("start to listen on", addr)
+	log.Println("start to listen on", addr)
 
 	go func() {
 		iox.ErrorReport("ListenAndServe error %+v", http.ListenAndServe(addr, logRequest(mux, logC)))
