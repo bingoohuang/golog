@@ -122,9 +122,7 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 }
 
 func (lo LogrusOption) createFormatter() *LogrusFormatter {
-	var (
-		layout *Layout
-	)
+	var layout *Layout
 
 	if lo.Layout != "" {
 		layout, _ = NewLayout(lo)

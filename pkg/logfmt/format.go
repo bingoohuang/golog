@@ -124,7 +124,7 @@ func (f Formatter) Format(e Entry) []byte {
 
 func (f Formatter) PrintCallerInfo(b *bytes.Buffer, callSkip int) {
 	if f.PrintCaller {
-		if c := caller.GetCaller(callSkip); c != nil {
+		if c := caller.GetCaller(callSkip, "github.com/sirupsen/logrus"); c != nil {
 			// show function
 			fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(c.Function), filepath.Base(c.File), c.Line)
 			// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html

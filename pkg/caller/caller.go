@@ -19,7 +19,7 @@ var (
 )
 
 // GetCaller retrieves the name of the first non-logrus calling function
-func GetCaller(skip int) *runtime.Frame {
+func GetCaller(skip int, terminalPkg string) *runtime.Frame {
 	// cache this package's fully-qualified name
 	callerInitOnce.Do(func() {
 		pcs := make([]uintptr, maximumCallerDepth)
@@ -28,7 +28,7 @@ func GetCaller(skip int) *runtime.Frame {
 		// dynamic get the package name and the minimum caller depth
 		for i := 0; i < maximumCallerDepth; i++ {
 			funcName := runtime.FuncForPC(pcs[i]).Name()
-			if funcName == "github.com/sirupsen/logrus.(*Entry).fireHooks" {
+			if strings.HasPrefix(funcName, terminalPkg) {
 				minimumCallerDepth = i - 1
 				break
 			}
@@ -43,13 +43,15 @@ func GetCaller(skip int) *runtime.Frame {
 	for f, again := frames.Next(); again; f, again = frames.Next() {
 		pkg := getPackageName(f.Function)
 		// If the caller isn't part of this package, we're done
-		if pkg != "github.com/sirupsen/logrus" {
-			if skip != 0 {
-				skip--
-				continue
-			}
-			return &f //nolint:scopelint
+		if strings.HasPrefix(pkg, terminalPkg) {
+			continue
 		}
+		if skip != 0 {
+			skip--
+			continue
+		}
+
+		return &f //nolint:scopelint
 	}
 
 	// if we got here, we failed to find the caller's context

@@ -59,7 +59,10 @@ func NewLayout(lo LogrusOption) (*Layout, error) {
 		}
 
 		if percentPos > 0 {
-			l.addLiteralPart(layout[:percentPos])
+			p := layout[:percentPos]
+			if len(p) > 0 {
+				l.addLiteralPart(layout[:percentPos])
+			}
 		}
 
 		layout = layout[percentPos+1:]
@@ -84,29 +87,7 @@ func NewLayout(lo LogrusOption) (*Layout, error) {
 			return nil, err
 		}
 
-		var p Part
-
-		switch indicator {
-		case "t", "time":
-			p, err = parseTime(minus, digits, options)
-		case "l", "level":
-			p, err = lo.parseLevel(minus, digits, options)
-		case "pid":
-			p, err = parsePid(minus, digits, options)
-		case "gid":
-			p, err = parseGid(minus, digits, options)
-		case "trace":
-			p, err = parseTrace(minus, digits, options)
-		case "caller":
-			p, err = parseCaller(minus, digits, options)
-		case "fields":
-			p, err = parseFields(minus, digits, options)
-		case "message", "msg", "m":
-			p, err = parseMessage(minus, digits, options)
-		case "n":
-			p, err = parseNewLine(minus, digits, options)
-		}
-
+		p, err := lo.createPart(indicator, minus, digits, options)
 		if err != nil {
 			return nil, err
 		}
@@ -115,6 +96,31 @@ func NewLayout(lo LogrusOption) (*Layout, error) {
 	}
 
 	return l, nil
+}
+
+func (lo LogrusOption) createPart(indicator string, minus bool, digits, options string) (Part, error) {
+	switch indicator {
+	case "t", "time":
+		return parseTime(minus, digits, options)
+	case "l", "level":
+		return lo.parseLevel(minus, digits, options)
+	case "pid":
+		return parsePid(minus, digits, options)
+	case "gid":
+		return parseGid(minus, digits, options)
+	case "trace":
+		return parseTrace(minus, digits, options)
+	case "caller":
+		return parseCaller(minus, digits, options)
+	case "fields":
+		return parseFields(minus, digits, options)
+	case "message", "msg", "m":
+		return parseMessage(minus, digits, options)
+	case "n":
+		return parseNewLine(minus, digits, options)
+	}
+
+	return nil, fmt.Errorf("unknown indicator %s", indicator)
 }
 
 type NewLinePart struct {
@@ -208,7 +214,7 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 		delete(e.Fields(), caller.CallerSkip)
 	}
 
-	if c := caller.GetCaller(callSkip); c != nil {
+	if c := caller.GetCaller(callSkip, "github.com/sirupsen/logrus"); c != nil {
 		// show function
 		fileLine = fmt.Sprintf("%s %s%s%d", filepath.Base(c.Function), filepath.Base(c.File), p.Sep, c.Line)
 	}
