@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -20,8 +21,7 @@ import (
 const channelSize = 1000
 
 func main() {
-	custom()
-
+	fixlog := flag.Bool("fixlog", false, "fix log.Print...")
 	help := flag.Bool("help", false,
 		`SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./gologdemo`)
 	flag.Parse()
@@ -31,6 +31,22 @@ func main() {
 		os.Exit(0)
 	}
 
+	if *fixlog {
+		golog.SetupLogrus(nil, "", "")
+
+		for i := 0; i < 10; i++ {
+			time.Sleep(10 * time.Millisecond)
+			log.Printf("W! Hello, this message is logged by std log, #%d", i)
+		}
+
+		for i := 0; i < 10; i++ {
+			time.Sleep(10 * time.Millisecond)
+			logrus.Infof("Hello, this message is logged by std log, #%d", i)
+		}
+
+		return
+	}
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write([]byte("OK\n"))
@@ -38,12 +54,12 @@ func main() {
 
 	ginpprof.Wrap(mux)
 
-	spec := "file=~/gologdemo.log,maxSize=1M,stdout=false,rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m"
+	spec := "file=~/gologdemo.log,maxSize=1M,stdout=true,rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m"
 	if v := os.Getenv("SPEC"); v != "" {
 		spec = v
 	}
 
-	layout := `%t{HH:mm:ss.SSS} %5l{length=1} PID=%pid --- [GID=%gid] [%trace] %20caller : %fields %msg%n`
+	layout := `%t{HH:mm:ss.SSS} %5l{length=4} PID=%pid --- [GID=%gid] [%trace] %20caller{level=info} : %fields %msg%n`
 	if v := os.Getenv("LAYOUT"); v != "" {
 		layout = v
 	}
@@ -57,7 +73,7 @@ func main() {
 
 	logC := make(chan LogMessage, channelSize)
 	for i := 0; i < channelSize; i++ {
-		go log(logC, i)
+		go logging(logC, i)
 	}
 
 	addr := port.FreeAddr()
@@ -106,7 +122,7 @@ func restclient(urlAddr string) {
 	httpx.CloseResponse(rsp)
 }
 
-func log(logC <-chan LogMessage, workerID int) {
+func logging(logC <-chan LogMessage, workerID int) {
 	for r := range logC {
 		logrus.WithFields(map[string]interface{}{
 			"workerID":    workerID,
@@ -142,16 +158,4 @@ func logRequest(handler http.Handler, logC chan LogMessage) http.Handler {
 
 		handler.ServeHTTP(w, r)
 	})
-}
-
-func custom() {
-	spec := "file=~/gologdemo.log,maxSize=1M,stdout=true,rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m"
-	layout := `%t{yyyy-MM-dd HH:mm:ss.SSS} [%-5l{length=5}] %caller %fields %msg%n`
-	golog.SetupLogrus(nil, spec, layout)
-	golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-mm-dd-HH-mm-ss", "")
-
-	// golog.SetupLogrus(nil, spec, layout)
-
-	logrus.Error("error")
-	logrus.Warn("warn")
 }

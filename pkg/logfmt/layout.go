@@ -59,7 +59,7 @@ func NewLayout(lo LogrusOption) (*Layout, error) {
 		}
 
 		if percentPos > 0 {
-			l.addLiteralPart(strings.TrimSpace(layout[:percentPos]))
+			l.addLiteralPart(layout[:percentPos])
 		}
 
 		layout = layout[percentPos+1:]
@@ -139,9 +139,9 @@ func (p MessagePart) Append(b *bytes.Buffer, e Entry) {
 
 	if p.SingleLine {
 		// indent multiple lines log
-		b.WriteString(" " + strings.Replace(msg, "\n", `\n`, -1))
+		b.WriteString(strings.Replace(msg, "\n", `\n`, -1))
 	} else {
-		b.WriteString(" " + msg)
+		b.WriteString(msg)
 	}
 }
 
@@ -201,17 +201,19 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 	}
 
 	fileLine := "-"
-	c := e.Caller()
-	if c == nil {
-		c = caller.GetCaller()
+
+	callSkip := 0
+	if v, ok := e.Fields()[caller.CallerSkip]; ok {
+		callSkip = v.(int)
+		delete(e.Fields(), caller.CallerSkip)
 	}
 
-	if c != nil {
+	if c := caller.GetCaller(callSkip); c != nil {
 		// show function
 		fileLine = fmt.Sprintf("%s %s%s%d", filepath.Base(c.Function), filepath.Base(c.File), p.Sep, c.Line)
 	}
 
-	b.WriteString(fmt.Sprintf(" %"+p.Digits+"s", fileLine))
+	b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
 }
 
 func parseCaller(minus bool, digits string, options string) (Part, error) {
@@ -254,7 +256,7 @@ type TracePart struct {
 }
 
 func (t TracePart) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(fmt.Sprintf(" %"+t.Digits+"s", e.TraceID()))
+	b.WriteString(fmt.Sprintf("%"+t.Digits+"s", e.TraceID()))
 }
 
 func parseTrace(minus bool, digits string, options string) (Part, error) {
@@ -282,7 +284,7 @@ type PidPart struct {
 }
 
 func (p PidPart) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(fmt.Sprintf(" %d ", Pid))
+	b.WriteString(fmt.Sprintf("%d", Pid))
 }
 
 func parsePid(minus bool, digits string, options string) (Part, error) {
@@ -344,8 +346,8 @@ func (lo LogrusOption) parseLevel(minus bool, digits string, options string) (Pa
 		}
 
 		switch k {
-		// case "printcolor":
-		//	l.PrintColor = str.ParseBool(v, false)
+		case "printcolor":
+			l.PrintColor = str.ParseBool(v, false)
 		case "lowercase":
 			l.LowerCase = str.ParseBool(v, false)
 		case "length":
@@ -373,7 +375,7 @@ type Time struct {
 }
 
 func (t Time) Append(b *bytes.Buffer, e Entry) {
-	b.WriteString(timex.OrNow(e.Time()).Format(t.Format) + " ")
+	b.WriteString(timex.OrNow(e.Time()).Format(t.Format))
 }
 
 func parseTime(minus bool, digits string, options string) (Part, error) {

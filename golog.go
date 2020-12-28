@@ -2,7 +2,6 @@ package golog
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -15,12 +14,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
-
-// SetupLog setup the logrus logger with specific configuration like guava CacheBuilderSpec.
-// eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
-func SetupLog(ll *log.Logger, specification string) *logfmt.Result {
-	return nil
-}
 
 // SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
@@ -43,6 +36,7 @@ func SetupLogrus(ll *logrus.Logger, specification, layout string) (*logfmt.Resul
 		Stdout:      logSpec.Stdout,
 		Simple:      logSpec.Simple,
 		Layout:      layout,
+		FixStd:      logSpec.FixStd,
 	}
 
 	fmt.Println("log file created:", logrusOption.LogPath)
@@ -62,4 +56,5 @@ type LogSpec struct {
 	PrintCaller bool          `spec:"printCall,true"`
 	Stdout      bool          `spec:"stdout,true"`
 	Simple      bool          `spec:"simple,false"`
+	FixStd      bool          `spec:"fixstd,true"` // 是否增强log.Print...的输出
 }

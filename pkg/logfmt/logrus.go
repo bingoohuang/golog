@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/local"
+	"github.com/pkg/errors"
 
 	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/sirupsen/logrus"
@@ -39,14 +40,12 @@ type LogrusOption struct {
 	MaxSize int64
 	MaxAge  time.Duration
 	GzipAge time.Duration
+	FixStd  bool // 是否增强log.Print...的输出
 }
 
-type DiscardFormatter struct {
-}
+type DiscardFormatter struct{}
 
-func (f DiscardFormatter) Format(_ *logrus.Entry) ([]byte, error) {
-	return nil, nil
-}
+func (f DiscardFormatter) Format(_ *logrus.Entry) ([]byte, error) { return nil, nil }
 
 type LogrusFormatter struct {
 	Formatter
@@ -71,37 +70,21 @@ func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 
 // Setup setup log parameters.
 func (lo LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
-	l, err := logrus.ParseLevel(lo.Level)
+	ll, err := lo.setLoggerLevel(ll)
 	if err != nil {
-		l = logrus.InfoLevel
+		return nil, err
 	}
 
-	if ll == nil {
-		ll = logrus.StandardLogger()
-	}
-
-	ll.SetLevel(l)
-
-	var layout *Layout = nil
-
-	if lo.Layout != "" {
-		if layout, err = NewLayout(lo); err != nil {
-			return nil, err
-		}
+	formatter, err := lo.createFormatter()
+	if err != nil {
+		return nil, err
 	}
 
 	writers := make([]*WriterFormatter, 0, 2)
 	if lo.Stdout {
 		writers = append(writers, &WriterFormatter{
-			Writer: os.Stdout,
-			Formatter: &LogrusFormatter{
-				Formatter: Formatter{
-					// PrintColor:  o.PrintColor,
-					PrintCaller: lo.PrintCaller,
-					Simple:      lo.Simple,
-					Layout:      layout,
-				},
-			},
+			Writer:    os.Stdout,
+			Formatter: formatter,
 		})
 	}
 
@@ -120,28 +103,14 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 			panic(err)
 		}
 
-		if lo.Layout != "" {
-			lo.PrintColor = false
-			if layout, err = NewLayout(lo); err != nil {
-				return nil, err
-			}
-		}
 		g.Rotate = r
 		writers = append(writers, &WriterFormatter{
-			Writer: r,
-			Formatter: &LogrusFormatter{
-				Formatter: Formatter{
-					// PrintColor:  false,
-					PrintCaller: lo.PrintCaller,
-					Simple:      lo.Simple,
-					Layout:      layout,
-				},
-			},
+			Writer:    r,
+			Formatter: formatter,
 		})
 	}
 
 	var ws []io.Writer
-
 	for _, w := range writers {
 		ws = append(ws, w)
 	}
@@ -150,8 +119,60 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) (*Result, error) {
 
 	ll.SetFormatter(&DiscardFormatter{})
 	ll.SetOutput(ioutil.Discard)
-	ll.SetReportCaller(lo.PrintCaller)
+	ll.AddHook(&FlagHook{})
 	ll.AddHook(NewHook(writers))
 
+	if lo.FixStd {
+		fixStd(ll)
+	}
+
 	return g, nil
+}
+
+type FlagHook struct{}
+
+func (h *FlagHook) Levels() []logrus.Level   { return logrus.AllLevels }
+func (h *FlagHook) Fire(*logrus.Entry) error { return nil }
+
+func (lo LogrusOption) createFormatter() (*LogrusFormatter, error) {
+	var (
+		err    error
+		layout *Layout
+	)
+
+	if lo.Layout != "" {
+		if layout, err = NewLayout(lo); err != nil {
+			return nil, err
+		}
+	}
+
+	formatter := &LogrusFormatter{Formatter: Formatter{
+		PrintColor:  lo.PrintColor,
+		PrintCaller: lo.PrintCaller,
+		Simple:      lo.Simple,
+		Layout:      layout,
+	}}
+	return formatter, nil
+}
+
+func (lo LogrusOption) setLoggerLevel(ll *logrus.Logger) (*logrus.Logger, error) {
+	l, err := logrus.ParseLevel(lo.Level)
+	if err != nil {
+		l = logrus.InfoLevel
+	}
+
+	if ll == nil {
+		ll = logrus.StandardLogger()
+	}
+
+	for _, vv := range ll.Hooks {
+		for _, h := range vv {
+			if _, ok := h.(*FlagHook); ok {
+				return nil, errors.New("already setup for logurs")
+			}
+		}
+	}
+
+	ll.SetLevel(l)
+	return ll, err
 }

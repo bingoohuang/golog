@@ -87,7 +87,7 @@ func (f Formatter) Format(e Entry) []byte {
 
 	w(timex.OrNow(e.Time()).Format(layout) + " ")
 
-	f.printLevel(b, e.Level())
+	f.PrintLevel(b, e.Level())
 
 	if !f.Simple {
 		w(fmt.Sprintf("%d --- ", Pid))
@@ -95,7 +95,13 @@ func (f Formatter) Format(e Entry) []byte {
 		w(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
 	}
 
-	f.printCaller(b, e.Caller())
+	callSkip := 0
+	if v, ok := e.Fields()[caller.CallerSkip]; ok {
+		callSkip = v.(int)
+		delete(e.Fields(), caller.CallerSkip)
+	}
+
+	f.PrintCallerInfo(b, callSkip)
 
 	w(" : ")
 
@@ -116,21 +122,19 @@ func (f Formatter) Format(e Entry) []byte {
 	return b.Bytes()
 }
 
-func (f Formatter) printCaller(b *bytes.Buffer, c *runtime.Frame) {
-	if c == nil && f.PrintCaller {
-		c = caller.GetCaller()
-	}
-
-	if c != nil {
-		// show function
-		fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(c.Function), filepath.Base(c.File), c.Line)
-		// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
-		// 统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
-		b.WriteString(fmt.Sprintf("%-20s", fileLine))
+func (f Formatter) PrintCallerInfo(b *bytes.Buffer, callSkip int) {
+	if f.PrintCaller {
+		if c := caller.GetCaller(callSkip); c != nil {
+			// show function
+			fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(c.Function), filepath.Base(c.File), c.Line)
+			// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
+			// 统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
+			b.WriteString(fmt.Sprintf("%-20s", fileLine))
+		}
 	}
 }
 
-func (f Formatter) printLevel(b *bytes.Buffer, level string) {
+func (f Formatter) PrintLevel(b *bytes.Buffer, level string) {
 	level = strings.ToUpper(str.Or(level, "info"))
 
 	if f.PrintColor {
