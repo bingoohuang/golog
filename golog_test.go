@@ -1,11 +1,9 @@
 package golog_test
 
 import (
-	"testing"
-	"time"
-
 	"github.com/bingoohuang/golog"
 	"github.com/sirupsen/logrus"
+	"testing"
 )
 
 func TestSetupLogrus(t *testing.T) {
@@ -15,8 +13,6 @@ func TestSetupLogrus(t *testing.T) {
 		logrus.Warnf("这是警告信息 %d", i)
 		logrus.Infof("这是普通信息 %d", i)
 		logrus.Debugf("这是调试信息 %d", i)
-
-		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -28,7 +24,5 @@ func TestSetupLogrusLayout(t *testing.T) {
 		logrus.Warnf("这是警告信息 %d", i)
 		logrus.Infof("这是普通信息 %d", i)
 		logrus.Debugf("这是调试信息 %d", i)
-
-		time.Sleep(1 * time.Second)
 	}
 }
