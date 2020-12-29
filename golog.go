@@ -14,19 +14,30 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// SetupOption defines the options to setup.
 type SetupOption struct {
 	Spec   string
 	Layout string
 	Logger *logrus.Logger
 }
 
-type SetupOptionFn func(*SetupOption)
-type SetupOptionFns []SetupOptionFn
+type (
+	// SetupOptionFn is func type to option setter
+	SetupOptionFn func(*SetupOption)
+	// SetupOptionFns is the slice of SetupOptionFn
+	SetupOptionFns []SetupOptionFn
+)
 
-func Spec(v string) SetupOptionFn           { return func(o *SetupOption) { o.Spec = v } }
-func Layout(v string) SetupOptionFn         { return func(o *SetupOption) { o.Layout = v } }
+// Spec defines the specification of log.
+func Spec(v string) SetupOptionFn { return func(o *SetupOption) { o.Spec = v } }
+
+// Layout defines the layout of log.
+func Layout(v string) SetupOptionFn { return func(o *SetupOption) { o.Layout = v } }
+
+// Logger defines the root logrus logger.
 func Logger(v *logrus.Logger) SetupOptionFn { return func(o *SetupOption) { o.Logger = v } }
 
+// Setup setups the options.
 func (fns SetupOptionFns) Setup(o *SetupOption) {
 	for _, f := range fns {
 		f(o)

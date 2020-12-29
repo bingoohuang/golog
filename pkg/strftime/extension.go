@@ -58,7 +58,7 @@ func Milliseconds() Appender {
 	return milliseconds
 }
 
-// Microsecond returns the Appender suitable for creating a zero-padded,
+// Microseconds returns the Appender suitable for creating a zero-padded,
 // 6-digit microsecond textual representation.
 func Microseconds() Appender {
 	return microseconds

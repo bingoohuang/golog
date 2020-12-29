@@ -24,7 +24,8 @@ var (
 	r        = regexp.MustCompile(`(?i)[TDIWEFP]!`)
 	levelMap = map[string]logrus.Level{
 		"T!": logrus.TraceLevel, "D!": logrus.DebugLevel, "I!": logrus.InfoLevel, "W!": logrus.WarnLevel,
-		"E!": logrus.ErrorLevel, "F!": logrus.FatalLevel, "P!": logrus.PanicLevel}
+		"E!": logrus.ErrorLevel, "F!": logrus.FatalLevel, "P!": logrus.PanicLevel,
+	}
 )
 
 func parseLevelFromMsg(msg string) (logrus.Level, string) {

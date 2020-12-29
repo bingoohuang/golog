@@ -15,7 +15,7 @@ func (o *option) Value() interface{} { return o.value }
 
 const optSpecificationSet = `opt-specification-set`
 
-// WithSpecification allows you to specify a custom specification set.
+// WithSpecificationSet allows you to specify a custom specification set.
 func WithSpecificationSet(ds SpecificationSet) Option {
 	return &option{
 		name:  optSpecificationSet,

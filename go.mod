@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/bingoohuang/ginx v0.0.0-20200729033750-047869f5e81c
+	github.com/bingoohuang/sariaf v0.0.0-20201222043148-21fd9703b115
 	github.com/gin-gonic/gin v1.6.3
 	github.com/google/uuid v1.1.1
 	github.com/kr/pretty v0.1.0 // indirect

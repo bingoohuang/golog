@@ -26,7 +26,7 @@ func get(gid uint64) context.Context {
 }
 
 // nolint golint
-func set(gid uint64, ctx context.Context) {
+func set(ctx context.Context, gid uint64) {
 	locals.Lock()
 	locals.ctx[gid] = ctx
 	locals.Unlock()
@@ -34,7 +34,7 @@ func set(gid uint64, ctx context.Context) {
 
 func temp(gid uint64, key, val interface{}) context.Context {
 	ctx := context.WithValue(get(gid), key, val)
-	set(gid, ctx)
+	set(ctx, gid)
 
 	return ctx
 }
@@ -55,7 +55,7 @@ func Get() context.Context {
 
 // Set ...
 func Set(ctx context.Context) {
-	set(Goid(), ctx)
+	set(ctx, Goid())
 }
 
 // ...

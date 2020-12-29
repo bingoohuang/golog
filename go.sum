@@ -1,5 +1,7 @@
 github.com/bingoohuang/ginx v0.0.0-20200729033750-047869f5e81c h1:/yxMJq8n0flDBUizmVhte2820bNVKXTdpAz4AHYb6k0=
 github.com/bingoohuang/ginx v0.0.0-20200729033750-047869f5e81c/go.mod h1:fv5fKhsGUfPInVsslF5FJv2oNlZn153C5OogaaUFvFc=
+github.com/bingoohuang/sariaf v0.0.0-20201222043148-21fd9703b115 h1:EFFNU0tKdIPNrBSuSgL3UDF4bnFPMzQs3YaUWn4rxM4=
+github.com/bingoohuang/sariaf v0.0.0-20201222043148-21fd9703b115/go.mod h1:DSi1LVR76Ap189KzzA40C8pFSpRZHsy/n+kgK8ihfhs=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

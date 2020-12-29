@@ -36,9 +36,5 @@ func Gzip(src string) (err error) {
 		return err
 	}
 
-	if err := os.Remove(src); err != nil {
-		return err
-	}
-
-	return nil
+	return os.Remove(src)
 }

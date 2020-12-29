@@ -1,9 +1,10 @@
 package golog_test
 
 import (
+	"testing"
+
 	"github.com/bingoohuang/golog"
 	"github.com/sirupsen/logrus"
-	"testing"
 )
 
 func TestSetupLogrus(t *testing.T) {
