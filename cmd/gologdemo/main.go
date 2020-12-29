@@ -30,7 +30,7 @@ func main() {
 	}
 
 	if *std {
-		golog.SetupLogrus(nil, "", "")
+		golog.SetupLogrus()
 
 		log.Printf("Hello, this message is logged by std log, #%d", 1)
 		log.Printf("T! Hello, this message is logged by std log, #%d", 2)
@@ -39,7 +39,10 @@ func main() {
 		log.Printf("W! Hello, this message is logged by std log, #%d", 5)
 		log.Printf("F! Hello, this message is logged by std log, #%d", 6)
 
-		logrus.Infof("Hello, this message is logged by std log, #%d", 7)
+		logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
+		logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
+		logrus.Infof("Hello, this message is logged by std log, #%d", 9)
+		logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
 
 		return
 	}
@@ -62,7 +65,7 @@ func main() {
 	}
 
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
-	_ = golog.SetupLogrus(nil, spec, layout)
+	_ = golog.SetupLogrus(golog.Spec(spec), golog.Layout(layout))
 
 	log.Println("golog spec:", spec)
 

@@ -16,16 +16,40 @@ golog，支持:
 1. 自动日志文件名
 1. logrus一行集成
 
-## Integration with logrus
+## Integration with logrus and log
 
 Use default settings:
 
 ```go
 import "github.com/bingoohuang/golog"
 
-func init() {
-	golog.SetupLogrus(nil, "", "")
+func main() {
+	golog.SetupLogrus()
+
+    log.Printf("Hello, this message is logged by std log, #%d", 1)
+    log.Printf("T! Hello, this message is logged by std log, #%d", 2)
+    log.Printf("D! Hello, this message is logged by std log, #%d", 3)
+    log.Printf("I! Hello, this message is logged by std log, #%d", 4)
+    log.Printf("W! Hello, this message is logged by std log, #%d", 5)
+    log.Printf("F! Hello, this message is logged by std log, #%d", 6)
+
+    logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
+    logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
+    logrus.Infof("Hello, this message is logged by std log, #%d", 9)
+    logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
 }
+```
+
+will output the log messages as below:
+
+```sh
+2020-12-29 08:52:43.810 [INFO ] 29490 --- [1    ] [-] logfmt.LogrusOption.Setup logrus.go:121 : log file created:~/logs/gologdemo.log
+2020-12-29 08:52:43.810 [INFO ] 29490 --- [1    ] [-] main.main main.go:35 : Hello, this message is logged by std log, #1
+2020-12-29 08:52:43.810 [INFO ] 29490 --- [1    ] [-] main.main main.go:38 : Hello, this message is logged by std log, #4
+2020-12-29 08:52:43.810 [WARN ] 29490 --- [1    ] [-] main.main main.go:39 : Hello, this message is logged by std log, #5
+2020-12-29 08:52:43.811 [FATAL] 29490 --- [1    ] [-] main.main main.go:40 : Hello, this message is logged by std log, #6
+2020-12-29 08:52:43.811 [INFO ] 29490 --- [1    ] [-] main.main main.go:44 : Hello, this message is logged by std log, #8
+2020-12-29 08:52:43.811 [WARN ] 29490 --- [1    ] [-] main.main main.go:45 : Hello, this message is logged by std log, #8
 ```
 
 Customize the settings:
@@ -33,8 +57,8 @@ Customize the settings:
 ```go
 import "github.com/bingoohuang/golog"
 
-func init() {
-	golog.SetupLogrus(nil, "level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d","")
+func main() {
+	golog.SetupLogrus(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d"))
 }
 ```
 
@@ -168,7 +192,7 @@ import (
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
-	golog.SetupLogrus(nil, "", "")
+	golog.SetupLogrus()
 
 	r := gin.New()
 	r.Use(ginlogrus.Logger(nil,true), gin.Recovery())

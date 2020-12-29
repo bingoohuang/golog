@@ -14,12 +14,33 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type SetupOption struct {
+	Spec   string
+	Layout string
+	Logger *logrus.Logger
+}
+
+type SetupOptionFn func(*SetupOption)
+type SetupOptionFns []SetupOptionFn
+
+func Spec(v string) SetupOptionFn           { return func(o *SetupOption) { o.Spec = v } }
+func Layout(v string) SetupOptionFn         { return func(o *SetupOption) { o.Layout = v } }
+func Logger(v *logrus.Logger) SetupOptionFn { return func(o *SetupOption) { o.Logger = v } }
+
+func (fns SetupOptionFns) Setup(o *SetupOption) {
+	for _, f := range fns {
+		f(o)
+	}
+}
+
 // SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
-func SetupLogrus(ll *logrus.Logger, specification, layout string) *logfmt.Result {
-	logSpec := &LogSpec{}
+func SetupLogrus(fns ...SetupOptionFn) *logfmt.Result {
+	o := &SetupOption{}
+	SetupOptionFns(fns).Setup(o)
 
-	if err := spec.ParseSpec(specification, "spec", logSpec); err != nil {
+	logSpec := &LogSpec{}
+	if err := spec.ParseSpec(o.Spec, "spec", logSpec); err != nil {
 		panic(err)
 	}
 
@@ -34,11 +55,11 @@ func SetupLogrus(ll *logrus.Logger, specification, layout string) *logfmt.Result
 		PrintCaller: logSpec.PrintCaller,
 		Stdout:      logSpec.Stdout,
 		Simple:      logSpec.Simple,
-		Layout:      layout,
+		Layout:      o.Layout,
 		FixStd:      logSpec.FixStd,
 	}
 
-	return logrusOption.Setup(ll)
+	return logrusOption.Setup(o.Logger)
 }
 
 // LogSpec defines the spec structure to be mapped to the log specification.

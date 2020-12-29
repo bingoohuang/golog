@@ -13,7 +13,7 @@ import (
 
 func TestGinlogrus(t *testing.T) {
 	gin.SetMode(gin.ReleaseMode)
-	_ = golog.SetupLogrus(nil, "file=~/gologdemo.log,level=debug", "")
+	_ = golog.SetupLogrus(golog.Spec("file=~/gologdemo.log,level=debug"))
 
 	r := gin.New()
 	r.Use(ginlogrus.Logger(nil, true))
