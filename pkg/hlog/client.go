@@ -86,11 +86,20 @@ func (dl HLog) LogRecover(side string, duration time.Duration, recover interface
 // LogResponse logs path, host, status code and duration in milliseconds.
 func (dl HLog) LogResponse(side string, req *http.Request, res *http.Response, err error, duration time.Duration) {
 	if res == nil {
-		dl.Printf("I! %s Response Duration:%s nil error:%s", side, duration, err)
+		if err != nil {
+			dl.Printf("I! %s Response Duration:%s error:%s", side, duration, err)
+		} else {
+			dl.Printf("I! %s Response Duration:%s", side, duration)
+		}
 	} else {
 		rspContentEncoding := res.Header.Get("Content-Encoding")
 		rspDump, _ := httputil.DumpResponse(res, rspContentEncoding == "")
-		dl.Printf("I! %s Response Duration:%s error:%v Dump:%s", side, duration, err, rspDump)
+
+		if err != nil {
+			dl.Printf("I! %s Response Duration:%s error:%v Dump:%s", side, duration, err, rspDump)
+		} else {
+			dl.Printf("I! %s Response Duration:%s Dump:%s", side, duration, rspDump)
+		}
 	}
 }
 

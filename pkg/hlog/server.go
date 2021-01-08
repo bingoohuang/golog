@@ -104,7 +104,11 @@ func (dl LogWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request, h http.Ha
 	h(wrapped, r)
 
 	if v, ok := dl.Log.(HTTPWriterLogger); ok {
-		v.LogWriter(time.Since(startTime), wrapped.status, wrapped.Header(), wrapped.payload.String())
+		status := wrapped.status
+		if status == 0 {
+			status = http.StatusOK
+		}
+		v.LogWriter(time.Since(startTime), status, wrapped.Header(), wrapped.payload.String())
 	}
 }
 
