@@ -26,17 +26,17 @@ import "github.com/bingoohuang/golog"
 func main() {
 	golog.SetupLogrus()
 
-    log.Printf("Hello, this message is logged by std log, #%d", 1)
-    log.Printf("T! Hello, this message is logged by std log, #%d", 2)
-    log.Printf("D! Hello, this message is logged by std log, #%d", 3)
-    log.Printf("I! Hello, this message is logged by std log, #%d", 4)
-    log.Printf("W! Hello, this message is logged by std log, #%d", 5)
-    log.Printf("F! Hello, this message is logged by std log, #%d", 6)
+	log.Printf("Hello, this message is logged by std log, #%d", 1)
+	log.Printf("T! Hello, this message is logged by std log, #%d", 2)
+	log.Printf("D! Hello, this message is logged by std log, #%d", 3)
+	log.Printf("I! Hello, this message is logged by std log, #%d", 4)
+	log.Printf("W! Hello, this message is logged by std log, #%d", 5)
+	log.Printf("F! Hello, this message is logged by std log, #%d", 6)
 
-    logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
-    logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
-    logrus.Infof("Hello, this message is logged by std log, #%d", 9)
-    logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
+	logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
+	logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
+	logrus.Infof("Hello, this message is logged by std log, #%d", 9)
+	logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
 }
 ```
 
