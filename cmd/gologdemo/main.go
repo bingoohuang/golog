@@ -29,6 +29,13 @@ func main() {
 		os.Exit(0)
 	}
 
+	logf := golog.NewLimitLog(1, 200*time.Millisecond, 2)
+
+	for i := 0; i < 10; i++ {
+		logf("Hello i:%d", i)
+		time.Sleep(90 * time.Millisecond)
+	}
+
 	if *std {
 		golog.SetupLogrus()
 
@@ -66,6 +73,12 @@ func main() {
 
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
 	_ = golog.SetupLogrus(golog.Spec(spec), golog.Layout(layout))
+
+	logr := golog.NewLimitLogrus(nil, 1, 200*time.Millisecond, 2)
+	for i := 0; i < 10; i++ {
+		logr.Infof("Hello i:%d", i)
+		time.Sleep(90 * time.Millisecond)
+	}
 
 	log.Println("golog spec:", spec)
 

@@ -7,6 +7,8 @@ import (
 	"runtime"
 	"time"
 
+	"golang.org/x/time/rate"
+
 	"github.com/bingoohuang/golog/pkg/local"
 	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/sirupsen/logrus"
@@ -51,19 +53,43 @@ type LogrusFormatter struct {
 
 const traceIDKey = "TRACE_ID"
 
+type ContextKey int
+
+const (
+	RateLimiterKey ContextKey = iota
+)
+
 func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	traceID, ok := entry.Data[traceIDKey].(string)
-	if ok {
-		delete(entry.Data, traceIDKey)
-	} else {
-		// caution: should use local.TraceId.
-		traceID = local.String(local.TraceId)
+	if f.rateLimited(entry) {
+		return nil, nil
 	}
 
 	return f.Formatter.Format(&LogrusEntry{
+		EntryTraceID: GetTraceID(entry),
 		Entry:        entry,
-		EntryTraceID: traceID,
 	}), nil
+}
+
+func GetTraceID(entry *logrus.Entry) string {
+	traceID, ok := entry.Data[traceIDKey].(string)
+	if !ok {
+		return local.String(local.TraceId)
+	}
+
+	delete(entry.Data, traceIDKey)
+	return traceID
+}
+
+func (f LogrusFormatter) rateLimited(entry *logrus.Entry) bool {
+	if entry.Context == nil {
+		return false
+	}
+
+	if v := entry.Context.Value(RateLimiterKey); v != nil {
+		return !v.(*rate.Limiter).Allow()
+	}
+
+	return false
 }
 
 // Setup setup log parameters.

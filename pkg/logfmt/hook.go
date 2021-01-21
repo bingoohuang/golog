@@ -36,6 +36,10 @@ func (hook *Hook) Fire(entry *logrus.Entry) error {
 			return err
 		}
 
+		if len(msg) == 0 {
+			continue
+		}
+
 		if _, err := writer.Write(msg); err != nil {
 			return err
 		}

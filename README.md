@@ -15,6 +15,7 @@ golog，支持:
 1. 自动删除
 1. 自动日志文件名
 1. logrus一行集成
+1. 日志限速
 
 ## Integration with logrus and log
 
@@ -24,19 +25,19 @@ Use default settings:
 import "github.com/bingoohuang/golog"
 
 func main() {
-	golog.SetupLogrus()
+golog.SetupLogrus()
 
-	log.Printf("Hello, this message is logged by std log, #%d", 1)
-	log.Printf("T! Hello, this message is logged by std log, #%d", 2)
-	log.Printf("D! Hello, this message is logged by std log, #%d", 3)
-	log.Printf("I! Hello, this message is logged by std log, #%d", 4)
-	log.Printf("W! Hello, this message is logged by std log, #%d", 5)
-	log.Printf("F! Hello, this message is logged by std log, #%d", 6)
+log.Printf("Hello, this message is logged by std log, #%d", 1)
+log.Printf("T! Hello, this message is logged by std log, #%d", 2)
+log.Printf("D! Hello, this message is logged by std log, #%d", 3)
+log.Printf("I! Hello, this message is logged by std log, #%d", 4)
+log.Printf("W! Hello, this message is logged by std log, #%d", 5)
+log.Printf("F! Hello, this message is logged by std log, #%d", 6)
 
-	logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
-	logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
-	logrus.Infof("Hello, this message is logged by std log, #%d", 9)
-	logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
+logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
+logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
+logrus.Infof("Hello, this message is logged by std log, #%d", 9)
+logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
 }
 ```
 
@@ -58,7 +59,7 @@ Customize the settings:
 import "github.com/bingoohuang/golog"
 
 func main() {
-	golog.SetupLogrus(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d"))
+golog.SetupLogrus(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d"))
 }
 ```
 
@@ -173,6 +174,23 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
      +-----------------------------+                          +----------------------------------+
 ```
 
+## Log rate limiter
+
+stdlib log
+
+```go
+logf := golog.NewLimitLog(1, 200*time.Millisecond, 2)
+logf("Hello i:%d", i) // will limited to 200 lines per ms with burst 2.
+```
+
+logurs:
+
+```go
+golog.SetupLogrus()
+logr := golog.NewLimitLogrus(nil, 1, 200*time.Millisecond, 2)
+logr.Infof("Hello i:%d", i) // will limited to 200 lines per ms with burst 2.
+```
+
 ## Help
 
 1. `sed "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" x.log` to strip color from log file.
@@ -185,27 +203,27 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh  gologd
 
 ```go
 import (
-	"github.com/bingoohuang/golog"
-	"github.com/bingoohuang/golog/pkg/ginlogrus"
-	"github.com/gin-gonic/gin"
+"github.com/bingoohuang/golog"
+"github.com/bingoohuang/golog/pkg/ginlogrus"
+"github.com/gin-gonic/gin"
 )
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
-	golog.SetupLogrus()
+gin.SetMode(gin.ReleaseMode)
+golog.SetupLogrus()
 
-	r := gin.New()
-	r.Use(ginlogrus.Logger(nil,true), gin.Recovery())
+r := gin.New()
+r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
 
-	r.GET("/ping", func(c *gin.Context) {
-		ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
-		logrus.Info("pinged2")
-		c.JSON(200, gin.H{"message": "pong"})
-    
-        fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
+r.GET("/ping", func(c *gin.Context) {
+ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
+logrus.Info("pinged2")
+c.JSON(200, gin.H{"message": "pong"})
 
-	})
-    // ...
+fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
+
+})
+// ...
 }
 ```
 
