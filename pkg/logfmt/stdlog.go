@@ -16,7 +16,7 @@ type WriterWrapper struct {
 
 func (w WriterWrapper) Write(p []byte) (n int, err error) {
 	level, msg := parseLevelFromMsg(string(p))
-	w.ll.WithField(caller.CallerSkip, 3).Log(level, msg)
+	w.ll.WithField(caller.Skip, 3).Log(level, msg)
 	return 0, nil
 }
 

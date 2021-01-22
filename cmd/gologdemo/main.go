@@ -20,6 +20,7 @@ const channelSize = 1000
 
 func main() {
 	std := flag.Bool("std", false, "fix log.Print...")
+	cs := flag.Bool("cs", false, "http client and server logging")
 	help := flag.Bool("help", false,
 		`SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./gologdemo`)
 	flag.Parse()
@@ -29,16 +30,10 @@ func main() {
 		os.Exit(0)
 	}
 
-	logf := golog.NewLimitLog(1, 200*time.Millisecond, 2)
-
-	for i := 0; i < 10; i++ {
-		logf("Hello i:%d", i)
-		time.Sleep(90 * time.Millisecond)
-	}
+	golog.SetupLogrus()
+	log.Printf("Hello, this message is logged by std log, #%d", 0)
 
 	if *std {
-		golog.SetupLogrus()
-
 		log.Printf("Hello, this message is logged by std log, #%d", 1)
 		log.Printf("T! Hello, this message is logged by std log, #%d", 2)
 		log.Printf("D! Hello, this message is logged by std log, #%d", 3)
@@ -54,13 +49,6 @@ func main() {
 		return
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		_, _ = w.Write([]byte("OK\n"))
-	})
-
-	ginpprof.Wrap(mux)
-
 	spec := "file=~/gologdemo.log,maxSize=1M,stdout=true,rotate=.yyyy-MM-dd-HH-mm,maxAge=5m,gzipAge=3m"
 	if v := os.Getenv("SPEC"); v != "" {
 		spec = v
@@ -71,14 +59,37 @@ func main() {
 		layout = v
 	}
 
+	logf := golog.NewLimitLog(1, 200*time.Millisecond, 2)
+
+	for i := 0; i < 10; i++ {
+		logf("log Hello i:%d", i)
+		time.Sleep(90 * time.Millisecond)
+	}
+
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
 	_ = golog.SetupLogrus(golog.Spec(spec), golog.Layout(layout))
+
+	for i := 0; i < 10; i++ {
+		logf("log Hello i:%d", i)
+		time.Sleep(90 * time.Millisecond)
+	}
 
 	logr := golog.NewLimitLogrus(nil, 1, 200*time.Millisecond, 2)
 	for i := 0; i < 10; i++ {
 		logr.Infof("Hello i:%d", i)
 		time.Sleep(90 * time.Millisecond)
 	}
+
+	if !*cs {
+		return
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte("OK\n"))
+	})
+
+	ginpprof.Wrap(mux)
 
 	log.Println("golog spec:", spec)
 

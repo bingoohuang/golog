@@ -1,7 +1,7 @@
 package caller
 
 import (
-	"log"
+	"fmt"
 	"runtime"
 	"strings"
 	"sync"
@@ -9,8 +9,8 @@ import (
 
 const (
 	maximumCallerDepth = 25
-	// CallerSkip is the key to set/get call skip value.
-	CallerSkip = "_CallerSkip"
+	// Skip is the key to set/get call skip value.
+	Skip = "_CallerSkip"
 )
 
 var (
@@ -52,7 +52,9 @@ func GetCaller(skip int, terminalPkg string) *runtime.Frame {
 			continue
 		}
 
-		return &f //nolint:scopelint
+		if f.Function != "github.com/bingoohuang/golog.NewLimitLog.func1" {
+			return &f
+		}
 	}
 
 	// if we got here, we failed to find the caller's context
@@ -66,7 +68,7 @@ func PrintStack(max int) {
 		if !ok {
 			break
 		}
-		log.Println(c, pc, file, line)
+		fmt.Println(c, pc, file, line)
 	}
 }
 

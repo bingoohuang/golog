@@ -96,9 +96,9 @@ func (f Formatter) Format(e Entry) []byte {
 	}
 
 	callSkip := 0
-	if v, ok := e.Fields()[caller.CallerSkip]; ok {
+	if v, ok := e.Fields()[caller.Skip]; ok {
 		callSkip = v.(int)
-		delete(e.Fields(), caller.CallerSkip)
+		delete(e.Fields(), caller.Skip)
 	}
 
 	f.PrintCallerInfo(b, callSkip)
@@ -123,14 +123,16 @@ func (f Formatter) Format(e Entry) []byte {
 }
 
 func (f Formatter) PrintCallerInfo(b *bytes.Buffer, callSkip int) {
-	if f.PrintCaller {
-		if c := caller.GetCaller(callSkip, "github.com/sirupsen/logrus"); c != nil {
-			// show function
-			fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(c.Function), filepath.Base(c.File), c.Line)
-			// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
-			// 统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
-			b.WriteString(fmt.Sprintf("%-20s", fileLine))
-		}
+	if !f.PrintCaller {
+		return
+	}
+
+	if c := caller.GetCaller(callSkip, "github.com/sirupsen/logrus"); c != nil {
+		// show function
+		fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(c.Function), filepath.Base(c.File), c.Line)
+		// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
+		// 统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
+		b.WriteString(fmt.Sprintf("%-20s", fileLine))
 	}
 }
 

@@ -224,11 +224,10 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 	}
 
 	fileLine := "-"
-
 	callSkip := 0
-	if v, ok := e.Fields()[caller.CallerSkip]; ok {
+	if v, ok := e.Fields()[caller.Skip]; ok {
 		callSkip = v.(int)
-		delete(e.Fields(), caller.CallerSkip)
+		delete(e.Fields(), caller.Skip)
 	}
 
 	if c := caller.GetCaller(callSkip, "github.com/sirupsen/logrus"); c != nil {
