@@ -20,6 +20,7 @@ const channelSize = 1000
 
 func main() {
 	std := flag.Bool("std", false, "fix log.Print...")
+	sleep := flag.Duration("sleep", 100*time.Millisecond, "sleep duration lime, like 10s, default 10ms")
 	cs := flag.Bool("cs", false, "http client and server logging")
 	help := flag.Bool("help", false,
 		`SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./gologdemo`)
@@ -107,7 +108,7 @@ func main() {
 		log.Printf("W! ListenAndServe error %+v", http.ListenAndServe(addr, logRequest(mux, logC)))
 	}()
 
-	ticker := time.NewTicker(3 * time.Second)
+	ticker := time.NewTicker(*sleep)
 	defer ticker.Stop()
 
 	for range ticker.C {
