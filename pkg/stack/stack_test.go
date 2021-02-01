@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-stack/stack"
+	"github.com/bingoohuang/golog/pkg/stack"
 )
 
 func ExampleStack() {
@@ -24,7 +24,7 @@ func ExampleStack() {
 
 	// Output:
 	// stack_test.go:17
-	// github.com/go-stack/stack/stack_test.go:17
+	// github.com/bingoohuang/golog/pkg/stack/stack_test.go:17
 	// ExampleStack
 	// [stack_test.go:22 run_example.go:62 example.go:44 testing.go:1346 _testmain.go:113]
 }
@@ -72,7 +72,7 @@ func TestCallerMidstackInlined(t *testing.T) {
 	if got, want := c.Frame().Line, line; got != want {
 		t.Errorf("got line == %v, want line == %v", got, want)
 	}
-	if got, want := c.Frame().Function, "github.com/go-stack/stack_test.f3"; got != want {
+	if got, want := c.Frame().Function, "github.com/bingoohuang/golog/pkg/stack_test.f3"; got != want {
 		t.Errorf("got func name == %v, want func name == %v", got, want)
 	}
 }
@@ -107,7 +107,7 @@ func TestCallerPanic(t *testing.T) {
 				t.Errorf("sigpanic frame: got name == %v, want name == %v", got, want)
 			}
 			c1 := stack.Caller(panicIdx + 1)
-			if got, want := c1.Frame().Function, "github.com/go-stack/stack_test.TestCallerPanic"; got != want {
+			if got, want := c1.Frame().Function, "github.com/bingoohuang/golog/pkg/stack_test.TestCallerPanic"; got != want {
 				t.Errorf("TestCallerPanic frame: got name == %v, want name == %v", got, want)
 			}
 			if got, want := c1.Frame().Line, line; got != want {
@@ -189,7 +189,7 @@ func TestTracePanic(t *testing.T) {
 			if got, want := trace[panicIdx].Frame().Function, "runtime.sigpanic"; got != want {
 				t.Errorf("sigpanic frame: got name == %v, want name == %v", got, want)
 			}
-			if got, want := trace[panicIdx+1].Frame().Function, "github.com/go-stack/stack_test.TestTracePanic"; got != want {
+			if got, want := trace[panicIdx+1].Frame().Function, "github.com/bingoohuang/golog/pkg/stack_test.TestTracePanic"; got != want {
 				t.Errorf("TestTracePanic frame: got name == %v, want name == %v", got, want)
 			}
 			if got, want := trace[panicIdx+1].Frame().Line, line; got != want {
@@ -208,7 +208,7 @@ func TestTracePanic(t *testing.T) {
 	_ = *x
 }
 
-const importPath = "github.com/go-stack/stack"
+const importPath = "github.com/bingoohuang/golog/pkg/stack"
 
 type testType struct{}
 
@@ -249,9 +249,9 @@ func TestCallFormat(t *testing.T) {
 		{c, "func", "%#s", file},
 		{c, "func", "%d", fmt.Sprint(line)},
 		{c, "func", "%n", "TestCallFormat"},
-		{c, "func", "%+n", "github.com/go-stack/stack_test.TestCallFormat"},
+		{c, "func", "%+n", "github.com/bingoohuang/golog/pkg/stack_test.TestCallFormat"},
 		{c, "func", "%k", "stack_test"},
-		{c, "func", "%+k", "github.com/go-stack/stack_test"},
+		{c, "func", "%+k", "github.com/bingoohuang/golog/pkg/stack_test"},
 		{c, "func", "%v", fmt.Sprint(path.Base(file), ":", line)},
 		{c, "func", "%+v", fmt.Sprint(relFile, ":", line)},
 		{c, "func", "%#v", fmt.Sprint(file, ":", line)},
@@ -261,9 +261,9 @@ func TestCallFormat(t *testing.T) {
 		{c2, "meth", "%#s", file2},
 		{c2, "meth", "%d", fmt.Sprint(line2)},
 		{c2, "meth", "%n", "testType.testMethod"},
-		{c2, "meth", "%+n", "github.com/go-stack/stack_test.testType.testMethod"},
+		{c2, "meth", "%+n", "github.com/bingoohuang/golog/pkg/stack_test.testType.testMethod"},
 		{c2, "meth", "%k", "stack_test"},
-		{c2, "meth", "%+k", "github.com/go-stack/stack_test"},
+		{c2, "meth", "%+k", "github.com/bingoohuang/golog/pkg/stack_test"},
 		{c2, "meth", "%v", fmt.Sprint(path.Base(file2), ":", line2)},
 		{c2, "meth", "%+v", fmt.Sprint(relFile2, ":", line2)},
 		{c2, "meth", "%#v", fmt.Sprint(file2, ":", line2)},
