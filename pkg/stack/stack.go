@@ -31,11 +31,11 @@ func Caller(skip int) Call {
 	var pcs [3]uintptr
 	n := runtime.Callers(skip+1, pcs[:])
 	frames := runtime.CallersFrames(pcs[:n])
-	frame, _ := frames.Next()
-	frame, _ = frames.Next()
+	frames.Next()
+	f, _ := frames.Next()
 
 	return Call{
-		frame: frame,
+		frame: f,
 	}
 }
 
@@ -98,7 +98,7 @@ func (c Call) Format(s fmt.State, verb rune) {
 				file = file[i+len(sep):]
 			}
 		}
-		io.WriteString(s, file)
+		_, _ = io.WriteString(s, file)
 		if verb == 'v' {
 			buf := [7]byte{':'}
 			s.Write(strconv.AppendInt(buf[:1], int64(c.frame.Line), 10))
@@ -122,7 +122,7 @@ func (c Call) Format(s fmt.State, verb rune) {
 		if s.Flag('+') {
 			start = 0
 		}
-		io.WriteString(s, name[start:end])
+		_, _ = io.WriteString(s, name[start:end])
 
 	case 'n':
 		name := c.frame.Function
@@ -136,7 +136,7 @@ func (c Call) Format(s fmt.State, verb rune) {
 				name = name[i+len(pkgSep):]
 			}
 		}
-		io.WriteString(s, name)
+		_, _ = io.WriteString(s, name)
 	}
 }
 
@@ -209,7 +209,6 @@ func Trace() CallStack {
 	// Skip extra frame retrieved just to make sure the runtime.sigpanic
 	// special case is handled.
 	frame, more := frames.Next()
-
 	for more {
 		frame, more = frames.Next()
 		cs = append(cs, Call{frame: frame})

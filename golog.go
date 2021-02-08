@@ -4,14 +4,15 @@ import (
 	"context"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 	"time"
 
 	"golang.org/x/time/rate"
 
 	"github.com/bingoohuang/golog/pkg/logfmt"
-
-	"github.com/bingoohuang/golog/pkg/str"
 
 	"github.com/bingoohuang/golog/pkg/spec"
 
@@ -59,9 +60,19 @@ func SetupLogrus(fns ...SetupOptionFn) *logfmt.Result {
 		panic(err)
 	}
 
+	logPath := logSpec.File
+	if logPath == "" {
+		if CheckPrivileges() {
+			logPath = "/var/log/" + filepath.Base(os.Args[0])
+			_ = os.MkdirAll(logPath, 0644)
+		} else {
+			logPath = "~/logs/" + filepath.Base(os.Args[0]) + ".log"
+		}
+	}
+
 	logrusOption := logfmt.LogrusOption{
 		Level:       logSpec.Level,
-		LogPath:     str.Or(logSpec.File, "~/logs/"+filepath.Base(os.Args[0])+".log"),
+		LogPath:     logPath,
 		Rotate:      string(logSpec.Rotate),
 		MaxAge:      logSpec.MaxAge,
 		GzipAge:     logSpec.GzipAge,
@@ -75,6 +86,16 @@ func SetupLogrus(fns ...SetupOptionFn) *logfmt.Result {
 	}
 
 	return logrusOption.Setup(o.Logger)
+}
+
+// CheckPrivileges checks root rights to use system service
+func CheckPrivileges() bool {
+	if out, err := exec.Command("id", "-g").Output(); err == nil {
+		if gid, e := strconv.ParseUint(strings.TrimSpace(string(out)), 10, 32); e == nil {
+			return gid == 0
+		}
+	}
+	return false
 }
 
 // LogSpec defines the spec structure to be mapped to the log specification.
