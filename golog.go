@@ -2,6 +2,7 @@ package golog
 
 import (
 	"context"
+	"github.com/bingoohuang/golog/pkg/homedir"
 	"log"
 	"os"
 	"os/exec"
@@ -99,6 +100,16 @@ func createLogDir(logSpec *LogSpec) string {
 		}
 
 		logDir = filepath.Dir(logPath)
+	}
+
+	stat, err := os.Stat(logPath)
+	if err == nil && stat.IsDir() {
+		return logPath
+	}
+
+	logDir, err = homedir.Expand(logDir)
+	if err != nil {
+		panic(err)
 	}
 
 	if err := os.MkdirAll(logDir, 0644); err != nil {
