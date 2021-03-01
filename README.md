@@ -25,19 +25,19 @@ Use default settings:
 import "github.com/bingoohuang/golog"
 
 func main() {
-golog.SetupLogrus()
+	golog.SetupLogrus()
 
-log.Printf("Hello, this message is logged by std log, #%d", 1) // default Info
-log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
-log.Printf("D! Hello, this message is logged by std log, #%d", 3) // Debug
-log.Printf("I! Hello, this message is logged by std log, #%d", 4) // Info
-log.Printf("W! Hello, this message is logged by std log, #%d", 5) // Warn
-log.Printf("F! Hello, this message is logged by std log, #%d", 6) // Fatal
+	log.Printf("Hello, this message is logged by std log, #%d", 1) // default Info
+	log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
+	log.Printf("D! Hello, this message is logged by std log, #%d", 3) // Debug
+	log.Printf("I! Hello, this message is logged by std log, #%d", 4) // Info
+	log.Printf("W! Hello, this message is logged by std log, #%d", 5) // Warn
+	log.Printf("F! Hello, this message is logged by std log, #%d", 6) // Fatal
 
-logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
-logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
-logrus.Infof("Hello, this message is logged by std log, #%d", 9)
-logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
+	logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
+	logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
+	logrus.Infof("Hello, this message is logged by std log, #%d", 9)
+	logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
 }
 ```
 
@@ -212,24 +212,24 @@ logr.Infof("Hello i:%d", i) // will limited to 200 lines per ms with burst 2.
 
 ```go
 import (
-"github.com/bingoohuang/golog"
-"github.com/bingoohuang/golog/pkg/ginlogrus"
-"github.com/gin-gonic/gin"
+	"github.com/bingoohuang/golog"
+	"github.com/bingoohuang/golog/pkg/ginlogrus"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-gin.SetMode(gin.ReleaseMode)
-golog.SetupLogrus()
+	gin.SetMode(gin.ReleaseMode)
+	golog.SetupLogrus()
 
-r := gin.New()
-r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
+	r := gin.New()
+	r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
 
-r.GET("/ping", func(c *gin.Context) {
-ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
-logrus.Info("pinged2")
-c.JSON(200, gin.H{"message": "pong"})
+	r.GET("/ping", func(c *gin.Context) {
+	ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
+	logrus.Info("pinged2")
+	c.JSON(200, gin.H{"message": "pong"})
 
-fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
+	fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
 })
 // ...
 }
