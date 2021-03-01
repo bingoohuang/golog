@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"golang.org/x/time/rate"
@@ -112,7 +113,8 @@ func createLogDir(logSpec *LogSpec) string {
 		panic(err)
 	}
 
-	if err := os.MkdirAll(logDir, 0644); err != nil {
+	syscall.Umask(0)
+	if err := os.MkdirAll(logDir, os.ModeSticky|os.ModePerm); err != nil {
 		panic(err)
 	}
 
