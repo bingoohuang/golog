@@ -208,7 +208,10 @@ func Trace() CallStack {
 
 	// Skip extra frame retrieved just to make sure the runtime.sigpanic
 	// special case is handled.
-	frame, more := frames.Next()
+	var frame runtime.Frame
+	var more bool
+
+	_, more = frames.Next()
 	for more {
 		frame, more = frames.Next()
 		cs = append(cs, Call{frame: frame})

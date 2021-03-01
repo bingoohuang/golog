@@ -1,6 +1,7 @@
 package spec
 
 import (
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -17,8 +18,35 @@ type Parser interface {
 	Parse(string) error
 }
 
+type SpecOptions struct {
+	EnvPrefix string
+}
+
+type (
+	SpecOptionsFn  func(*SpecOptions)
+	SpecOptionsFns []SpecOptionsFn
+)
+
+func WithEnvPrefix(v string) SpecOptionsFn {
+	return func(o *SpecOptions) {
+		o.EnvPrefix = v
+	}
+}
+
+func (r SpecOptionsFns) CreateOptions() *SpecOptions {
+	options := &SpecOptions{}
+
+	for _, fn := range r {
+		fn(options)
+	}
+
+	return options
+}
+
 // ParseSpec parses a specification to a structure.
-func ParseSpec(spec, tagName string, v interface{}) error {
+func ParseSpec(spec, tagName string, v interface{}, options ...SpecOptionsFn) error {
+	specOptions := SpecOptionsFns(options).CreateOptions()
+
 	rv := reflect.ValueOf(v)
 	if rv.Kind() != reflect.Ptr || rv.Elem().Kind() != reflect.Struct {
 		return errors.Errorf("v must be a pointer to a struct")
@@ -42,7 +70,7 @@ func ParseSpec(spec, tagName string, v interface{}) error {
 
 		specName, defaultValue := parseSpecTag(tag)
 
-		if err := setFieldSpec(vv.Field(i), specMap, specName, defaultValue); err != nil {
+		if err := setFieldSpec(vv.Field(i), specMap, specName, defaultValue, specOptions); err != nil {
 			return err
 		}
 	}
@@ -50,8 +78,11 @@ func ParseSpec(spec, tagName string, v interface{}) error {
 	return nil
 }
 
-func setFieldSpec(fv reflect.Value, specMap map[string]string, name, defaultValue string) error {
+func setFieldSpec(fv reflect.Value, specMap map[string]string, name, defaultValue string, options *SpecOptions) error {
 	specValue, ok := specMap[name]
+	if specValue == "" {
+		specValue, _ = parseEnvSpec(options.EnvPrefix, name)
+	}
 	if specValue == "" {
 		specValue = defaultValue
 	}
@@ -109,6 +140,29 @@ func setFieldSpec(fv reflect.Value, specMap map[string]string, name, defaultValu
 	}
 
 	return nil
+}
+
+var envVars = make(map[string]string)
+
+func init() {
+	environ := os.Environ()
+	for _, s := range environ {
+		if i := strings.Index(s, "="); i >= 1 {
+			envVars[s[0:i]] = s[i+1:]
+		}
+	}
+}
+
+func parseEnvSpec(prefix, name string) (string, bool) {
+	if prefix == "" {
+		return "", false
+	}
+
+	envKey := prefix + "_" + strings.ToUpper(name)
+	envKey = strings.Replace(envKey, "-", "_", -1)
+
+	value, isSet := envVars[envKey]
+	return value, isSet
 }
 
 func parseSpecTag(tag string) (string, string) {

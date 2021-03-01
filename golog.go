@@ -56,23 +56,13 @@ func SetupLogrus(fns ...SetupOptionFn) *logfmt.Result {
 	SetupOptionFns(fns).Setup(o)
 
 	logSpec := &LogSpec{}
-	if err := spec.ParseSpec(o.Spec, "spec", logSpec); err != nil {
+	if err := spec.ParseSpec(o.Spec, "spec", logSpec, spec.WithEnvPrefix("GOLOG")); err != nil {
 		panic(err)
-	}
-
-	logPath := logSpec.File
-	if logPath == "" {
-		if CheckPrivileges() {
-			logPath = "/var/log/" + filepath.Base(os.Args[0])
-			_ = os.MkdirAll(logPath, 0644)
-		} else {
-			logPath = "~/logs/" + filepath.Base(os.Args[0]) + ".log"
-		}
 	}
 
 	logrusOption := logfmt.LogrusOption{
 		Level:       logSpec.Level,
-		LogPath:     logPath,
+		LogPath:     createLogDir(logSpec),
 		Rotate:      string(logSpec.Rotate),
 		MaxAge:      logSpec.MaxAge,
 		GzipAge:     logSpec.GzipAge,
@@ -86,6 +76,33 @@ func SetupLogrus(fns ...SetupOptionFn) *logfmt.Result {
 	}
 
 	return logrusOption.Setup(o.Logger)
+}
+
+func createLogDir(logSpec *LogSpec) string {
+	logDir := ""
+	logPath := logSpec.File
+	appName := filepath.Base(os.Args[0])
+
+	if logPath == "" {
+		if CheckPrivileges() {
+			logDir = filepath.Join("/var/log/", appName)
+		} else {
+			logDir = filepath.Join("~/logs/" + appName)
+		}
+
+		logPath = filepath.Join(appName + ".log")
+	} else {
+		stat, err := os.Stat(logPath)
+		if err == nil && stat.IsDir() || strings.ToLower(filepath.Ext(logPath)) != ".log" {
+			// treat logPath as a log directory
+			logPath = filepath.Join(logPath, appName+".log")
+		}
+
+		logDir = filepath.Dir(logPath)
+	}
+
+	_ = os.MkdirAll(logDir, 0644)
+	return logPath
 }
 
 // CheckPrivileges checks root rights to use system service

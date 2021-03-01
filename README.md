@@ -25,19 +25,19 @@ Use default settings:
 import "github.com/bingoohuang/golog"
 
 func main() {
-	golog.SetupLogrus()
+golog.SetupLogrus()
 
-	log.Printf("Hello, this message is logged by std log, #%d", 1) // default Info
-	log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
-	log.Printf("D! Hello, this message is logged by std log, #%d", 3) // Debug
-	log.Printf("I! Hello, this message is logged by std log, #%d", 4) // Info
-	log.Printf("W! Hello, this message is logged by std log, #%d", 5) // Warn
-	log.Printf("F! Hello, this message is logged by std log, #%d", 6) // Fatal
+log.Printf("Hello, this message is logged by std log, #%d", 1) // default Info
+log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
+log.Printf("D! Hello, this message is logged by std log, #%d", 3) // Debug
+log.Printf("I! Hello, this message is logged by std log, #%d", 4) // Info
+log.Printf("W! Hello, this message is logged by std log, #%d", 5) // Warn
+log.Printf("F! Hello, this message is logged by std log, #%d", 6) // Fatal
 
-	logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
-	logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
-	logrus.Infof("Hello, this message is logged by std log, #%d", 9)
-	logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
+logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
+logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
+logrus.Infof("Hello, this message is logged by std log, #%d", 9)
+logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
 }
 ```
 
@@ -61,19 +61,32 @@ golog.SetupLogrus(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAg
 
 ## Specifications
 
-name       | prerequisite    | default value    | description
------------|-----------------|------------------|-----------------------------------------------------------------------------------------------------
-level      | -               | info             | log level to record (debug/info/warn/error)
-file       | -               | ~/logs/{bin}.log | base log file name
-rotate     | -               | .yyyy-MM-dd      | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit]
-maxAge     | -               | 30d              | max age to keep log files (unit m/h/d/w)
-gzipAge    | -               | 3d               | gzip aged log files (unit m/h/d/w)
-maxSize    | -               | 100M             | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
-stdout     | -               | true             | print the log to stdout at the same time or not
-printColor | layout is empty | true             | print color on the log level or not, only for stdout=true
-printCall  | layout is empty | true             | print caller file:line or not (performance slow)
-simple     | layout is empty | false            | simple to print log (not print `PID --- [GID] [TraceID]`)
-layout     | -               | (empty)          | log line layout customization, like `%t %5l %pid --- [%5gid] [%trace] %20caller : %fields %msg%n`
+name       | env              | prerequisite    | default value          | description
+-----------|------------------|-----------------|------------------------|-----------------------------------------------------------------------------------------------------
+level      | GOLOG_LEVEL      | -               | info                   | log level to record (debug/info/warn/error)
+file       | GOLOG_FILE       | -               | ~/logs/{bin}/{bin}.log | base log file name, if root user, default log file will be /var/log/{bin}/{bin}.log
+rotate     | GOLOG_ROTATE     | -               | .yyyy-MM-dd            | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit]
+maxAge     | GOLOG_MAXAGE     | -               | 30d                    | max age to keep log files (unit m/h/d/w)
+gzipAge    | GOLOG_GZIPAGE    | -               | 3d                     | gzip aged log files (unit m/h/d/w)
+maxSize    | GOLOG_MAXSIZE    | -               | 100M                   | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
+stdout     | GOLOG_STDOUT     | -               | true                   | print the log to stdout at the same time or not
+printColor | GOLOG_PRINTCOLOR | layout is empty | true                   | print color on the log level or not, only for stdout=true
+printCall  | GOLOG_PRINTCALL  | layout is empty | true                   | print caller file:line or not (performance slow)
+simple     | GOLOG_SIMPLE     | layout is empty | false                  | simple to print log (not print `PID --- [GID] [TraceID]`)
+layout     | GOLOG_LAYOUT     | -               | (empty)                | log line layout customization, like `%t %5l %pid --- [%5gid] [%trace] %20caller : %fields %msg%n`
+
+### file
+
+1. If the file is an existed directory, like `/var/log/`, a log file will appended as `/var/log/{bin}.log`
+1. If the file is not a valid directory or file, the suffix '.log' will be used to distinguished as directory or logfile.
+
+so examples:
+
+1. /var/log(existed dir) -> /var/log/{bin}.log
+1. /var/log/app.log(only existed dir) ->  (same)
+1. /var/log/applog(existed file) -> (same)
+1. /home/bingoo/logs(not existed w/o .log) -> /home/bingoo/logs/{bin}.log
+1. /home/bingoo/logs/app.log(not existed w/ .log) -> (same)
 
 ## Layout pattern
 
@@ -132,7 +145,7 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh gologde
 
 ## Log Creation Sequence
 
-```
+```sh
 +------------+   Write log messages    +-------------------------+
 | file=a.log +------------------------>+ a.log created           |
 +------------+                         +-------------------------+    rotate=.yyyy-MM-dd
@@ -199,30 +212,30 @@ logr.Infof("Hello i:%d", i) // will limited to 200 lines per ms with burst 2.
 
 ```go
 import (
-	"github.com/bingoohuang/golog"
-	"github.com/bingoohuang/golog/pkg/ginlogrus"
-	"github.com/gin-gonic/gin"
+"github.com/bingoohuang/golog"
+"github.com/bingoohuang/golog/pkg/ginlogrus"
+"github.com/gin-gonic/gin"
 )
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
-	golog.SetupLogrus()
+gin.SetMode(gin.ReleaseMode)
+golog.SetupLogrus()
 
-	r := gin.New()
-	r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
+r := gin.New()
+r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
 
-	r.GET("/ping", func(c *gin.Context) {
-		ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
-		logrus.Info("pinged2")
-		c.JSON(200, gin.H{"message": "pong"})
-	
-		fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
-	})
+r.GET("/ping", func(c *gin.Context) {
+ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
+logrus.Info("pinged2")
+c.JSON(200, gin.H{"message": "pong"})
+
+fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
+})
 // ...
 }
 ```
 
-```
+```sh
 2020-08-24 09:47:30.530 [INFO ] 68880 --- [24   ] [87513ae4-10d4-43f3-be5e-f8a11e636f4b] ginlogurs_test.go:21 : pinged1
 2020-08-24 09:47:30.531 [INFO ] 68880 --- [24   ] [87513ae4-10d4-43f3-be5e-f8a11e636f4b] ginlogurs_test.go:22 : pinged2
 2020-08-24 09:47:30.531 [INFO ] 68880 --- [24   ] [87513ae4-10d4-43f3-be5e-f8a11e636f4b] ginlogrus.go:64      : 127.0.0.1 GET /ping [200] 18  Go-http-client/1.1 (746.916µs)```
