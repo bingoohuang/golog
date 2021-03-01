@@ -101,7 +101,10 @@ func createLogDir(logSpec *LogSpec) string {
 		logDir = filepath.Dir(logPath)
 	}
 
-	_ = os.MkdirAll(logDir, 0644)
+	if err := os.MkdirAll(logDir, 0644); err != nil {
+		panic(err)
+	}
+
 	return logPath
 }
 
