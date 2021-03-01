@@ -91,7 +91,7 @@ func createLogDir(logSpec *LogSpec) string {
 			logDir = filepath.Join("~/logs/" + appName)
 		}
 
-		logPath = filepath.Join(appName + ".log")
+		logPath = filepath.Join(logDir, appName+".log")
 	} else {
 		stat, err := os.Stat(logPath)
 		if err == nil && stat.IsDir() || strings.ToLower(filepath.Ext(logPath)) != ".log" {
