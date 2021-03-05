@@ -2,6 +2,8 @@ package main
 
 import (
 	"flag"
+	"github.com/bingoohuang/golog/pkg/ginlogrus"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"os"
@@ -19,6 +21,7 @@ import (
 const channelSize = 1000
 
 func main() {
+	ginHttp := flag.Bool("gin", false, "start gin http server for concurrent testing...")
 	std := flag.Bool("std", false, "fix log.Print...")
 	sleep := flag.Duration("sleep", 100*time.Millisecond, "sleep duration lime, like 10s, default 10ms")
 	cs := flag.Bool("cs", false, "http client and server logging")
@@ -33,6 +36,25 @@ func main() {
 
 	golog.SetupLogrus()
 	log.Printf("Hello, this message is logged by std log, #%d", 0)
+
+	if *ginHttp {
+		gin.SetMode(gin.ReleaseMode)
+		r := gin.New()
+		r.Use(ginlogrus.Logger(nil, true))
+
+		r.GET("/", func(c *gin.Context) {
+			ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
+			logrus.Info("pinged2")
+			c.JSON(200, gin.H{"message": "pong"})
+
+			logrus.Info("trace id:", ginlogrus.GetTraceIDGin(c))
+		})
+
+		server := &http.Server{Addr: ":12345", Handler: r}
+		logrus.Info("start gin http server :12345 for gobench test")
+		_ = server.ListenAndServe()
+		return
+	}
 
 	if *std {
 		log.Printf("Hello, this message is logged by std log, #%d", 1)

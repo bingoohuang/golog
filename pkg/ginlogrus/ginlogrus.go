@@ -55,13 +55,13 @@ func Logger(l logrus.FieldLogger, filter bool) gin.HandlerFunc {
 			c.ClientIP(), c.Request.Method, path, statusCode,
 			c.Writer.Size(), c.Request.Referer(), c.Request.UserAgent(), stop)
 
-		l = NewLoggerGin(c, l)
+		l2 := NewLoggerGin(c, l)
 		if statusCode > 499 {
-			l.Error(msg)
+			l2.Error(msg)
 		} else if statusCode > 399 {
-			l.Warn(msg)
+			l2.Warn(msg)
 		} else {
-			l.Info(msg)
+			l2.Info(msg)
 		}
 	}
 }
