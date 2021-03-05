@@ -139,9 +139,9 @@ type LogSpec struct {
 	MaxAge      time.Duration `spec:"maxAge,30d"`
 	GzipAge     time.Duration `spec:"gzipAge,3d"`
 	MaxSize     spec.Size     `spec:"maxSize,100M"`
-	PrintColor  bool          `spec:"printColor,true"`
-	PrintCaller bool          `spec:"printCall,true"`
-	Stdout      bool          `spec:"stdout,true"`
+	PrintColor  bool          `spec:"printColor,false"`
+	PrintCaller bool          `spec:"printCall,false"`
+	Stdout      bool          `spec:"stdout,false"`
 	Simple      bool          `spec:"simple,false"`
 	FixStd      bool          `spec:"fixstd,true"` // 是否增强log.Print...的输出
 }

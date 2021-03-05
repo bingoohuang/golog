@@ -69,11 +69,12 @@ rotate     | GOLOG_ROTATE     | -               | .yyyy-MM-dd            | time 
 maxAge     | GOLOG_MAXAGE     | -               | 30d                    | max age to keep log files (unit m/h/d/w)
 gzipAge    | GOLOG_GZIPAGE    | -               | 3d                     | gzip aged log files (unit m/h/d/w)
 maxSize    | GOLOG_MAXSIZE    | -               | 100M                   | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
-stdout     | GOLOG_STDOUT     | -               | true                   | print the log to stdout at the same time or not
+stdout     | GOLOG_STDOUT     | -               | false                  | print the log to stdout at the same time or not
 printColor | GOLOG_PRINTCOLOR | layout is empty | true                   | print color on the log level or not, only for stdout=true
-printCall  | GOLOG_PRINTCALL  | layout is empty | true                   | print caller file:line or not (performance slow)
+printCall  | GOLOG_PRINTCALL  | layout is empty | false                  | print caller file:line or not (performance slow)
 simple     | GOLOG_SIMPLE     | layout is empty | false                  | simple to print log (not print `PID --- [GID] [TraceID]`)
 layout     | GOLOG_LAYOUT     | -               | (empty)                | log line layout customization, like `%t %5l %pid --- [%5gid] [%trace] %20caller : %fields %msg%n`
+fixstd     | GOLOG_FIXSTD     | -               | true                   | improve standard log for golog format.
 
 ### file
 
