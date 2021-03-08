@@ -15,11 +15,7 @@ var staticReg = regexp.MustCompile(".(js|jpg|jpeg|ico|css|woff2|html|woff|ttf|sv
 
 // Logger is the logrus logger handler
 // Filter static when true
-func Logger(l logrus.FieldLogger, filter bool) gin.HandlerFunc {
-	if l == nil {
-		l = logrus.StandardLogger()
-	}
-
+func Logger(l0 logrus.FieldLogger, filter bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// other handler can change c.Path so:
 		path := c.Request.URL.Path
@@ -45,6 +41,10 @@ func Logger(l logrus.FieldLogger, filter bool) gin.HandlerFunc {
 		statusCode := c.Writer.Status()
 
 		c.Header(HTTPHeaderNamTraceID, traceID)
+		l := l0
+		if l == nil {
+			l = logrus.StandardLogger()
+		}
 
 		if len(c.Errors) > 0 {
 			l.Error(c.Errors.ByType(gin.ErrorTypePrivate).String())
