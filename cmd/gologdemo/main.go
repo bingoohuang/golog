@@ -25,6 +25,7 @@ func main() {
 	std := flag.Bool("std", false, "fix log.Print...")
 	sleep := flag.Duration("sleep", 100*time.Millisecond, "sleep duration lime, like 10s, default 10ms")
 	cs := flag.Bool("cs", false, "http client and server logging")
+	pprof := flag.String("pprof", "", "Profile pprof address, like localhost:6060")
 	help := flag.Bool("help", false,
 		`SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./gologdemo`)
 	flag.Parse()
@@ -32,6 +33,14 @@ func main() {
 	if *help {
 		flag.Usage()
 		os.Exit(0)
+	}
+
+	if *pprof != "" {
+		go func() {
+			// http://localhost:6060/debug/pprof/
+			log.Printf("Starting pprof at %s", *pprof)
+			log.Println(http.ListenAndServe(*pprof, nil))
+		}()
 	}
 
 	golog.SetupLogrus()
