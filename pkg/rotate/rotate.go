@@ -1,16 +1,12 @@
-// Package rotate is a port of File-Rotate from Perl
-// (https://metacpan.org/release/File-Rotate), and it allows
-// you to automatically rotate output files when you write to them
-// according to the filename pattern that you can specify.
 package rotate
 
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/lock"
@@ -72,14 +68,13 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize >= rl.rotateMaxSize
 	out, err := rl.getWriter(forRotate)
 	if err != nil {
-		log.Printf("E! Write getWriter error %+v", err)
-
+		log("E! Write getWriter error%v", err)
 		return 0, errors.Wrap(err, `failed to acquire target io.Writer`)
 	}
 
 	n, err = out.Write(p)
 	if err != nil {
-		log.Printf("E! Write error %+v", err)
+		log("E! Write error %v", err)
 	}
 
 	rl.outFhSize += int64(n)
@@ -155,19 +150,17 @@ func (rl *Rotate) rotateFile(filename string) error {
 		rl.outFh = nil
 
 		if err := os.Rename(rl.logfile, filename); err != nil {
-			log.Printf("E! Rename %s to %s error %+v", rl.logfile, filename, err)
-
+			log("E! Rename %s to %s error %+v", rl.logfile, filename, err)
 			return err
 		}
 
-		log.Printf("I! log file renamed to %s", filename)
+		log("I! log file renamed to %s", filename)
 	}
 
 	// if we got here, then we need to create a file
 	fh, err := os.OpenFile(rl.logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log.Printf("E! OpenFile %s error %+v", rl.logfile, err)
-
+		log("E! OpenFile %s error %+v", rl.logfile, err)
 		return errors.Errorf("failed to open file %s: %s", rl.logfile, err)
 	}
 
@@ -177,7 +170,7 @@ func (rl *Rotate) rotateFile(filename string) error {
 		rl.outFhSize = stat.Size()
 	} else {
 		rl.outFhSize = 0
-		log.Printf("E! Stat %s error %+v", rl.logfile, err)
+		log("E! Stat %s error %+v", rl.logfile, err)
 	}
 
 	return nil
@@ -210,7 +203,7 @@ func (rl *Rotate) Rotate() error {
 
 	_, err := rl.getWriter(true)
 	if err != nil {
-		log.Printf("E! Rotate getWriter error %+v", err)
+		log("E! Rotate getWriter error %+v", err)
 	}
 
 	return err
@@ -221,7 +214,7 @@ func (rl *Rotate) maintain(now time.Time) {
 
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
-		log.Printf("E! fail to glob %v* error %+v", rl.logfile, err)
+		log("E! fail to glob %v* error %+v", rl.logfile, err)
 
 		return
 	}
@@ -239,18 +232,18 @@ func (rl *Rotate) maintain(now time.Time) {
 }
 
 func (rl *Rotate) gzipFile(path string) {
-	log.Printf("I! gzipped by duration:%s path:%s", rl.gzipAge, path)
+	log("I! gzipped by duration:%s path:%s", rl.gzipAge, path)
 
 	if err := compress.Gzip(path); err != nil {
-		log.Printf("E! Gzip error %+v", err)
+		log("E! Gzip error %+v", err)
 	}
 }
 
 func (rl *Rotate) removeFile(path string) {
-	log.Printf("I! removed by duration:%s path:%s", rl.maxAge, path)
+	log("I! removed by duration:%s path:%s", rl.maxAge, path)
 
 	if err := os.Remove(path); err != nil {
-		log.Printf("E! Remove error %+v", err)
+		log("E! Remove error %+v", err)
 	}
 }
 
@@ -265,11 +258,20 @@ func (rl *Rotate) Close() error {
 
 	err := rl.outFh.Close()
 	if err != nil {
-		log.Printf("E! Close outFh error %+v", err)
+		log("E! Close outFh error %+v", err)
 	}
 
 	rl.outFh = nil
-	log.Printf("I! outFh closed")
+	log("I! outFh closed")
 
 	return err
+}
+
+func log(format string, a ...interface{}) {
+	m := fmt.Sprintf(format, a...)
+	if !strings.HasSuffix(m, "\n") {
+		m += "\n"
+	}
+
+	fmt.Fprintf(os.Stderr, time.Now().Format("2006-01-02 15:04:05.000"), m)
 }
