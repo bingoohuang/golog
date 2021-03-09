@@ -26,7 +26,7 @@ func ExampleStack() {
 	// stack_test.go:17
 	// github.com/bingoohuang/golog/pkg/stack/stack_test.go:17
 	// ExampleStack
-	// [stack_test.go:22 run_example.go:62 example.go:44 testing.go:1346 _testmain.go:113]
+	// [stack_test.go:22 run_example.go:63 example.go:44 testing.go:1419 _testmain.go:113]
 }
 
 func TestCaller(t *testing.T) {

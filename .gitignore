@@ -25,3 +25,4 @@ access_log.*
 .DS_Store
 .idea
 gologdemo.log*
+/pkg/rotate/.*

@@ -1,7 +1,6 @@
 package rotate
 
 import (
-	"log"
 	"os"
 	"time"
 
@@ -61,7 +60,7 @@ func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 
 	fi, err := os.Stat(path)
 	if err != nil {
-		log.Printf("E! Stat %s error %+v", path, err)
+		print("E! Stat %s error %+v", path, err)
 
 		return false
 	}
@@ -83,7 +82,7 @@ func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
 	fi, err := os.Stat(path)
 	if err != nil {
 		if !os.IsNotExist(err) {
-			log.Printf("E! Stat %s error %+v", path, err)
+			print("E! Stat %s error %+v", path, err)
 		}
 
 		return false

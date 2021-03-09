@@ -68,13 +68,13 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize >= rl.rotateMaxSize
 	out, err := rl.getWriter(forRotate)
 	if err != nil {
-		log("E! Write getWriter error%v", err)
+		print("E! Write getWriter error%v", err)
 		return 0, errors.Wrap(err, `failed to acquire target io.Writer`)
 	}
 
 	n, err = out.Write(p)
 	if err != nil {
-		log("E! Write error %v", err)
+		print("E! Write error %v", err)
 	}
 
 	rl.outFhSize += int64(n)
@@ -150,17 +150,17 @@ func (rl *Rotate) rotateFile(filename string) error {
 		rl.outFh = nil
 
 		if err := os.Rename(rl.logfile, filename); err != nil {
-			log("E! Rename %s to %s error %+v", rl.logfile, filename, err)
+			print("E! Rename %s to %s error %+v", rl.logfile, filename, err)
 			return err
 		}
 
-		log("I! log file renamed to %s", filename)
+		print("I! log file renamed to %s", filename)
 	}
 
 	// if we got here, then we need to create a file
 	fh, err := os.OpenFile(rl.logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		log("E! OpenFile %s error %+v", rl.logfile, err)
+		print("E! OpenFile %s error %+v", rl.logfile, err)
 		return errors.Errorf("failed to open file %s: %s", rl.logfile, err)
 	}
 
@@ -170,7 +170,7 @@ func (rl *Rotate) rotateFile(filename string) error {
 		rl.outFhSize = stat.Size()
 	} else {
 		rl.outFhSize = 0
-		log("E! Stat %s error %+v", rl.logfile, err)
+		print("E! Stat %s error %+v", rl.logfile, err)
 	}
 
 	return nil
@@ -203,7 +203,7 @@ func (rl *Rotate) Rotate() error {
 
 	_, err := rl.getWriter(true)
 	if err != nil {
-		log("E! Rotate getWriter error %+v", err)
+		print("E! Rotate getWriter error %+v", err)
 	}
 
 	return err
@@ -214,7 +214,7 @@ func (rl *Rotate) maintain(now time.Time) {
 
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
-		log("E! fail to glob %v* error %+v", rl.logfile, err)
+		print("E! fail to glob %v* error %+v", rl.logfile, err)
 
 		return
 	}
@@ -232,18 +232,18 @@ func (rl *Rotate) maintain(now time.Time) {
 }
 
 func (rl *Rotate) gzipFile(path string) {
-	log("I! gzipped by duration:%s path:%s", rl.gzipAge, path)
+	print("I! gzipped by duration:%s path:%s", rl.gzipAge, path)
 
 	if err := compress.Gzip(path); err != nil {
-		log("E! Gzip error %+v", err)
+		print("E! Gzip error %+v", err)
 	}
 }
 
 func (rl *Rotate) removeFile(path string) {
-	log("I! removed by duration:%s path:%s", rl.maxAge, path)
+	print("I! removed by duration:%s path:%s", rl.maxAge, path)
 
 	if err := os.Remove(path); err != nil {
-		log("E! Remove error %+v", err)
+		print("E! Remove error %+v", err)
 	}
 }
 
@@ -258,16 +258,16 @@ func (rl *Rotate) Close() error {
 
 	err := rl.outFh.Close()
 	if err != nil {
-		log("E! Close outFh error %+v", err)
+		print("E! Close outFh error %+v", err)
 	}
 
 	rl.outFh = nil
-	log("I! outFh closed")
+	print("I! outFh closed")
 
 	return err
 }
 
-func log(format string, a ...interface{}) {
+func print(format string, a ...interface{}) {
 	m := fmt.Sprintf(format, a...)
 	if !strings.HasSuffix(m, "\n") {
 		m += "\n"
