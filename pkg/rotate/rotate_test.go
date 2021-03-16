@@ -20,6 +20,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestPrint(t *testing.T) {
+	rotate.InnerPrint("I! gzipped by duration:%s path:%s", "rl.gzipAge", "path")
+}
+
 func TestGenFilename(t *testing.T) {
 	ts := []time.Time{{}, (time.Time{}).Add(24 * time.Hour)} // Mock time
 
