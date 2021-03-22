@@ -44,6 +44,11 @@ func main() {
 	}
 
 	golog.SetupLogrus()
+	logrus.Infof("hello\nworld")
+	logrus.Infof("{PRE}hello\nworld")
+	log.Printf("hello\nworld")
+	log.Printf("{PRE}hello\nworld")
+
 	log.Printf("Hello, this message is logged by std log, #%d", 0)
 
 	if *ginHttp {
