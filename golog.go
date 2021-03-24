@@ -3,6 +3,7 @@ package golog
 import (
 	"context"
 	"github.com/bingoohuang/golog/pkg/homedir"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -49,6 +50,14 @@ func (fns SetupOptionFns) Setup(o *SetupOption) {
 	for _, f := range fns {
 		f(o)
 	}
+}
+
+// DisableLogging disable all logrus logging and standard logging.
+func DisableLogging() {
+	logrus.SetLevel(logrus.PanicLevel)
+	logrus.SetOutput(io.Discard)
+	log.SetOutput(io.Discard)
+	log.SetFlags(0)
 }
 
 // SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
