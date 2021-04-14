@@ -21,7 +21,7 @@ func (w WriterWrapper) Write(p []byte) (n int, err error) {
 }
 
 var (
-	r        = regexp.MustCompile(`(?i)[TDIWEFP]!`)
+	r        = regexp.MustCompile(`^[TDIWEFP]!`)
 	levelMap = map[string]logrus.Level{
 		"T!": logrus.TraceLevel, "D!": logrus.DebugLevel, "I!": logrus.InfoLevel, "W!": logrus.WarnLevel,
 		"E!": logrus.ErrorLevel, "F!": logrus.FatalLevel, "P!": logrus.PanicLevel,
