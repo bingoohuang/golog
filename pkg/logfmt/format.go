@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/caller"
@@ -62,21 +61,9 @@ const (
 	layout = "2006-01-02 15:04:05.000"
 )
 
-// pool关键作用:
-// 减轻GC的压力。
-// 复用对象内存。有时不一定希望复用内存，单纯是想减轻GC压力也可主动给pool塞对象。
-var bufferPool = sync.Pool{
-	New: func() interface{} {
-		return new(bytes.Buffer)
-	},
-}
-
 // Format formats the log output.
 func (f Formatter) Format(e Entry) []byte {
-	b := bufferPool.Get().(*bytes.Buffer)
-	b.Reset()
-
-	defer bufferPool.Put(b)
+	b := &bytes.Buffer{}
 
 	if f.Layout != nil {
 		f.Layout.Append(b, e)
