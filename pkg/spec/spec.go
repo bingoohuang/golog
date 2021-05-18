@@ -80,6 +80,8 @@ func ParseSpec(spec, tagName string, v interface{}, options ...SpecOptionsFn) er
 
 func setFieldSpec(fv reflect.Value, specMap map[string]string, name, defaultValue string, options *SpecOptions) error {
 	specValue, ok := specMap[name]
+	originalValue := specValue
+
 	if specValue == "" {
 		specValue, _ = parseEnvSpec(options.EnvPrefix, name)
 	}
@@ -130,7 +132,7 @@ func setFieldSpec(fv reflect.Value, specMap map[string]string, name, defaultValu
 
 		fv.SetInt(v)
 	case reflect.Bool:
-		if specValue == "" && ok {
+		if originalValue == "" && ok {
 			specValue = "true"
 		}
 
