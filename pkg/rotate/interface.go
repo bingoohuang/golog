@@ -1,6 +1,7 @@
 package rotate
 
 import (
+	"io"
 	"os"
 	"time"
 
@@ -41,7 +42,7 @@ type Rotate struct {
 	gzipAge    time.Duration
 	lock       lock.RWLock
 	handler    Handler
-	outFh      *os.File
+	outFh      io.WriteCloser
 	outFhSize  int64
 
 	logfile             string

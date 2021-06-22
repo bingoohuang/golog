@@ -1,6 +1,7 @@
 package rotate
 
 import (
+	"bufio"
 	"fmt"
 	"io"
 	"os"
@@ -141,6 +142,23 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 	}
 }
 
+type BufioWriteCloser struct {
+	closer io.WriteCloser
+	*bufio.Writer
+}
+
+func NewBufioWriteCloser(w io.WriteCloser) *BufioWriteCloser {
+	return &BufioWriteCloser{
+		closer: w,
+		Writer: bufio.NewWriter(w),
+	}
+}
+
+func (b *BufioWriteCloser) Close() error {
+	b.Writer.Flush()
+	return b.closer.Close()
+}
+
 func (rl *Rotate) rotateFile(filename string) error {
 	if rl.outFh != nil {
 		if err := rl.outFh.Close(); err != nil {
@@ -164,8 +182,7 @@ func (rl *Rotate) rotateFile(filename string) error {
 		return errors.Errorf("failed to open file %s: %s", rl.logfile, err)
 	}
 
-	rl.outFh = fh
-
+	rl.outFh = NewBufioWriteCloser(fh)
 	if stat, err := fh.Stat(); err == nil {
 		rl.outFhSize = stat.Size()
 	} else {
