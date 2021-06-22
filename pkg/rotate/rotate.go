@@ -45,6 +45,7 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 		return nil, errors.Wrapf(err, "failed to create directory %s", dirname)
 	}
 
+	go r.flushing()
 	runtime.SetFinalizer(r, func(r *Rotate) { r.Close() })
 
 	return r, nil
@@ -140,6 +141,11 @@ func (rl *Rotate) tryGenerational(generation int, filename string) (int, string)
 
 		return generation, name
 	}
+}
+
+type FlushWriteCloser interface {
+	io.WriteCloser
+	Flush() error
 }
 
 type BufioWriteCloser struct {

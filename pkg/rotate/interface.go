@@ -1,7 +1,6 @@
 package rotate
 
 import (
-	"io"
 	"os"
 	"time"
 
@@ -42,7 +41,7 @@ type Rotate struct {
 	gzipAge    time.Duration
 	lock       lock.RWLock
 	handler    Handler
-	outFh      io.WriteCloser
+	outFh      FlushWriteCloser
 	outFhSize  int64
 
 	logfile             string
@@ -90,6 +89,23 @@ func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
 	}
 
 	return fi.ModTime().Before(cutoff)
+}
+
+func (rl *Rotate) flushing() {
+	ticker := time.NewTicker(3 * time.Second)
+	defer ticker.Stop()
+
+	for range ticker.C {
+		rl.tryFlush()
+	}
+}
+
+func (rl *Rotate) tryFlush() {
+	defer rl.lock.Lock()()
+
+	if rl.outFh != nil {
+		_ = rl.outFh.Flush()
+	}
 }
 
 // Clock is the interface used by the Rotate object to determine the current time.
