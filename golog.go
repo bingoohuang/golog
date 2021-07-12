@@ -93,12 +93,13 @@ func createLogDir(logSpec *LogSpec) string {
 	logDir := ""
 	logPath := logSpec.File
 	appName := filepath.Base(os.Args[0])
-
+	wd, _ := os.Getwd()
+	wd = filepath.Base(wd)
 	if logPath == "" {
 		if CheckPrivileges() {
-			logDir = filepath.Join("/var/log/", appName)
+			logDir = filepath.Join("/var/log/", wd)
 		} else {
-			logDir = filepath.Join("~/logs/" + appName)
+			logDir = filepath.Join("~/logs/" + wd)
 		}
 
 		logPath = filepath.Join(logDir, appName+".log")
