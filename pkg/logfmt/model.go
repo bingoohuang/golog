@@ -33,3 +33,7 @@ func (r *Result) RegisterSignalRotate(sig ...os.Signal) error {
 
 	return nil
 }
+
+func (r *Result) OnExit() error {
+	return r.Rotate.Close()
+}
