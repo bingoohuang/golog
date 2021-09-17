@@ -19,6 +19,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+var Debug = false
+
 // New creates a new Rotate object. A logfile filename
 // must be passed. Optional `Option` parameters may be passed.
 func New(logfile string, options ...OptionFn) (*Rotate, error) {
@@ -291,6 +293,10 @@ func (rl *Rotate) Close() error {
 }
 
 func InnerPrint(format string, a ...interface{}) {
+	if !Debug {
+		return
+	}
+
 	m := fmt.Sprintf(format, a...)
 	if !strings.HasSuffix(m, "\n") {
 		m += "\n"
