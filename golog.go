@@ -179,3 +179,18 @@ func NewLimitLogrus(v *logrus.Logger, logLines float64, interval time.Duration, 
 	ctx := context.WithValue(context.Background(), logfmt.RateLimiterKey, limiter)
 	return v.WithContext(ctx)
 }
+
+// Printf calls Output to print to the standard logger.
+// Arguments are handled in the manner of fmt.Printf.
+// If the last argument is an error, the format will be prepended with "E!"
+// for error level if there is no level tag defined in it.
+func Printf(format string, v ...interface{}) {
+	if len(v) > 0 {
+		if _, ok := v[len(v)-1].(error); ok {
+			if _, _, hasLevelTag := logfmt.ParseLevelFromMsg(format); !hasLevelTag {
+				format = "E! " + format
+			}
+		}
+	}
+	log.Printf(format, v...)
+}

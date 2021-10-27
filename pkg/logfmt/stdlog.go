@@ -15,7 +15,7 @@ type WriterWrapper struct {
 }
 
 func (w WriterWrapper) Write(p []byte) (n int, err error) {
-	level, msg := parseLevelFromMsg(string(p))
+	level, msg, _ := ParseLevelFromMsg(string(p))
 	w.ll.WithField(caller.Skip, 3).Log(level, msg)
 	return 0, nil
 }
@@ -28,14 +28,14 @@ var (
 	}
 )
 
-func parseLevelFromMsg(msg string) (logrus.Level, string) {
+func ParseLevelFromMsg(msg string) (level logrus.Level, s string, foundLevelTag bool) {
 	if l := r.FindStringIndex(msg); len(l) > 0 {
 		x, y := l[0], l[1]
 		return levelMap[strings.ToUpper(msg[x:y])], strings.TrimRightFunc(msg[:x], unicode.IsSpace) +
-			strings.TrimLeftFunc(msg[y:], unicode.IsSpace)
+			strings.TrimLeftFunc(msg[y:], unicode.IsSpace), true
 	}
 
-	return logrus.InfoLevel, msg
+	return logrus.InfoLevel, msg, false
 }
 
 func fixStd(ll *logrus.Logger) {
