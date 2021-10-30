@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/bingoohuang/golog/pkg/lock"
 
 	"github.com/bingoohuang/golog/pkg/compress"
@@ -66,7 +68,7 @@ func (rl *Rotate) GenBaseFilename() (string, time.Time) {
 // appropriate file handle that is currently being used.
 // If we have reached rotation time, the target file gets
 // automatically rotated, and also purged if necessary.
-func (rl *Rotate) Write(p []byte) (n int, err error) {
+func (rl *Rotate) Write(level logrus.Level, p []byte) (n int, err error) {
 	defer rl.lock.Lock()()
 
 	forRotate := rl.rotateMaxSize > 0 && rl.outFhSize >= rl.rotateMaxSize
@@ -81,12 +83,16 @@ func (rl *Rotate) Write(p []byte) (n int, err error) {
 		InnerPrint("E! Write error %v", err)
 	}
 
+	if level <= logrus.WarnLevel {
+		out.Flush() // flush when level is warn/error/fatal/panic
+	}
+
 	rl.outFhSize += int64(n)
 
 	return n, err
 }
 
-func (rl *Rotate) getWriter(forceRotate bool) (io.Writer, error) {
+func (rl *Rotate) getWriter(forceRotate bool) (FlushWriteCloser, error) {
 	fnBase, now := rl.GenBaseFilename()
 	generation := rl.generation
 

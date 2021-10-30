@@ -2,12 +2,13 @@ package main
 
 import (
 	"flag"
-	"github.com/bingoohuang/golog/pkg/ginlogrus"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/bingoohuang/golog/pkg/ginlogrus"
+	"github.com/gin-gonic/gin"
 
 	"github.com/bingoohuang/ginx/pkg/ginpprof"
 	"github.com/bingoohuang/golog/pkg/httpx"
@@ -99,7 +100,7 @@ func main() {
 	logf := golog.NewLimitLog(1, 200*time.Millisecond, 2)
 
 	for i := 0; i < 10; i++ {
-		logf("log Hello i:%d", i)
+		logf("W! log Hello i:%d", i)
 		time.Sleep(90 * time.Millisecond)
 	}
 
@@ -107,13 +108,13 @@ func main() {
 	_ = golog.SetupLogrus(golog.Spec(spec), golog.Layout(layout))
 
 	for i := 0; i < 10; i++ {
-		logf("log Hello i:%d", i)
+		logf("W! log Hello i:%d", i)
 		time.Sleep(90 * time.Millisecond)
 	}
 
 	logr := golog.NewLimitLogrus(nil, 1, 200*time.Millisecond, 2)
 	for i := 0; i < 10; i++ {
-		logr.Infof("Hello i:%d", i)
+		logr.Warnf("Hello i:%d", i)
 		time.Sleep(90 * time.Millisecond)
 	}
 

@@ -2,7 +2,6 @@ package golog
 
 import (
 	"context"
-	"github.com/bingoohuang/golog/pkg/homedir"
 	"io"
 	"log"
 	"os"
@@ -12,6 +11,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/bingoohuang/golog/pkg/homedir"
 
 	"golang.org/x/time/rate"
 

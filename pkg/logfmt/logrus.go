@@ -99,8 +99,8 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 
 	if lo.Stdout {
 		writers = append(writers, &WriterFormatter{
-			Writer:    os.Stdout,
-			Formatter: formatter,
+			LevelWriter: WrapLevelWriter(os.Stdout),
+			Formatter:   formatter,
 		})
 	}
 
@@ -121,14 +121,14 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 
 		g.Rotate = r
 		writers = append(writers, &WriterFormatter{
-			Writer:    r,
-			Formatter: resetPrintColor(formatter),
+			LevelWriter: r,
+			Formatter:   resetPrintColor(formatter),
 		})
 	}
 
 	var ws []io.Writer
 	for _, w := range writers {
-		ws = append(ws, w)
+		ws = append(ws, WrapWriter(w))
 	}
 
 	g.Writer = io.MultiWriter(ws...)
