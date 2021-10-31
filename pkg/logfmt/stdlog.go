@@ -33,7 +33,7 @@ var (
 	// E! for error
 	// F! for fatal
 	// P! for panic
-	regLevelTip = regexp.MustCompile(`^[TDIWEFP]!`)
+	regLevelTip = regexp.MustCompile(`\b[TDIWEFP]!`)
 	levelMap    = map[string]logrus.Level{
 		"T!": logrus.TraceLevel, "D!": logrus.DebugLevel, "I!": logrus.InfoLevel, "W!": logrus.WarnLevel,
 		"E!": logrus.ErrorLevel, "F!": logrus.FatalLevel, "P!": logrus.PanicLevel,

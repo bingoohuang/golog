@@ -20,7 +20,7 @@ import (
 )
 
 func main() {
-	golog.SetupLogrus()
+	golog.Setup()
 	r := sariaf.New()
 	r.GET("/", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("Hello World")) })
 	r.GET("/posts", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("GET: Get All Posts")) })

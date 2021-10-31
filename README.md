@@ -25,7 +25,7 @@ Use default settings:
 import "github.com/bingoohuang/golog"
 
 func main() {
-	golog.SetupLogrus()
+	golog.Setup()
 
 	log.Printf("Hello, this message is logged by std log, #%d", 1) // default Info
 	log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
@@ -56,7 +56,7 @@ will output the log messages as below:
 Customize the settings:
 
 ```go
-golog.SetupLogrus(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d"))
+golog.Setup(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d"))
 ```
 
 ## Specifications
@@ -198,7 +198,7 @@ limit config examples:
 
 
 ```go
-golog.SetupLogrus()
+golog.Setup()
 log.Printf("[L:200ms] W! Hello i:%d", i) // will limit to 1 log per 200ms.
 logrus.Infof("[L:200ms] Hello i:%d", i) // will limit to 1 log per 200ms.
 logrus.Infof("[L:LimitConf1] Hello i:%d", i) // will limit to by registered configuration `LimitConf1`.
@@ -223,7 +223,7 @@ import (
 
 func main() {
 	gin.SetMode(gin.ReleaseMode)
-	golog.SetupLogrus()
+	golog.Setup()
 
 	r := gin.New()
 	r.Use(ginlogrus.Logger(nil, true), gin.Recovery())

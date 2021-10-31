@@ -58,9 +58,9 @@ func DisableLogging() {
 	log.SetFlags(0)
 }
 
-// SetupLogrus setup the logrus logger with specific configuration like guava CacheBuilderSpec.
+// Setup setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
-func SetupLogrus(fns ...SetupOptionFn) *logfmt.Result {
+func Setup(fns ...SetupOptionFn) *logfmt.Result {
 	o := &SetupOption{}
 	SetupOptionFns(fns).Setup(o)
 

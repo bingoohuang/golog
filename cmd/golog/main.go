@@ -44,7 +44,10 @@ func main() {
 		}()
 	}
 
-	golog.SetupLogrus()
+	golog.Setup()
+
+	log.Printf("[L:%s] W! ignore sync %s.%s", "15s", "r.Schema", "r.Table")
+
 	logrus.Infof("hello\nworld")
 	logrus.Infof("{PRE}hello\nworld")
 	log.Printf("hello\nworld")
@@ -114,7 +117,7 @@ func main() {
 	}
 
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
-	_ = golog.SetupLogrus(golog.Spec(spec), golog.Layout(layout))
+	_ = golog.Setup(golog.Spec(spec), golog.Layout(layout))
 
 	golog.RegisterLimiter(golog.LimitConf{
 		EveryTime: 200 * time.Millisecond,
