@@ -10,7 +10,9 @@ import (
 const (
 	maximumCallerDepth = 25
 	// Skip is the key to set/get call skip value.
-	Skip = "_CallerSkip"
+	Skip      = "_CallerSkip"
+	GidKey    = "_CallerGid"
+	CallerKey = "_CallerCaller"
 )
 
 var (
@@ -42,7 +44,7 @@ func GetCaller(skip int, terminalPkg string) *runtime.Frame {
 	frames := runtime.CallersFrames(pcs[:depth])
 
 	for f, again := frames.Next(); again; f, again = frames.Next() {
-		pkg := getPackageName(f.Function)
+		pkg := GetPackageName(f.Function)
 		// If the caller isn't part of this package, we're done
 		if strings.HasPrefix(pkg, terminalPkg) {
 			continue
@@ -72,9 +74,9 @@ func PrintStack(max int) {
 	}
 }
 
-// getPackageName reduces a fully qualified function name to the package name
+// GetPackageName reduces a fully qualified function name to the package name
 // There really ought to be to be a better way...
-func getPackageName(f string) string {
+func GetPackageName(f string) string {
 	for {
 		lastPeriod := strings.LastIndex(f, ".")
 		lastSlash := strings.LastIndex(f, "/")

@@ -24,11 +24,11 @@ const channelSize = 1000
 func main() {
 	ginHttp := flag.Bool("gin", false, "start gin http server for concurrent testing...")
 	std := flag.Bool("std", false, "fix log.Print...")
+	limit := flag.String("limit", "", "test limit, like 100,3s to limit 1 log every 100 logs or every 3s")
 	sleep := flag.Duration("sleep", 100*time.Millisecond, "sleep duration lime, like 10s, default 10ms")
 	cs := flag.Bool("cs", false, "http client and server logging")
 	pprof := flag.String("pprof", "", "Profile pprof address, like localhost:6060")
-	help := flag.Bool("help", false,
-		`SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./gologdemo`)
+	help := flag.Bool("help", false, `SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./golog`)
 	flag.Parse()
 
 	if *help {
@@ -51,6 +51,15 @@ func main() {
 	log.Printf("{PRE}hello\nworld")
 
 	log.Printf("Hello, this message is logged by std log, #%d", 0)
+
+	if *limit != "" {
+		for i := 0; i < 30*100; i++ {
+			log.Printf("[L:"+*limit+"] limit test %d", i)
+			time.Sleep(10 * time.Millisecond)
+		}
+
+		return
+	}
 
 	if *ginHttp {
 		gin.SetMode(gin.ReleaseMode)
@@ -97,24 +106,27 @@ func main() {
 		layout = v
 	}
 
-	logf := golog.NewLimitLog(1, 200*time.Millisecond, 2)
+	golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "log.hello"})
 
 	for i := 0; i < 10; i++ {
-		logf("W! log Hello i:%d", i)
+		log.Printf("[L:log.hello] W! log Hello1 i:%d", i)
 		time.Sleep(90 * time.Millisecond)
 	}
 
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
 	_ = golog.SetupLogrus(golog.Spec(spec), golog.Layout(layout))
 
+	golog.RegisterLimiter(golog.LimitConf{
+		EveryTime: 200 * time.Millisecond,
+		Key:       "log.hello2",
+	})
 	for i := 0; i < 10; i++ {
-		logf("W! log Hello i:%d", i)
+		log.Printf("[L:log.hello2] W! log Hello2 i:%d", i)
 		time.Sleep(90 * time.Millisecond)
 	}
 
-	logr := golog.NewLimitLogrus(nil, 1, 200*time.Millisecond, 2)
 	for i := 0; i < 10; i++ {
-		logr.Warnf("Hello i:%d", i)
+		log.Printf("[L:log.hello2] W! log Hello3 i:%d", i)
 		time.Sleep(90 * time.Millisecond)
 	}
 

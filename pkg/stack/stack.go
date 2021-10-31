@@ -8,11 +8,36 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/bingoohuang/golog/pkg/caller"
 )
 
 // Call records a single function invocation from a goroutine stack.
 type Call struct {
 	frame runtime.Frame
+}
+
+func CallerIgnore(skip int, ignorePkg string) *Call {
+	var pcs [3]uintptr
+	n := runtime.Callers(1, pcs[:])
+	frames := runtime.CallersFrames(pcs[:n])
+	for f, again := frames.Next(); again; f, again = frames.Next() {
+		pkg := caller.GetPackageName(f.Function)
+		if strings.HasPrefix(pkg, ignorePkg) {
+			continue
+		}
+
+		if skip > 0 {
+			skip--
+			continue
+		}
+
+		return &Call{
+			frame: f,
+		}
+	}
+
+	return nil
 }
 
 // Caller returns a Call from the stack of the current goroutine. The argument

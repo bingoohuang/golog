@@ -5,6 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/bingoohuang/golog/pkg/rotate"
 )
 
@@ -24,7 +26,7 @@ func ExampleNew() {
 			return
 		}
 
-		n, err := writer.Write([]byte("test"))
+		n, err := writer.Write(logrus.InfoLevel, []byte("test"))
 		if err != nil || n != 4 {
 			fmt.Println("Write failed ", err, " number written ", n)
 			return

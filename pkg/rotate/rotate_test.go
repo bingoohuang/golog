@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/bingoohuang/golog/pkg/timex"
 
 	"github.com/bingoohuang/golog/pkg/clock"
@@ -70,7 +72,7 @@ func TestGenPathFilename(t *testing.T) {
 }
 
 func TestSatisfiesIOWriter(t *testing.T) {
-	var w io.Writer
+	var w rotate.LevelWriter
 	w, _ = rotate.New("/foo/bar")
 	_ = w
 }
@@ -81,7 +83,6 @@ func TestSatisfiesIOCloser(t *testing.T) {
 	_ = c
 }
 
-// nolint:funlen
 func TestLogRotate(t *testing.T) {
 	dir, err := ioutil.TempDir("", "file-golog-test")
 	if !assert.NoError(t, err, "creating temporary directory should succeed") {
@@ -109,7 +110,7 @@ func TestLogRotate(t *testing.T) {
 	defer assert.Nil(t, rl.Close())
 
 	str := "Hello, World"
-	n, err := rl.Write([]byte(str))
+	n, err := rl.Write(logrus.WarnLevel, []byte(str))
 
 	if !assert.NoError(t, err, "rl.Write should succeed") {
 		return
@@ -132,9 +133,7 @@ func TestLogRotate(t *testing.T) {
 		t.Errorf("Failed to read file %s: %s", fn, err)
 	}
 
-	if string(content) != str {
-		t.Errorf(`File content does not match (was "%s")`, content)
-	}
+	assert.Equal(t, str, string(content))
 
 	err = os.Chtimes(fn, dummyTime, dummyTime)
 	if err != nil {
@@ -153,7 +152,7 @@ func TestLogRotate(t *testing.T) {
 	cl.Add(timex.Week)
 
 	// This next Write() should trigger Rotate()
-	_, _ = rl.Write([]byte(str))
+	_, _ = rl.Write(logrus.WarnLevel, []byte(str))
 	newfn := rl.CurrentFileName()
 
 	if newfn == fn {
@@ -194,11 +193,11 @@ func TestLogSetOutput(t *testing.T) {
 	}
 	defer rl.Close()
 
-	log.SetOutput(rl)
+	log.SetOutput(rotate.WrapWriter(rl))
 	defer log.SetOutput(os.Stderr)
 
 	str := "Hello, World"
-	log.Print(str)
+	log.Print("W! " + str)
 
 	fn := rl.LogFile()
 	content, err := ioutil.ReadFile(fn)
@@ -206,9 +205,7 @@ func TestLogSetOutput(t *testing.T) {
 		t.Errorf("Failed to read file %s: %s", fn, err)
 	}
 
-	if !strings.Contains(string(content), str) {
-		t.Errorf(`File content does not contain "%s" (was "%s")`, str, content)
-	}
+	assert.True(t, strings.Contains(string(content), str))
 }
 
 func TestGHIssue16(t *testing.T) {
@@ -258,7 +255,7 @@ func TestRotationGenerationalNames(t *testing.T) {
 
 		seen := map[string]struct{}{}
 		for i := 0; i < 10; i++ {
-			rl.Write([]byte("Hello, World!"))
+			rl.Write(logrus.WarnLevel, []byte("Hello, World!"))
 			if !assert.NoError(t, rl.Rotate(), "rl.Rotate should succeed") {
 				return
 			}
@@ -270,7 +267,7 @@ func TestRotationGenerationalNames(t *testing.T) {
 			if !assert.True(t, strings.HasPrefix(fn, "unchanged-pattern.log"), "prefix for all filenames should match") {
 				return
 			}
-			rl.Write([]byte("Hello, World!"))
+			rl.Write(logrus.WarnLevel, []byte("Hello, World!"))
 			suffix := strings.TrimPrefix(fn, "unchanged-pattern.log")
 			expectedSuffix := fmt.Sprintf(".%d", i+1)
 			if !assert.True(t, strings.HasSuffix(suffix, expectedSuffix), "expected suffix %s found %s", expectedSuffix, suffix) {
@@ -305,7 +302,7 @@ func TestRotationGenerationalNames(t *testing.T) {
 
 		for i := 0; i < 10; i++ {
 			time.Sleep(time.Second)
-			_, _ = rl.Write([]byte("Hello, World!"))
+			_, _ = rl.Write(logrus.InfoLevel, []byte("Hello, World!"))
 			if !assert.NoError(t, rl.Rotate(), "rl.Rotate should succeed") {
 				return
 			}

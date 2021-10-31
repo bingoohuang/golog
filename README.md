@@ -186,19 +186,22 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh gologde
 
 ## Log rate limiter
 
-stdlib log
+[more examples](pkg/logfmt/limitconf_test.go)
 
-```go
-logf := golog.NewLimitLog(1, 200*time.Millisecond, 2)
-logf("Hello i:%d", i) // will limited to 200 lines per ms with burst 2.
-```
+limit config examples:
+1. \[L:100,15s:ignore.sync]  to limit 1 message every 15 seconds  or every 100 messages with "ignore.sync" as key
+1. \[L:15s:ignore.sync]      to limit 1 message every 15 seconds with "ignore.sync" as key
+1. \[L:100,15s]  to limit 1 message every 15 seconds or every 100 messages with the first two words in the message as key
+1. \[L:100,0s]  to limit 1 message every 100 messages with the first two words in the message as key
+1. \[L:15s]      to limit 1 message every 15 seconds with the first two words in the message as key
+1. \[L:LimitConf1]      to limit using configuration whose name is LimitConf1 registered first by `golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "LimitConf1"})`
 
-logurs:
 
 ```go
 golog.SetupLogrus()
-logr := golog.NewLimitLogrus(nil, 1, 200*time.Millisecond, 2)
-logr.Infof("Hello i:%d", i) // will limited to 200 lines per ms with burst 2.
+log.Printf("[L:200ms] W! Hello i:%d", i) // will limit to 1 log per 200ms.
+logrus.Infof("[L:200ms] Hello i:%d", i) // will limit to 1 log per 200ms.
+logrus.Infof("[L:LimitConf1] Hello i:%d", i) // will limit to by registered configuration `LimitConf1`.
 ```
 
 ## Help

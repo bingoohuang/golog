@@ -7,8 +7,6 @@ import (
 	"runtime"
 	"time"
 
-	"golang.org/x/time/rate"
-
 	"github.com/bingoohuang/golog/pkg/local"
 	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/sirupsen/logrus"
@@ -53,17 +51,7 @@ type LogrusFormatter struct {
 
 const traceIDKey = "TRACE_ID"
 
-type ContextKey int
-
-const (
-	RateLimiterKey ContextKey = iota
-)
-
 func (f LogrusFormatter) Format(entry *logrus.Entry) ([]byte, error) {
-	if f.rateLimited(entry) {
-		return nil, nil
-	}
-
 	return f.Formatter.Format(&LogrusEntry{
 		EntryTraceID: GetTraceID(entry),
 		Entry:        entry,
@@ -80,26 +68,14 @@ func GetTraceID(entry *logrus.Entry) string {
 	return traceID
 }
 
-func (f LogrusFormatter) rateLimited(entry *logrus.Entry) bool {
-	if entry.Context == nil {
-		return false
-	}
-
-	if v := entry.Context.Value(RateLimiterKey); v != nil {
-		return !v.(*rate.Limiter).Allow()
-	}
-
-	return false
-}
-
 // Setup setup log parameters.
 func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 	formatter := lo.createFormatter()
-	writers := make([]*WriterFormatter, 0, 2)
+	writers := make([]*rotate.WriterFormatter, 0, 2)
 
 	if lo.Stdout {
-		writers = append(writers, &WriterFormatter{
-			LevelWriter: WrapLevelWriter(os.Stdout),
+		writers = append(writers, &rotate.WriterFormatter{
+			LevelWriter: rotate.WrapLevelWriter(os.Stdout),
 			Formatter:   formatter,
 		})
 	}
@@ -120,7 +96,7 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 		}
 
 		g.Rotate = r
-		writers = append(writers, &WriterFormatter{
+		writers = append(writers, &rotate.WriterFormatter{
 			LevelWriter: r,
 			Formatter:   resetPrintColor(formatter),
 		})
@@ -128,7 +104,7 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 
 	var ws []io.Writer
 	for _, w := range writers {
-		ws = append(ws, WrapWriter(w))
+		ws = append(ws, rotate.WrapWriter(w))
 	}
 
 	g.Writer = io.MultiWriter(ws...)
@@ -141,7 +117,7 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 	ll.AddHook(NewHook(writers))
 
 	if lo.FixStd {
-		fixStd(ll)
+		fixStd(ll, formatter)
 	}
 
 	ll.Infof("log file created:%s", lo.LogPath)

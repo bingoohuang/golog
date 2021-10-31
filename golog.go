@@ -1,7 +1,6 @@
 package golog
 
 import (
-	"context"
 	"io"
 	"log"
 	"os"
@@ -13,8 +12,6 @@ import (
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/homedir"
-
-	"golang.org/x/time/rate"
 
 	"github.com/bingoohuang/golog/pkg/logfmt"
 
@@ -157,30 +154,6 @@ type LogSpec struct {
 	FixStd      bool          `spec:"fixstd,true"` // 是否增强log.Print...的输出
 }
 
-// NewLimitLog create a limited printf functor to log
-// that allows events up to rate r and permits bursts of at most b tokens.
-func NewLimitLog(logLines float64, interval time.Duration, burst int) func(string, ...interface{}) {
-	rateLimiter := rate.NewLimiter(rate.Limit(logLines/interval.Seconds()), burst)
-
-	return func(format string, v ...interface{}) {
-		if rateLimiter.Allow() {
-			log.Printf(format, v...)
-		}
-	}
-}
-
-// NewLimitLogrus create a limited logrus entry
-// that allows events up to rate r and permits bursts of at most b tokens.
-func NewLimitLogrus(v *logrus.Logger, logLines float64, interval time.Duration, burst int) *logrus.Entry {
-	limiter := rate.NewLimiter(rate.Limit(logLines/interval.Seconds()), burst)
-	if v == nil {
-		v = logrus.StandardLogger()
-	}
-
-	ctx := context.WithValue(context.Background(), logfmt.RateLimiterKey, limiter)
-	return v.WithContext(ctx)
-}
-
 // Printf calls Output to print to the standard logger.
 // Arguments are handled in the manner of fmt.Printf.
 // If the last argument is an error, the format will be prepended with "E!"
@@ -194,4 +167,20 @@ func Printf(format string, v ...interface{}) {
 		}
 	}
 	log.Printf(format, v...)
+}
+
+// LimitConf defines the log limit configuration.
+type LimitConf struct {
+	EveryNum  int
+	EveryTime time.Duration
+	Key       string
+}
+
+// RegisterLimiter registers a limit for the log generation frequency.
+func RegisterLimiter(c LimitConf) {
+	logfmt.RegisterLimitConf(logfmt.LimitConf{
+		EveryNum:  c.EveryNum,
+		EveryTime: c.EveryTime,
+		Key:       c.Key,
+	})
 }

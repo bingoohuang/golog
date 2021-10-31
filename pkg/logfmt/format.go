@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/bingoohuang/golog/pkg/stack"
+
 	"github.com/bingoohuang/golog/pkg/caller"
 	"github.com/bingoohuang/golog/pkg/str"
 	"github.com/bingoohuang/golog/pkg/timex"
@@ -76,23 +78,31 @@ func (f Formatter) Format(e Entry) []byte {
 
 	f.PrintLevel(b, e.Level())
 
+	fs := e.Fields()
 	if !f.Simple {
 		w(fmt.Sprintf("%d --- ", Pid))
-		w(fmt.Sprintf("[%-5s] ", gid.CurGoroutineID()))
+		var goroutineID gid.GoroutineID
+		if v, ok := fs[caller.GidKey]; ok {
+			goroutineID = v.(gid.GoroutineID)
+			delete(fs, caller.GidKey)
+		} else {
+			goroutineID = gid.CurGoroutineID()
+		}
+		w(fmt.Sprintf("[%-5s] ", goroutineID))
 		w(fmt.Sprintf("[%s] ", str.Or(e.TraceID(), "-")))
 	}
 
 	callSkip := 0
-	if v, ok := e.Fields()[caller.Skip]; ok {
+	if v, ok := fs[caller.Skip]; ok {
 		callSkip = v.(int)
-		delete(e.Fields(), caller.Skip)
+		delete(fs, caller.Skip)
 	}
 
-	f.PrintCallerInfo(b, callSkip)
+	f.PrintCallerInfo(fs, b, callSkip)
 
 	w(" : ")
 
-	if fields := e.Fields(); len(fields) > 0 {
+	if fields := fs; len(fields) > 0 {
 		if v, err := json.Marshal(fields); err == nil {
 			b.Write(v)
 			w(" ")
@@ -116,18 +126,33 @@ func (f Formatter) Format(e Entry) []byte {
 	return b.Bytes()
 }
 
-func (f Formatter) PrintCallerInfo(b *bytes.Buffer, callSkip int) {
-	if !f.PrintCaller {
+func (f Formatter) PrintCallerInfo(fs Fields, b *bytes.Buffer, callSkip int) {
+	var call *stack.Call
+	if v, ok := fs[caller.CallerKey]; ok {
+		call = v.(*stack.Call)
+		delete(fs, caller.CallerKey)
+	}
+
+	if call != nil {
+		f := call.Frame()
+		fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(f.Function), filepath.Base(f.File), f.Line)
+		b.WriteString(fmt.Sprintf("%-20s", fileLine))
 		return
 	}
 
-	if c := caller.GetCaller(callSkip, "github.com/sirupsen/logrus"); c != nil {
-		// show function
-		fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(c.Function), filepath.Base(c.File), c.Line)
-		// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
-		// 统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
-		b.WriteString(fmt.Sprintf("%-20s", fileLine))
+	if !f.PrintCaller || callSkip < 0 {
+		return
 	}
+	if callSkip == 0 {
+		callSkip = 12
+	}
+
+	c := stack.Caller(callSkip)
+	cf := c.Frame()
+	fileLine := fmt.Sprintf("%s %s:%d", filepath.Base(cf.Function), filepath.Base(cf.File), cf.Line)
+	// 参考电子书（写给大家看的设计书 第四版）：http://www.downcc.com/soft/1300.html
+	// 统一对齐方向，全局左对齐，左侧阅读更适合现代人阅读惯性
+	b.WriteString(fmt.Sprintf("%-20s", fileLine))
 }
 
 func (f Formatter) PrintLevel(b *bytes.Buffer, level string) {
