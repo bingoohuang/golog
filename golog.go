@@ -22,9 +22,10 @@ import (
 
 // SetupOption defines the options to setup.
 type SetupOption struct {
-	Spec   string
-	Layout string
-	Logger *logrus.Logger
+	Spec    string
+	Layout  string
+	LogPath string
+	Logger  *logrus.Logger
 }
 
 type (
@@ -39,6 +40,9 @@ func Spec(v string) SetupOptionFn { return func(o *SetupOption) { o.Spec = v } }
 
 // Layout defines the layout of log.
 func Layout(v string) SetupOptionFn { return func(o *SetupOption) { o.Layout = v } }
+
+// LogPath defines the log path.
+func LogPath(v string) SetupOptionFn { return func(o *SetupOption) { o.LogPath = v } }
 
 // Logger defines the root logrus logger.
 func Logger(v *logrus.Logger) SetupOptionFn { return func(o *SetupOption) { o.Logger = v } }
@@ -62,6 +66,12 @@ func DisableLogging() {
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
 func Setup(fns ...SetupOptionFn) *logfmt.Result {
 	o := &SetupOption{}
+	logrusOption := InitiateOption(fns, o)
+
+	return logrusOption.Setup(o.Logger)
+}
+
+func InitiateOption(fns []SetupOptionFn, o *SetupOption) logfmt.LogrusOption {
 	SetupOptionFns(fns).Setup(o)
 
 	logSpec := &LogSpec{}
@@ -71,7 +81,7 @@ func Setup(fns ...SetupOptionFn) *logfmt.Result {
 
 	logrusOption := logfmt.LogrusOption{
 		Level:       logSpec.Level,
-		LogPath:     createLogDir(logSpec),
+		LogPath:     CreateLogDir(o.LogPath, logSpec),
 		Rotate:      string(logSpec.Rotate),
 		MaxAge:      logSpec.MaxAge,
 		GzipAge:     logSpec.GzipAge,
@@ -83,13 +93,14 @@ func Setup(fns ...SetupOptionFn) *logfmt.Result {
 		Layout:      o.Layout,
 		FixStd:      logSpec.FixStd,
 	}
-
-	return logrusOption.Setup(o.Logger)
+	return logrusOption
 }
 
-func createLogDir(logSpec *LogSpec) string {
+func CreateLogDir(logPath string, logSpec *LogSpec) string {
 	logDir := ""
-	logPath := logSpec.File
+	if logPath == "" {
+		logPath = logSpec.File
+	}
 	appName := filepath.Base(os.Args[0])
 	wd, _ := os.Getwd()
 	wd = filepath.Base(wd)
