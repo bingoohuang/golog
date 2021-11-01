@@ -2,9 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/ginlogrus"
@@ -25,6 +27,7 @@ func main() {
 	ginHttp := flag.Bool("gin", false, "start gin http server for concurrent testing...")
 	std := flag.Bool("std", false, "fix log.Print...")
 	limit := flag.String("limit", "", "test limit, like 100,3s to limit 1 log every 100 logs or every 3s")
+	features := flag.String("features", "", "features, available: fatal")
 	sleep := flag.Duration("sleep", 100*time.Millisecond, "sleep duration lime, like 10s, default 10ms")
 	cs := flag.Bool("cs", false, "http client and server logging")
 	pprof := flag.String("pprof", "", "Profile pprof address, like localhost:6060")
@@ -54,6 +57,11 @@ func main() {
 	log.Printf("{PRE}hello\nworld")
 
 	log.Printf("Hello, this message is logged by std log, #%d", 0)
+
+	if strings.Contains(*features, "fatal") {
+		err := fmt.Errorf("test fatal features")
+		log.Fatal("E! " + err.Error())
+	}
 
 	if *limit != "" {
 		for i := 0; i < 30*100; i++ {
