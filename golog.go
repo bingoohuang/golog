@@ -65,15 +65,14 @@ func DisableLogging() {
 // Setup setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
 func Setup(fns ...SetupOptionFn) *logfmt.Result {
-	o := &SetupOption{}
-	logrusOption := InitiateOption(fns, o)
+	o := SetupOption{}
+	SetupOptionFns(fns).Setup(&o)
+	logrusOption := o.InitiateOption()
 
 	return logrusOption.Setup(o.Logger)
 }
 
-func InitiateOption(fns []SetupOptionFn, o *SetupOption) logfmt.LogrusOption {
-	SetupOptionFns(fns).Setup(o)
-
+func (o SetupOption) InitiateOption() logfmt.LogrusOption {
 	logSpec := &LogSpec{}
 	if err := spec.ParseSpec(o.Spec, "spec", logSpec, spec.WithEnvPrefix("GOLOG")); err != nil {
 		panic(err)
