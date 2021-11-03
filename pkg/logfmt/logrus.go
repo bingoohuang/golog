@@ -1,6 +1,7 @@
 package logfmt
 
 import (
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -138,9 +139,13 @@ func resetPrintColor(formatter *LogrusFormatter) *LogrusFormatter {
 
 func (lo LogrusOption) createFormatter() *LogrusFormatter {
 	var layout *Layout
+	var err error
 
 	if lo.Layout != "" {
-		layout, _ = NewLayout(lo)
+		layout, err = NewLayout(lo)
+		if err != nil {
+			fmt.Printf("failed to create layout, error: %v", err)
+		}
 	}
 
 	return &LogrusFormatter{Formatter: Formatter{

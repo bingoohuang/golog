@@ -127,7 +127,7 @@ func (lo LogrusOption) createPart(indicator string, minus bool, digits, options 
 		return parseGid(minus, digits, options)
 	case "trace":
 		return parseTrace(minus, digits, options)
-	case "call":
+	case "caller":
 		return parseCaller(minus, digits, options)
 	case "fields":
 		return parseFields(minus, digits, options)
