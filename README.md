@@ -91,6 +91,12 @@ so examples:
 
 ## Layout pattern
 
+```go
+layout := `%t{HH:mm:ss.SSS} %5l{length=5} %pid --- [GID=%gid] [%trace] %caller : %fields %msg%n`
+golog.Setup(golog.Spec("level=debug,rotate=.yyyy-mm-dd-HH-mm"), golog.Layout(layout))
+```
+
+
 patter                 | remark
 -----------------------|-----------------------------------------------------------------------
 `%time`  `%t`          | `%time` same with `%time{yyyy-MM-dd HH:mm:ss.SSS}`
