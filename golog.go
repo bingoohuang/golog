@@ -1,6 +1,7 @@
 package golog
 
 import (
+	"github.com/bingoohuang/golog/pkg/unmask"
 	"io"
 	"log"
 	"os"
@@ -8,7 +9,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/homedir"
@@ -131,7 +131,7 @@ func CreateLogDir(logPath string, logSpec *LogSpec) string {
 		panic(err)
 	}
 
-	syscall.Umask(0)
+	unmask.Unmask()
 	if err := os.MkdirAll(logDir, os.ModeSticky|os.ModePerm); err != nil {
 		panic(err)
 	}
