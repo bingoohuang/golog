@@ -12,7 +12,6 @@ import (
 	"github.com/bingoohuang/golog/pkg/ginlogrus"
 	"github.com/gin-gonic/gin"
 
-	"github.com/bingoohuang/ginx/pkg/ginpprof"
 	"github.com/bingoohuang/golog/pkg/httpx"
 
 	"github.com/bingoohuang/golog"
@@ -150,7 +149,7 @@ func main() {
 		_, _ = w.Write([]byte("OK\n"))
 	})
 
-	ginpprof.Wrap(mux)
+	Wrap(mux)
 
 	log.Println("golog spec:", spec)
 
