@@ -1,8 +1,6 @@
 package golog
 
 import (
-	"fmt"
-	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/bingoohuang/golog/pkg/unmask"
 	"io"
 	"log"
@@ -70,10 +68,6 @@ func Setup(fns ...SetupOptionFn) *logfmt.Result {
 	o := SetupOption{}
 	SetupOptionFns(fns).Setup(&o)
 	option := o.InitiateOption()
-
-	if rotate.Debug {
-		fmt.Fprintf(os.Stderr, "golog options: %+v\n", option)
-	}
 	return option.Setup(o.Logger)
 }
 
