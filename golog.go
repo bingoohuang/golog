@@ -1,6 +1,8 @@
 package golog
 
 import (
+	"fmt"
+	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/bingoohuang/golog/pkg/unmask"
 	"io"
 	"log"
@@ -67,9 +69,12 @@ func DisableLogging() {
 func Setup(fns ...SetupOptionFn) *logfmt.Result {
 	o := SetupOption{}
 	SetupOptionFns(fns).Setup(&o)
-	logrusOption := o.InitiateOption()
+	option := o.InitiateOption()
 
-	return logrusOption.Setup(o.Logger)
+	if rotate.Debug {
+		fmt.Fprintf(os.Stderr, "golog options: %+v\n", option)
+	}
+	return option.Setup(o.Logger)
 }
 
 func (o SetupOption) InitiateOption() logfmt.LogrusOption {

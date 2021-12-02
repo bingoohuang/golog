@@ -21,7 +21,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-var Debug = false
+var Debug = os.Getenv("GOLOG_DEBUG") != "off"
 
 // New creates a new Rotate object. A logfile filename
 // must be passed. Optional `Option` parameters may be passed.
