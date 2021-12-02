@@ -130,6 +130,11 @@ func CreateLogDir(logPath string, logSpec *LogSpec) string {
 		panic(err)
 	}
 
+	logPath, err = homedir.Expand(logPath)
+	if err != nil {
+		panic(err)
+	}
+
 	unmask.Unmask()
 	if err := os.MkdirAll(logDir, os.ModeSticky|os.ModePerm); err != nil {
 		panic(err)
