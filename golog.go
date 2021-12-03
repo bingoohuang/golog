@@ -1,6 +1,8 @@
 package golog
 
 import (
+	"fmt"
+	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/bingoohuang/golog/pkg/unmask"
 	"io"
 	"log"
@@ -125,6 +127,7 @@ func CreateLogDir(logPath string, logSpec *LogSpec) string {
 		return logPath
 	}
 
+	oldLogDir := logDir
 	logDir, err = homedir.Expand(logDir)
 	if err != nil {
 		panic(err)
@@ -140,7 +143,26 @@ func CreateLogDir(logPath string, logSpec *LogSpec) string {
 		panic(err)
 	}
 
+	oldLogPath := logPath
+	logPath = Expand(oldLogPath, appName)
+
+	if rotate.Debug {
+		fmt.Fprintf(os.Stderr, "logDir: %s => %s, logPath: %s => %s\n", oldLogDir, logDir, oldLogPath, logPath)
+	}
+
 	return logPath
+}
+
+func Expand(path, appName string) string {
+	if len(path) == 0 {
+		return path
+	}
+
+	if path[0] != '~' {
+		return path
+	}
+
+	return filepath.Join("/var/log/", appName, path[1:])
 }
 
 // CheckPrivileges checks root rights to use system service
