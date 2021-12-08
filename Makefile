@@ -1,7 +1,7 @@
 .PHONY: default test install
 all: default test install
 
-app=gologdemo
+app=golog
 
 gosec:
 	go get github.com/securego/gosec/cmd/gosec
