@@ -111,20 +111,25 @@ func main() {
 		spec = v
 	}
 
-	layout := `%t{yyyy-MM-dd HH:mm:ss.SSS} [%5l{length=4}] PID=%pid --- [GID=%5gid] [%trace] %20caller{level=info} : %fields %msg%n`
+	layout := `%t{yyyy-MM-dd HH:mm:ss.SSS} [Watch:%context{name=WatchID}] [%5l{length=4}] PID=%pid --- [GID=%5gid] [%trace] %20caller{level=info} : %fields %msg%n`
 	if v := os.Getenv("LAYOUT"); v != "" {
 		layout = v
 	}
-
+	// 仅仅只需要一行代码，设置golog对于logrus的支持
+	_ = golog.Setup(golog.Spec(spec), golog.Layout(layout))
 	golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "log.hello"})
 
 	for i := 0; i < 10; i++ {
-		log.Printf("[L:log.hello] W! log Hello1 i:%d", i)
+		logctx.Set("WatchID", fmt.Sprintf("W%d", i+1))
+		log.Printf("W! log context i:%d", i)
 		time.Sleep(90 * time.Millisecond)
 	}
 
-	// 仅仅只需要一行代码，设置golog对于logrus的支持
-	_ = golog.Setup(golog.Spec(spec), golog.Layout(layout))
+	for i := 0; i < 10; i++ {
+		logctx.Set("WatchID", fmt.Sprintf("W%d", i+1))
+		log.Printf("[L:log.hello] W! log Hello1 i:%d", i)
+		time.Sleep(90 * time.Millisecond)
+	}
 
 	golog.RegisterLimiter(golog.LimitConf{
 		EveryTime: 200 * time.Millisecond,

@@ -25,19 +25,19 @@ Use default settings:
 import "github.com/bingoohuang/golog"
 
 func main() {
-	golog.Setup()
+golog.Setup()
 
-	log.Printf("Hello, this message is logged by std log, #%d", 1) // default Info
-	log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
-	log.Printf("D! Hello, this message is logged by std log, #%d", 3) // Debug
-	log.Printf("I! Hello, this message is logged by std log, #%d", 4) // Info
-	log.Printf("W! Hello, this message is logged by std log, #%d", 5) // Warn
-	log.Printf("F! Hello, this message is logged by std log, #%d", 6) // Fatal
+log.Printf("Hello, this message is logged by std log, #%d", 1) // default Info
+log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
+log.Printf("D! Hello, this message is logged by std log, #%d", 3) // Debug
+log.Printf("I! Hello, this message is logged by std log, #%d", 4) // Info
+log.Printf("W! Hello, this message is logged by std log, #%d", 5) // Warn
+log.Printf("F! Hello, this message is logged by std log, #%d", 6) // Fatal
 
-	logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
-	logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
-	logrus.Infof("Hello, this message is logged by std log, #%d", 9)
-	logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
+logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
+logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
+logrus.Infof("Hello, this message is logged by std log, #%d", 9)
+logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
 }
 ```
 
@@ -79,7 +79,8 @@ fixstd     | GOLOG_FIXSTD     | -               | true                   | impro
 ### file
 
 1. If the file is an existed directory, like `/var/log/`, a log file will appended as `/var/log/{bin}.log`
-1. If the file is not a valid directory or file, the suffix '.log' will be used to distinguished as directory or logfile.
+1. If the file is not a valid directory or file, the suffix '.log' will be used to distinguished as directory or
+   logfile.
 
 so examples:
 
@@ -96,7 +97,6 @@ layout := `%t{HH:mm:ss.SSS} %5l{length=5} %pid --- [GID=%gid] [%trace] %caller :
 golog.Setup(golog.Spec("level=debug,rotate=.yyyy-mm-dd-HH-mm"), golog.Layout(layout))
 ```
 
-
 patter                 | remark
 -----------------------|-----------------------------------------------------------------------
 `%time`  `%t`          | `%time` same with `%time{yyyy-MM-dd HH:mm:ss.SSS}`
@@ -108,6 +108,7 @@ patter                 | remark
 `%-10trace`            | trace ID, Pad with spaces (width 10, left justified)
 `%caller`              | caller information, `%caller{sep=:,level=warn}`, `sep` defines the separator between filename and line number, `level` defines the lowest level to print caller information.
 `%fields`              | fields JSON
+`%context(name=watchID)`   | context's value, where whose name is watchID for example. `vars.Set("watchID", "your id")`
 `%message` `%msg` `%m` | log detail message, `%m{singleLine=true}`, `singleLine` indicates whether the message should merged into a single line when there are multiple newlines in the message.
 `%n`                   | new line
 `%%`                   | escape percent sign
@@ -195,13 +196,15 @@ watch the log file rotating and gzipping and deleting `watch -c "ls -tlh gologde
 [more examples](pkg/logfmt/limitconf_test.go)
 
 limit config examples:
-1. \[L:100,15s:ignore.sync]  to limit 1 message every 15 seconds  or every 100 messages with "ignore.sync" as key
+
+1. \[L:100,15s:ignore.sync]  to limit 1 message every 15 seconds or every 100 messages with "ignore.sync" as key
 1. \[L:15s:ignore.sync]      to limit 1 message every 15 seconds with "ignore.sync" as key
-1. \[L:100,15s]  to limit 1 message every 15 seconds or every 100 messages with the first two words in the message as key
+1. \[L:100,15s]  to limit 1 message every 15 seconds or every 100 messages with the first two words in the message as
+   key
 1. \[L:100,0s]  to limit 1 message every 100 messages with the first two words in the message as key
 1. \[L:15s]      to limit 1 message every 15 seconds with the first two words in the message as key
-1. \[L:LimitConf1]      to limit using configuration whose name is LimitConf1 registered first by `golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "LimitConf1"})`
-
+1. \[L:LimitConf1]      to limit using configuration whose name is LimitConf1 registered first
+   by `golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "LimitConf1"})`
 
 ```go
 golog.Setup()
@@ -222,24 +225,24 @@ logrus.Infof("[L:LimitConf1] Hello i:%d", i) // will limit to by registered conf
 
 ```go
 import (
-	"github.com/bingoohuang/golog"
-	"github.com/bingoohuang/golog/pkg/ginlogrus"
-	"github.com/gin-gonic/gin"
+"github.com/bingoohuang/golog"
+"github.com/bingoohuang/golog/pkg/ginlogrus"
+"github.com/gin-gonic/gin"
 )
 
 func main() {
-	gin.SetMode(gin.ReleaseMode)
-	golog.Setup()
+gin.SetMode(gin.ReleaseMode)
+golog.Setup()
 
-	r := gin.New()
-	r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
+r := gin.New()
+r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
 
-	r.GET("/ping", func(c *gin.Context) {
-	ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
-	logrus.Info("pinged2")
-	c.JSON(200, gin.H{"message": "pong"})
+r.GET("/ping", func(c *gin.Context) {
+ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
+logrus.Info("pinged2")
+c.JSON(200, gin.H{"message": "pong"})
 
-	fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
+fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
 })
 // ...
 }

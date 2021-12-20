@@ -3,6 +3,7 @@ package logfmt
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -123,6 +124,8 @@ func (lo LogrusOption) createPart(indicator string, minus bool, digits, options 
 		return lo.parseLevel(minus, digits, options)
 	case "pid":
 		return parsePid(minus, digits, options)
+	case "context":
+		return parseContext(minus, digits, options)
 	case "gid":
 		return parseGid(minus, digits, options)
 	case "trace":
@@ -211,6 +214,49 @@ func parseFields(minus bool, digits string, options string) (Part, error) {
 	return FieldsPart{}, nil
 }
 
+type ContextPart struct {
+	Name   string
+	Digits string
+}
+
+func (p ContextPart) Append(b *bytes.Buffer, e Entry) {
+	v, _ := logctx.Get(p.Name)
+	b.WriteString(fmt.Sprintf("%"+p.Digits+"s", v))
+}
+
+func parseContext(minus bool, digits string, options string) (Part, error) {
+	c := ContextPart{Digits: compositeDigits(minus, digits, "")}
+
+	fields := strings.FieldsFunc(options, func(c rune) bool {
+		return unicode.IsSpace(c) || c == ','
+	})
+
+	name := ""
+
+	for _, f := range fields {
+		parts := strings.SplitN(f, "=", 2)
+		k, v := "", ""
+		if len(parts) > 0 {
+			k = strings.ToLower(parts[0])
+		}
+		if len(parts) > 1 {
+			v = parts[1]
+		}
+
+		switch k {
+		case "name":
+			name = v
+		}
+	}
+
+	if name == "" {
+		return nil, errors.New("name required for %var")
+	}
+
+	c.Name = name
+	return c, nil
+}
+
 type CallerPart struct {
 	Digits string
 	Level  logrus.Level
@@ -249,12 +295,10 @@ func parseCaller(minus bool, digits string, options string) (Part, error) {
 
 	for _, f := range fields {
 		parts := strings.SplitN(f, "=", 2)
-		k := ""
-		v := ""
+		k, v := "", ""
 		if len(parts) > 0 {
 			k = strings.ToLower(parts[0])
 		}
-
 		if len(parts) > 1 {
 			v = parts[1]
 		}
