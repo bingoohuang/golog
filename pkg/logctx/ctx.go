@@ -2,8 +2,10 @@ package logctx
 
 import "sync"
 
-var ctxMap map[string]string
-var ctxMapLock sync.Mutex
+var (
+	ctxMap     map[string]string
+	ctxMapLock sync.Mutex
+)
 
 func Get(key string) (string, bool) {
 	ctxMapLock.Lock()

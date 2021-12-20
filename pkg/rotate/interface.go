@@ -21,8 +21,7 @@ type HandlerFunc func(Event)
 func (h HandlerFunc) Handle(e Event) { h(e) }
 
 // Event defines the event interface to the handler.
-type Event interface {
-}
+type Event interface{}
 
 // FileRotatedEvent is the event when file rotating occurred.
 type FileRotatedEvent struct {

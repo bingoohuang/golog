@@ -9,6 +9,8 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/bingoohuang/golog/pkg/logctx"
+
 	"github.com/bingoohuang/golog/pkg/caller"
 	"github.com/bingoohuang/golog/pkg/gid"
 	"github.com/bingoohuang/golog/pkg/spec"
@@ -143,8 +145,7 @@ func (lo LogrusOption) createPart(indicator string, minus bool, digits, options 
 	return nil, fmt.Errorf("unknown indicator %s", indicator)
 }
 
-type NewLinePart struct {
-}
+type NewLinePart struct{}
 
 func (n NewLinePart) Append(b *bytes.Buffer, e Entry) {
 	b.WriteString("\n")
@@ -199,8 +200,7 @@ func parseMessage(minus bool, digits string, options string) (Part, error) {
 	return p, nil
 }
 
-type FieldsPart struct {
-}
+type FieldsPart struct{}
 
 func (p FieldsPart) Append(b *bytes.Buffer, e Entry) {
 	if fields := e.Fields(); len(fields) > 0 {

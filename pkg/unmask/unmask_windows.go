@@ -1,5 +1,4 @@
 package unmask
 
 func Unmask() {
-
 }

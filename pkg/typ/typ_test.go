@@ -14,8 +14,7 @@ type Ger interface {
 	Do()
 }
 
-type Mer struct {
-}
+type Mer struct{}
 
 func (m *Mer) Do() {
 }

@@ -3,12 +3,13 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/bingoohuang/golog/pkg/logctx"
 	"log"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/bingoohuang/golog/pkg/logctx"
 
 	"github.com/bingoohuang/golog/pkg/ginlogrus"
 	"github.com/gin-gonic/gin"
