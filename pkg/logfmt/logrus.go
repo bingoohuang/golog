@@ -125,7 +125,7 @@ func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
 		fixStd(ll, formatter)
 	}
 
-	ll.Infof("log file created:%s", lo.LogPath)
+	ll.Infof("log file created: %s", lo.LogPath)
 
 	return g
 }

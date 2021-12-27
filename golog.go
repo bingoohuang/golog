@@ -14,8 +14,6 @@ import (
 	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/bingoohuang/golog/pkg/unmask"
 
-	"github.com/bingoohuang/golog/pkg/homedir"
-
 	"github.com/bingoohuang/golog/pkg/logfmt"
 
 	"github.com/bingoohuang/golog/pkg/spec"
@@ -98,72 +96,75 @@ func (o SetupOption) InitiateOption() logfmt.LogrusOption {
 }
 
 func CreateLogDir(logPath string, logSpec *LogSpec) string {
-	logDir := ""
 	if logPath == "" {
 		logPath = logSpec.File
 	}
-	appName := filepath.Base(os.Args[0])
-	wd, _ := os.Getwd()
-	wd = filepath.Base(wd)
-	if logPath == "" {
-		if CheckPrivileges() {
-			logDir = filepath.Join("/var/log/", wd)
-		} else {
-			logDir = filepath.Join("~/logs/" + wd)
-		}
 
-		logPath = filepath.Join(logDir, appName+".log")
+	appName := filepath.Base(os.Args[0])
+
+	if logPath == "" {
+		if exeInCurrentDir, _ := ExecutableInCurrentDir(); exeInCurrentDir {
+			logPath = filepath.Join("~/logs/", appName, appName+".log")
+		} else {
+			if wd, err := os.Getwd(); err != nil {
+				fmt.Fprintf(os.Stderr, "get working directory, err: %v\n", err)
+			} else {
+				logPath = filepath.Join("~/logs/", filepath.Base(wd), appName+".log")
+			}
+		}
 	} else {
 		stat, err := os.Stat(logPath)
-		if err == nil && stat.IsDir() || strings.ToLower(filepath.Ext(logPath)) != ".log" {
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "logPath %s stat err: %v\n", logPath, err)
+		}
+		if stat != nil && stat.IsDir() || strings.ToLower(filepath.Ext(logPath)) != ".log" {
 			// treat logPath as a log directory
 			logPath = filepath.Join(logPath, appName+".log")
 		}
-
-		logDir = filepath.Dir(logPath)
 	}
 
-	stat, err := os.Stat(logPath)
+	if strings.HasPrefix(logPath, "~") {
+		dir, err := os.UserHomeDir()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "get user home directory, err: %v\n", err)
+			dir = "."
+		}
+
+		logPath = dir + logPath[1:]
+	}
+
+	logPath = filepath.Clean(logPath)
+	logDir := filepath.Dir(logPath)
+	stat, err := os.Stat(logDir)
 	if err == nil && stat.IsDir() {
 		return logPath
 	}
 
-	oldLogDir := logDir
-	logDir, err = homedir.Expand(logDir)
-	if err != nil {
-		panic(err)
-	}
-
-	logPath, err = homedir.Expand(logPath)
-	if err != nil {
-		panic(err)
-	}
-
 	unmask.Unmask()
 	if err := os.MkdirAll(logDir, os.ModeSticky|os.ModePerm); err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "make log directory, err: %v\n", err)
+		logPath = filepath.Base(logPath)
 	}
 
-	oldLogPath := logPath
-	logPath = Expand(oldLogPath, appName)
-
 	if rotate.Debug {
-		fmt.Fprintf(os.Stderr, "logDir: %s => %s, logPath: %s => %s\n", oldLogDir, logDir, oldLogPath, logPath)
+		fmt.Fprintf(os.Stderr, "logPath: %s\n", logPath)
 	}
 
 	return logPath
 }
 
-func Expand(path, appName string) string {
-	if len(path) == 0 {
-		return path
+func ExecutableInCurrentDir() (bool, error) {
+	ex, err := os.Executable()
+	if err != nil {
+		return false, err
 	}
 
-	if path[0] != '~' {
-		return path
+	workdirDir, err := os.Getwd()
+	if err != nil {
+		return false, err
 	}
 
-	return filepath.Join("/var/log/", appName, path[1:])
+	return filepath.Dir(ex) == workdirDir, nil
 }
 
 // CheckPrivileges checks root rights to use system service
