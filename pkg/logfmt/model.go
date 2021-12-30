@@ -11,7 +11,7 @@ import (
 
 type Result struct {
 	Rotate *rotate.Rotate
-	Option LogrusOption
+	Option Option
 
 	io.Writer
 }

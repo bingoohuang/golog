@@ -25,8 +25,8 @@ func (e LogrusEntry) Fields() Fields         { return Fields(e.Entry.Data) }
 func (e LogrusEntry) Message() string        { return e.Entry.Message }
 func (e LogrusEntry) Caller() *runtime.Frame { return e.Entry.Caller }
 
-// LogrusOption defines the options to setup logrus logging system.
-type LogrusOption struct {
+// Option defines the options to setup logrus logging system.
+type Option struct {
 	Level       string
 	PrintColor  bool
 	PrintCaller bool
@@ -70,7 +70,7 @@ func GetTraceID(entry *logrus.Entry) string {
 }
 
 // Setup setup log parameters.
-func (lo LogrusOption) Setup(ll *logrus.Logger) *Result {
+func (lo Option) Setup(ll *logrus.Logger) *Result {
 	if rotate.Debug {
 		fmt.Fprintf(os.Stderr, "golog options: %+v\n", lo)
 	}
@@ -141,7 +141,7 @@ func resetPrintColor(formatter *LogrusFormatter) *LogrusFormatter {
 	return &f1
 }
 
-func (lo LogrusOption) createFormatter() *LogrusFormatter {
+func (lo Option) createFormatter() *LogrusFormatter {
 	var layout *Layout
 	var err error
 
@@ -160,7 +160,7 @@ func (lo LogrusOption) createFormatter() *LogrusFormatter {
 	}}
 }
 
-func (lo LogrusOption) setLoggerLevel(ll *logrus.Logger) *logrus.Logger {
+func (lo Option) setLoggerLevel(ll *logrus.Logger) *logrus.Logger {
 	l, err := logrus.ParseLevel(lo.Level)
 	if err != nil {
 		l = logrus.InfoLevel

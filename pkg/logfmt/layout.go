@@ -66,7 +66,7 @@ func (l *Layout) addPart(p Part) {
 }
 
 // NewLayout creates a new layout from string expression.
-func NewLayout(lo LogrusOption) (*Layout, error) {
+func NewLayout(lo Option) (*Layout, error) {
 	l := &Layout{}
 	percentPos := 0
 	layout := lo.Layout
@@ -118,7 +118,7 @@ func NewLayout(lo LogrusOption) (*Layout, error) {
 	return l, nil
 }
 
-func (lo LogrusOption) createPart(indicator string, minus bool, digits, options string) (Part, error) {
+func (lo Option) createPart(indicator string, minus bool, digits, options string) (Part, error) {
 	switch indicator {
 	case "t", "time":
 		return parseTime(minus, digits, options)
@@ -391,7 +391,7 @@ func (l LevelPart) Append(b *bytes.Buffer, e Entry) {
 	}
 }
 
-func (lo LogrusOption) parseLevel(minus bool, digits string, options string) (Part, error) {
+func (lo Option) parseLevel(minus bool, digits string, options string) (Part, error) {
 	l := LevelPart{Digits: compositeDigits(minus, digits, "5"), PrintColor: lo.PrintColor}
 
 	fields := strings.FieldsFunc(options, func(c rune) bool {

@@ -72,13 +72,13 @@ func Setup(fns ...SetupOptionFn) *logfmt.Result {
 	return option.Setup(o.Logger)
 }
 
-func (o SetupOption) InitiateOption() logfmt.LogrusOption {
+func (o SetupOption) InitiateOption() logfmt.Option {
 	logSpec := &LogSpec{}
 	if err := spec.ParseSpec(o.Spec, "spec", logSpec, spec.WithEnvPrefix("GOLOG")); err != nil {
 		panic(err)
 	}
 
-	logrusOption := logfmt.LogrusOption{
+	option := logfmt.Option{
 		Level:       logSpec.Level,
 		LogPath:     CreateLogDir(o.LogPath, logSpec),
 		Rotate:      string(logSpec.Rotate),
@@ -92,7 +92,7 @@ func (o SetupOption) InitiateOption() logfmt.LogrusOption {
 		Layout:      o.Layout,
 		FixStd:      logSpec.FixStd,
 	}
-	return logrusOption
+	return option
 }
 
 func CreateLogDir(logPath string, logSpec *LogSpec) string {
@@ -103,15 +103,7 @@ func CreateLogDir(logPath string, logSpec *LogSpec) string {
 	appName := filepath.Base(os.Args[0])
 
 	if logPath == "" {
-		if exeInCurrentDir, _ := ExecutableInCurrentDir(); exeInCurrentDir {
-			logPath = filepath.Join("~/logs/", appName, appName+".log")
-		} else {
-			if wd, err := os.Getwd(); err != nil {
-				fmt.Fprintf(os.Stderr, "get working directory, err: %v\n", err)
-			} else {
-				logPath = filepath.Join("~/logs/", filepath.Base(wd), appName+".log")
-			}
-		}
+		logPath = filepath.Join("~/logs/", appName, appName+".log")
 	} else {
 		stat, err := os.Stat(logPath)
 		if err != nil {
