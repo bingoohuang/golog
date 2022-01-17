@@ -103,7 +103,14 @@ func CreateLogDir(logPath string, logSpec *LogSpec) string {
 	appName := filepath.Base(os.Args[0])
 
 	if logPath == "" {
-		logPath = filepath.Join("~/logs/", appName, appName+".log")
+		parent := appName
+		home, _ := os.UserHomeDir()
+		if wd, _ := os.Getwd(); wd != "" && home != wd {
+			if base := filepath.Base(wd); base != "bin" {
+				parent = base
+			}
+		}
+		logPath = filepath.Join("~/logs/", parent, appName+".log")
 	} else {
 		stat, err := os.Stat(logPath)
 		if err != nil {
