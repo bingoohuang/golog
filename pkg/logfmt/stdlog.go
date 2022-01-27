@@ -38,13 +38,36 @@ var (
 		"T!": logrus.TraceLevel, "D!": logrus.DebugLevel, "I!": logrus.InfoLevel, "W!": logrus.WarnLevel,
 		"E!": logrus.ErrorLevel, "F!": logrus.FatalLevel, "P!": logrus.PanicLevel,
 	}
+
+	customizeLevelMap = map[string]logrus.Level{}
 )
 
+// RegisterLevelKey customizes the log level key in the message, like [DEBUG] for debugging level.
+func RegisterLevelKey(levelKey string, level logrus.Level) {
+	customizeLevelMap[levelKey] = level
+}
+
 func ParseLevelFromMsg(msg string) (level logrus.Level, s string, foundLevelTag bool) {
+	for levelKey, customLevel := range customizeLevelMap {
+		if x := strings.Index(msg, levelKey); x >= 0 {
+			l := strings.TrimFunc(msg[:x], unicode.IsSpace)
+			r := strings.TrimFunc(msg[x+len(levelKey):], unicode.IsSpace)
+			if l != "" && r != "" {
+				l += " "
+			}
+
+			return customLevel, l + r, true
+		}
+	}
+
 	if l := regLevelTip.FindStringIndex(msg); len(l) > 0 {
 		x, y := l[0], l[1]
-		return levelMap[strings.ToUpper(msg[x:y])], strings.TrimFunc(msg[:x], unicode.IsSpace) +
-			strings.TrimFunc(msg[y:], unicode.IsSpace), true
+		l := strings.TrimFunc(msg[:x], unicode.IsSpace)
+		r := strings.TrimFunc(msg[y:], unicode.IsSpace)
+		if l != "" && r != "" {
+			l += " "
+		}
+		return levelMap[strings.ToUpper(msg[x:y])], l + r, true
 	}
 
 	return logrus.InfoLevel, msg, false
