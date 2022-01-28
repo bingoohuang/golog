@@ -117,6 +117,10 @@ func main() {
 	if v := os.Getenv("LAYOUT"); v != "" {
 		layout = v
 	}
+
+	// 默认不开启，只有配置为 on 时生效
+	// os.Setenv("GOLOG_DEBUG", "on")
+
 	// 仅仅只需要一行代码，设置golog对于logrus的支持
 	_ = golog.Setup(golog.Spec(spec), golog.Layout(layout))
 	golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "log.hello"})
@@ -156,7 +160,7 @@ func main() {
 		_, _ = w.Write([]byte("OK\n"))
 	})
 
-	Wrap(mux)
+	//Wrap(mux)
 
 	log.Println("golog spec:", spec)
 
