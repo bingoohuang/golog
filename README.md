@@ -220,10 +220,10 @@ logrus.Infof("[L:LimitConf1] Hello i:%d", i) // will limit to by registered conf
 1. [GIN](https://github.com/gin-gonic/gin) framework extra logs will be printed?
     1. Use gin.New() instead of gin.Default(), Because gin.Default() has extra Logger()
     2. ginlogrus.Logger(nil, true), `true` indicates whether static resources are filtered
-    ```
-    	r = gin.New()
-	   r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
-    ```
+```go
+	r = gin.New()
+	r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
+```
 
 ## golog gin with trace ID
 
