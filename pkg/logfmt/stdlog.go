@@ -143,8 +143,9 @@ func ParseLevelFromMsg(msg []byte) (level logrus.Level, s []byte, foundLevelTag 
 
 	if l := regLevelTip.FindIndex(msg); len(l) > 0 {
 		x, y := l[0], l[1]
+		level = levelMap[strings.ToUpper(string(msg[x:y]))]
 		s = clearMsg(msg, x, y)
-		return levelMap[strings.ToUpper(string(msg[x:y]))], s, true
+		return level, s, true
 	}
 
 	return logrus.InfoLevel, msg, false
