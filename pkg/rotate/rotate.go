@@ -70,6 +70,15 @@ func (rl *Rotate) GenBaseFilename() (string, time.Time) {
 	return rl.logfile + now.Format(rl.rotatePostfixLayout), now
 }
 
+var enableFlushWarn = func() logrus.Level {
+	level := os.Getenv("GOLOG_FLUSH_LEVEL")
+	if logLevel, err := logrus.ParseLevel(level); err == nil {
+		return logLevel
+	}
+
+	return 0
+}()
+
 // Write satisfies the io.Writer interface. It writes to the
 // appropriate file handle that is currently being used.
 // If we have reached rotation time, the target file gets
@@ -89,8 +98,8 @@ func (rl *Rotate) Write(level logrus.Level, p []byte) (n int, err error) {
 		InnerPrint("E! Write error %v", err)
 	}
 
-	if level <= logrus.WarnLevel {
-		out.Flush() // flush when level is warn/error/fatal/panic
+	if level <= enableFlushWarn {
+		_ = out.Flush() // flush when level is warn/error/fatal/panic
 	}
 
 	rl.outFhSize += int64(n)
