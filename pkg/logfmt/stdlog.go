@@ -10,7 +10,6 @@ import (
 	"os"
 	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -119,14 +118,30 @@ var (
 	// E! for error
 	// F! for fatal
 	// P! for panic
-	regLevelTip = regexp.MustCompile(`\b[TDIWEFP]!`)
-	levelMap    = map[string]logrus.Level{
-		"T!": logrus.TraceLevel, "D!": logrus.DebugLevel, "I!": logrus.InfoLevel, "W!": logrus.WarnLevel,
-		"E!": logrus.ErrorLevel, "F!": logrus.FatalLevel, "P!": logrus.PanicLevel,
-	}
-
+	regLevelTip       = regexp.MustCompile(`\b[TDIWEFP]!`)
 	customizeLevelMap = map[string]logrus.Level{}
 )
+
+func levelMapper(b byte) logrus.Level {
+	switch b {
+	case 'T':
+		return logrus.TraceLevel
+	case 'D':
+		return logrus.DebugLevel
+	case 'I':
+		return logrus.InfoLevel
+	case 'W':
+		return logrus.WarnLevel
+	case 'E':
+		return logrus.ErrorLevel
+	case 'F':
+		return logrus.FatalLevel
+	case 'P':
+		return logrus.PanicLevel
+	default:
+		return logrus.InfoLevel
+	}
+}
 
 // RegisterLevelKey customizes the log level key in the message, like [DEBUG] for debugging level.
 func RegisterLevelKey(levelKey string, level logrus.Level) {
@@ -143,7 +158,10 @@ func ParseLevelFromMsg(msg []byte) (level logrus.Level, s []byte, foundLevelTag 
 
 	if l := regLevelTip.FindIndex(msg); len(l) > 0 {
 		x, y := l[0], l[1]
-		level = levelMap[strings.ToUpper(string(msg[x:y]))]
+		level = levelMapper(msg[x])
+		if level <= logrus.PanicLevel {
+			fmt.Println()
+		}
 		s = clearMsg(msg, x, y)
 		return level, s, true
 	}
