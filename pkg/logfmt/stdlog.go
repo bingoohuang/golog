@@ -33,7 +33,7 @@ type AsyncConfig struct {
 	QueueSize int
 }
 
-var asyncCh chan []byte
+var asyncCh chan *bytes.Buffer
 var asyncOnce sync.Once
 var asyncMissed int
 
@@ -56,22 +56,30 @@ func (w writerWrapper) dealAsync(s []byte) (processed bool) {
 				size = i
 			}
 		}
-		asyncCh = make(chan []byte, size)
+		asyncCh = make(chan *bytes.Buffer, size)
 
 		go func() {
 			for msg := range asyncCh {
-				_, _ = w.writeInternal(msg)
+				_, _ = w.writeInternal(msg.Bytes())
+				str.PutBytesBuffer(msg)
 			}
 		}()
 	})
 
+	buf := str.GetBytesBuffer()
+	buf.Write(s)
+
 	select {
-	case asyncCh <- s:
+	case asyncCh <- buf:
 	default:
 		asyncMissed++
 		if asyncMissed >= 10000 {
-			asyncCh <- []byte(fmt.Sprintf("asyncMissed %d", asyncMissed))
+			buf.Reset()
+			buf.Write([]byte(fmt.Sprintf("asyncMissed %d", asyncMissed)))
+			asyncCh <- buf
 			asyncMissed = 0
+		} else {
+			str.PutBytesBuffer(buf)
 		}
 	}
 
