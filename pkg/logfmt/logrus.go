@@ -71,7 +71,7 @@ func GetTraceID(entry *logrus.Entry) string {
 
 // Setup setup log parameters.
 func (lo Option) Setup(ll *logrus.Logger) *Result {
-	if rotate.Debug {
+	if rotate.OpenDebug {
 		fmt.Fprintf(os.Stderr, "golog options: %+v\n", lo)
 	}
 
