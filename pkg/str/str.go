@@ -3,6 +3,7 @@ package str
 import (
 	"strconv"
 	"strings"
+	"unsafe"
 )
 
 func AnyOf(v string, any ...string) bool {
@@ -52,4 +53,12 @@ func ParseBool(s string, defaultValue bool) bool {
 	}
 
 	return defaultValue
+}
+
+func ToString(b []byte) string {
+	return *(*string)(unsafe.Pointer(&b))
+}
+
+func ToBytes(s string) []byte {
+	return *(*[]byte)(unsafe.Pointer(&s))
 }

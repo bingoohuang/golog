@@ -1,9 +1,9 @@
 package logfmt
 
 import (
+	"bytes"
 	"regexp"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 	"unicode"
@@ -35,7 +35,7 @@ type LimitConf struct {
 type limitRuntime struct {
 	conf *LimitConf
 	num  int
-	msg  string
+	msg  []byte
 	sync.Mutex
 	level       logrus.Level
 	ll          *logrus.Logger
@@ -55,7 +55,7 @@ func (r *limitRuntime) run() {
 	}
 }
 
-func (r *limitRuntime) SendNewMsg(ll *logrus.Logger, level logrus.Level, msg string, formatter *LogrusFormatter) {
+func (r *limitRuntime) SendNewMsg(ll *logrus.Logger, level logrus.Level, msg []byte, formatter *LogrusFormatter) {
 	r.Lock()
 	defer r.Unlock()
 
@@ -66,7 +66,7 @@ func (r *limitRuntime) SendNewMsg(ll *logrus.Logger, level logrus.Level, msg str
 
 		if r.num == 0 {
 			ll.WithField(caller.Skip, 13).Log(level, msg)
-			r.msg = ""
+			r.msg = nil
 			r.num++
 			return
 		}
@@ -88,13 +88,13 @@ func (r *limitRuntime) sendMsg() {
 	r.Lock()
 	defer r.Unlock()
 
-	if r.msg != "" {
+	if len(r.msg) > 0 {
 		r.ll.
 			WithField(caller.Skip, -1).
 			WithField(caller.GidKey, r.goroutineID).
 			WithField(caller.CallerKey, r.call).
 			Log(r.level, r.msg)
-		r.msg = ""
+		r.msg = nil
 	}
 }
 
@@ -104,7 +104,7 @@ var (
 	limiterRegistry = map[string]*LimitConf{}
 )
 
-func Limit(ll *logrus.Logger, level logrus.Level, msg string, formatter *LogrusFormatter) (filteredMsg string, limited bool) {
+func Limit(ll *logrus.Logger, level logrus.Level, msg []byte, formatter *LogrusFormatter) (filteredMsg []byte, limited bool) {
 	conf, s := ParseLimitConf(msg)
 	if conf == nil {
 		return msg, false
@@ -126,7 +126,7 @@ func Limit(ll *logrus.Logger, level logrus.Level, msg string, formatter *LogrusF
 	}
 
 	rt.SendNewMsg(ll, level, s, formatter)
-	return "", true
+	return nil, true
 }
 
 func getLimitConf(key string) *LimitConf {
@@ -143,29 +143,29 @@ func RegisterLimitConf(limitConf LimitConf) {
 	limiterRegistry[limitConf.Key] = &limitConf
 }
 
-func ParseLimitConf(msg string) (*LimitConf, string) {
-	catches := reglimitTip.FindStringIndex(msg)
+func ParseLimitConf(msg []byte) (*LimitConf, []byte) {
+	catches := reglimitTip.FindIndex(msg)
 	if len(catches) == 0 {
 		return nil, msg
 	}
 
 	x, y := catches[0], catches[1]
-	newMsg := strings.TrimFunc(msg[:x], unicode.IsSpace) + strings.TrimFunc(msg[y:], unicode.IsSpace)
 	confValue := msg[x:y]
-	confValue = strings.TrimSpace(confValue[3 : len(confValue)-1]) // get xyz from [L:xyz]
-	conf := getLimitConf(confValue)
+	confValue = bytes.TrimSpace(confValue[3 : len(confValue)-1]) // get xyz from [L:xyz]
+	confStr := string(confValue)
+
+	newMsg := clearMsg(msg, x, y)
+	conf := getLimitConf(confStr)
 	if conf != nil {
 		return conf, newMsg
 	}
 
-	subs := reglimitSep.FindStringSubmatch(confValue)
+	subs := reglimitSep.FindStringSubmatch(confStr)
 	if len(subs) == 0 {
 		return nil, newMsg
 	}
 
-	everyNumVal := subs[1]
-	everyTimeVal := subs[2]
-	keyVal := subs[3]
+	everyNumVal, everyTimeVal, keyVal := subs[1], subs[2], subs[3]
 	everyNum := 0
 	if everyNumVal != "" {
 		everyNumVal = everyNumVal[:len(everyNumVal)-1]
@@ -181,16 +181,15 @@ func ParseLimitConf(msg string) (*LimitConf, string) {
 		keyVal = keyVal[1:]
 	} else {
 		spaceCount := 0
-		idx := strings.IndexFunc(newMsg, func(r rune) bool {
+		if idx := bytes.IndexFunc(newMsg, func(r rune) bool {
 			if unicode.IsSpace(r) {
 				spaceCount++
 			}
 			return spaceCount >= 2
-		})
-		if idx < 0 {
-			keyVal = newMsg
+		}); idx < 0 {
+			keyVal = string(newMsg)
 		} else {
-			keyVal = newMsg[:idx]
+			keyVal = string(newMsg[:idx])
 		}
 	}
 

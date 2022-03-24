@@ -2,6 +2,7 @@ package golog
 
 import (
 	"fmt"
+	"github.com/bingoohuang/golog/pkg/str"
 	"io"
 	"log"
 	"os"
@@ -199,7 +200,7 @@ type LogSpec struct {
 func Printf(format string, v ...interface{}) {
 	if len(v) > 0 {
 		if _, ok := v[len(v)-1].(error); ok {
-			if _, _, hasLevelTag := logfmt.ParseLevelFromMsg(format); !hasLevelTag {
+			if _, _, hasLevelTag := logfmt.ParseLevelFromMsg(str.ToBytes(format)); !hasLevelTag {
 				format = "E! " + format
 			}
 		}

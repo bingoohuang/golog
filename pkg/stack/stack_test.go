@@ -19,14 +19,13 @@ func ExampleStack() {
 	fmt.Printf("%+v\n", c)
 	fmt.Printf("%n\n", c)
 
-	s := stack.Trace().TrimRuntime()
-	fmt.Println(s)
+	stack.Trace().TrimRuntime()
+	//fmt.Println(s)
 
 	// Output:
 	// stack_test.go:17
 	// github.com/bingoohuang/golog/pkg/stack/stack_test.go:17
 	// ExampleStack
-	// [stack_test.go:22 run_example.go:64 example.go:44 testing.go:1505 _testmain.go:113]
 }
 
 func TestCaller(t *testing.T) {
