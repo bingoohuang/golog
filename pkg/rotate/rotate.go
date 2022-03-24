@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -161,10 +162,20 @@ type BufioWriteCloser struct {
 	*bufio.Writer
 }
 
+var defaultBufSize = 40960
+
+func init() {
+	if v := os.Getenv("GOLOG_BUF_SIZE"); v != "" {
+		if size, _ := strconv.Atoi(v); size > defaultBufSize {
+			defaultBufSize = size
+		}
+	}
+}
+
 func NewBufioWriteCloser(w io.WriteCloser) *BufioWriteCloser {
 	return &BufioWriteCloser{
 		closer: w,
-		Writer: bufio.NewWriter(w),
+		Writer: bufio.NewWriterSize(w, defaultBufSize),
 	}
 }
 
