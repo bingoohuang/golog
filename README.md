@@ -21,23 +21,29 @@ golog，支持:
 
 Use default settings:
 
-```go
-import "github.com/bingoohuang/golog"
+```
+package main
+
+import (
+	"github.com/bingoohuang/golog"
+	"github.com/sirupsen/logrus"
+	"log"
+)
 
 func main() {
-golog.Setup()
+	golog.Setup()
 
-log.Printf("Hello, this message is logged by std log, #%d", 1) // default Info
-log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
-log.Printf("D! Hello, this message is logged by std log, #%d", 3) // Debug
-log.Printf("I! Hello, this message is logged by std log, #%d", 4) // Info
-log.Printf("W! Hello, this message is logged by std log, #%d", 5) // Warn
-log.Printf("F! Hello, this message is logged by std log, #%d", 6) // Fatal
+	log.Printf("Hello, this message is logged by std log, #%d", 1)    // default Info
+	log.Printf("T! Hello, this message is logged by std log, #%d", 2) // Trace
+	log.Printf("D! Hello, this message is logged by std log, #%d", 3) // Debug
+	log.Printf("I! Hello, this message is logged by std log, #%d", 4) // Info
+	log.Printf("W! Hello, this message is logged by std log, #%d", 5) // Warn
+	log.Printf("F! Hello, this message is logged by std log, #%d", 6) // Fatal
 
-logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
-logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
-logrus.Infof("Hello, this message is logged by std log, #%d", 9)
-logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
+	logrus.Tracef("Hello, this message is logged by std log, #%d", 7)
+	logrus.Debugf("Hello, this message is logged by std log, #%d", 8)
+	logrus.Infof("Hello, this message is logged by std log, #%d", 9)
+	logrus.Warnf("Hello, this message is logged by std log, #%d", 10)
 }
 ```
 
@@ -55,26 +61,26 @@ will output the log messages as below:
 
 Customize the settings:
 
-```go
+```
 golog.Setup(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d"))
 ```
 
 ## Specifications
 
-name       | env              | prerequisite    | default value          | description
------------|------------------|-----------------|------------------------|-----------------------------------------------------------------------------------------------------
-level      | GOLOG_LEVEL      | -               | info                   | log level to record (debug/info/warn/error)
-file       | GOLOG_FILE       | -               | ~/logs/{bin}/{bin}.log | base log file name, if root user, default log file will be /var/log/{bin}/{bin}.log
-rotate     | GOLOG_ROTATE     | -               | .yyyy-MM-dd            | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit]
-maxAge     | GOLOG_MAXAGE     | -               | 30d                    | max age to keep log files (unit m/h/d/w)
-gzipAge    | GOLOG_GZIPAGE    | -               | 3d                     | gzip aged log files (unit m/h/d/w)
-maxSize    | GOLOG_MAXSIZE    | -               | 100M                   | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)
-stdout     | GOLOG_STDOUT     | -               | false                  | print the log to stdout at the same time or not
-printColor | GOLOG_PRINTCOLOR | layout is empty | true                   | print color on the log level or not, only for stdout=true
-printCall  | GOLOG_PRINTCALL  | layout is empty | false                  | print caller file:line or not (performance slow)
-simple     | GOLOG_SIMPLE     | layout is empty | false                  | simple to print log (not print `PID --- [GID] [TraceID]`)
-layout     | GOLOG_LAYOUT     | -               | (empty)                | log line layout customization, like `%t %5l %pid --- [%5gid] [%trace] %20caller : %fields %msg%n`
-fixstd     | GOLOG_FIXSTD     | -               | true                   | improve standard log for golog format.
+| name       | env              | prerequisite    | default value          | description                                                                                          |
+|------------|------------------|-----------------|------------------------|------------------------------------------------------------------------------------------------------|
+| level      | GOLOG_LEVEL      | -               | info                   | log level to record (debug/info/warn/error)                                                          |
+| file       | GOLOG_FILE       | -               | ~/logs/{bin}/{bin}.log | base log file name, if root user, default log file will be /var/log/{bin}/{bin}.log                  |
+| rotate     | GOLOG_ROTATE     | -               | .yyyy-MM-dd            | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit] |
+| maxAge     | GOLOG_MAXAGE     | -               | 30d                    | max age to keep log files (unit m/h/d/w)                                                             |
+| gzipAge    | GOLOG_GZIPAGE    | -               | 3d                     | gzip aged log files (unit m/h/d/w)                                                                   |
+| maxSize    | GOLOG_MAXSIZE    | -               | 100M                   | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)                                       |
+| stdout     | GOLOG_STDOUT     | -               | false                  | print the log to stdout at the same time or not                                                      |
+| printColor | GOLOG_PRINTCOLOR | layout is empty | true                   | print color on the log level or not, only for stdout=true                                            |
+| printCall  | GOLOG_PRINTCALL  | layout is empty | false                  | print caller file:line or not (performance slow)                                                     |
+| simple     | GOLOG_SIMPLE     | layout is empty | false                  | simple to print log (not print `PID --- [GID] [TraceID]`)                                            |
+| layout     | GOLOG_LAYOUT     | -               | (empty)                | log line layout customization, like `%t %5l %pid --- [%5gid] [%trace] %20caller : %fields %msg%n`    |
+| fixstd     | GOLOG_FIXSTD     | -               | true                   | improve standard log for golog format.                                                               |
 
 ### file
 
@@ -90,28 +96,39 @@ so examples:
 1. /home/bingoo/logs(not existed w/o .log) -> /home/bingoo/logs/{bin}.log
 1. /home/bingoo/logs/app.log(not existed w/ .log) -> (same)
 
+## environments
+
+| NAME                   | DEFAULT VALUE | MEANING                                 | example |
+|------------------------|---------------|-----------------------------------------|---------|
+| GOLOG_ASYNC_QUEUE_SIZE | 10000         | asynchronously logging channel size     | 1000    |
+| GOLOG_FLUSH_LEVEL      | (none)        | FLUSH WHEN LEVEL IS higher than         | WARN    |
+| GOLOG_DEBUG            | (none)        | Enable debug logging before golog setup | on      |
+
+1. asynchronously log example: `log.Printf("[LOG_ASYNC] request received %s", remote_addr)`
+1. turn off log example: `log.Printf("[LOG_OFF] request received %s", remote_addr)`
+
 ## Layout pattern
 
-```go
+```
 layout := `%t{HH:mm:ss.SSS} %5l{length=5} %pid --- [GID=%gid] [%trace] %caller : %fields %msg%n`
 golog.Setup(golog.Spec("level=debug,rotate=.yyyy-mm-dd-HH-mm"), golog.Layout(layout))
 ```
 
-patter                 | remark
------------------------|-----------------------------------------------------------------------
-`%time`  `%t`          | `%time` same with `%time{yyyy-MM-dd HH:mm:ss.SSS}`
-`%level`  `%l`         | `%level` same with `%level{printColor=false lowerCase=false length=0}`
-`%pid`                 | process ID
-`%gid`                 | go routine ID
-`%08gid`               | go routine ID, Pad with leading zeroes(width 8)
-`%5gid`                | go routine ID, Pad with spaces (width 5, right justified)
-`%-10trace`            | trace ID, Pad with spaces (width 10, left justified)
-`%caller`              | caller information, `%caller{sep=:,level=warn}`, `sep` defines the separator between filename and line number, `level` defines the lowest level to print caller information.
-`%fields`              | fields JSON
-`%context(name=watchID)`   | context's value, where whose name is watchID for example. `vars.Set("watchID", "your id")`
-`%message` `%msg` `%m` | log detail message, `%m{singleLine=true}`, `singleLine` indicates whether the message should merged into a single line when there are multiple newlines in the message.
-`%n`                   | new line
-`%%`                   | escape percent sign
+| pattern                  | remark                                                                                                                                                                       |
+|--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `%time`  `%t`            | `%time` same with `%time{yyyy-MM-dd HH:mm:ss.SSS}`                                                                                                                           |
+| `%level`  `%l`           | `%level` same with `%level{printColor=false lowerCase=false length=0}`                                                                                                       |
+| `%pid`                   | process ID                                                                                                                                                                   |
+| `%gid`                   | go routine ID                                                                                                                                                                |
+| `%08gid`                 | go routine ID, Pad with leading zeroes(width 8)                                                                                                                              |
+| `%5gid`                  | go routine ID, Pad with spaces (width 5, right justified)                                                                                                                    |
+| `%-10trace`              | trace ID, Pad with spaces (width 10, left justified)                                                                                                                         |
+| `%caller`                | caller information, `%caller{sep=:,level=warn}`, `sep` defines the separator between filename and line number, `level` defines the lowest level to print caller information. |
+| `%fields`                | fields JSON                                                                                                                                                                  |
+| `%context(name=watchID)` | context's value, where whose name is watchID for example. `vars.Set("watchID", "your id")`                                                                                   |
+| `%message` `%msg` `%m`   | log detail message, `%m{singleLine=true}`, `singleLine` indicates whether the message should merged into a single line when there are multiple newlines in the message.      |
+| `%n`                     | new line                                                                                                                                                                     |
+| `%%`                     | escape percent sign                                                                                                                                                          |
 
 ## Demonstration
 
@@ -206,7 +223,7 @@ limit config examples:
 1. \[L:LimitConf1]      to limit using configuration whose name is LimitConf1 registered first
    by `golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "LimitConf1"})`
 
-```go
+```
 golog.Setup()
 log.Printf("[L:200ms] W! Hello i:%d", i) // will limit to 1 log per 200ms.
 logrus.Infof("[L:200ms] Hello i:%d", i) // will limit to 1 log per 200ms.
@@ -220,35 +237,39 @@ logrus.Infof("[L:LimitConf1] Hello i:%d", i) // will limit to by registered conf
 1. [GIN](https://github.com/gin-gonic/gin) framework extra logs will be printed?
     1. Use gin.New() instead of gin.Default(), Because gin.Default() has extra Logger()
     2. ginlogrus.Logger(nil, true), `true` indicates whether static resources are filtered
-```go
+
+```
 	r = gin.New()
 	r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
 ```
 
 ## golog gin with trace ID
 
-```go
+```
+package main
+
 import (
-"github.com/bingoohuang/golog"
-"github.com/bingoohuang/golog/pkg/ginlogrus"
-"github.com/gin-gonic/gin"
+	"github.com/bingoohuang/golog"
+	"github.com/bingoohuang/golog/pkg/ginlogrus"
+	"github.com/gin-gonic/gin"
+	"log"
 )
 
 func main() {
-gin.SetMode(gin.ReleaseMode)
-golog.Setup()
+	gin.SetMode(gin.ReleaseMode)
+	golog.Setup()
 
-r := gin.New()
-r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
+	r := gin.New()
+	r.Use(ginlogrus.Logger(nil, true), gin.Recovery())
 
-r.GET("/ping", func(c *gin.Context) {
-ginlogrus.NewLoggerGin(c, nil).Info("pinged1")
-logrus.Info("pinged2")
-c.JSON(200, gin.H{"message": "pong"})
+	r.GET("/ping", func(c *gin.Context) {
+		log.Printf("pinged1")
+		log.Printf("pinged2")
+		c.JSON(200, gin.H{"message": "pong"})
 
-fmt.Println("context trace id:", ginlogrus GetTraceIDGin(c))
-})
-// ...
+		fmt.Println("context trace id:", ginlogrus.GetTraceIDGin(c))
+	})
+	// ...
 }
 ```
 

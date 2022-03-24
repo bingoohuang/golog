@@ -22,12 +22,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-// 加载后立即执行，此时还未获得设置的参数,在statup中获取
-var OpenDebug bool
-
-func DebugState() {
-	OpenDebug = os.Getenv("GOLOG_DEBUG") == "on"
-}
+// GologDebug 加载后立即执行，此时还未获得设置的参数,在 startup 中获取
+var GologDebug = func() bool {
+	v := os.Getenv("GOLOG_DEBUG")
+	v = strings.ToLower(v)
+	switch v {
+	case "on", "1", "yes", "true":
+		return true
+	default:
+		return false
+	}
+}()
 
 // New creates a new Rotate object. A logfile filename
 // must be passed. Optional `Option` parameters may be passed.
@@ -324,7 +329,7 @@ func (rl *Rotate) Close() error {
 }
 
 func InnerPrint(format string, a ...interface{}) {
-	if !OpenDebug {
+	if !GologDebug {
 		return
 	}
 

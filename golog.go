@@ -67,7 +67,6 @@ func DisableLogging() {
 // Setup setup the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
 func Setup(fns ...SetupOptionFn) *logfmt.Result {
-	rotate.DebugState()
 	o := SetupOption{}
 	SetupOptionFns(fns).Setup(&o)
 	option := o.InitiateOption()
@@ -147,7 +146,7 @@ func CreateLogDir(logPath string, logSpec *LogSpec) string {
 		logPath = filepath.Base(logPath)
 	}
 
-	if rotate.OpenDebug {
+	if rotate.GologDebug {
 		fmt.Fprintf(os.Stderr, "logPath: %s\n", logPath)
 	}
 
