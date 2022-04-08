@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"runtime/debug"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -16,6 +18,7 @@ type ResponseWriter struct {
 	wroteHeader     bool
 	payload         bytes.Buffer
 	contentEncoding string
+	contentLength   int64
 }
 
 func wrapResponseWriter(w http.ResponseWriter) *ResponseWriter {
@@ -27,10 +30,13 @@ func (rw *ResponseWriter) Status() int {
 }
 
 func (rw *ResponseWriter) Write(data []byte) (int, error) {
-	rw.contentEncoding = rw.ResponseWriter.Header().Get("Content-Encoding")
-	if rw.contentEncoding == "" {
+	h := rw.ResponseWriter.Header()
+	rw.contentEncoding = h.Get("Content-Encoding")
+	rw.contentLength, _ = strconv.ParseInt(h.Get("Content-Length"), 10, 64)
+	if strings.Contains(rw.contentEncoding, "json") && (rw.contentLength > 0 && rw.contentLength < 2048) {
 		rw.payload.Write(data)
 	}
+
 	return rw.ResponseWriter.Write(data)
 }
 
