@@ -75,7 +75,14 @@ type HLog struct {
 func (dl HLog) LogRequest(side string, r *http.Request) {
 	contentEncoding := r.Header.Get("Content-Encoding")
 	reqDump, _ := httputil.DumpRequest(r, contentEncoding == "")
-	dl.Printf("I! %s Request %s", side, reqDump)
+
+	extra := ""
+	if envSize := EnvSize("MAX_PAYLOAD_SIZE", 256); len(reqDump) > envSize {
+		reqDump = reqDump[:envSize]
+		extra = "..."
+	}
+
+	dl.Printf("I! %s Request %s %s", side, reqDump, extra)
 }
 
 // LogRecover logs the recover information.
@@ -95,10 +102,16 @@ func (dl HLog) LogResponse(side string, req *http.Request, res *http.Response, e
 		rspContentEncoding := res.Header.Get("Content-Encoding")
 		rspDump, _ := httputil.DumpResponse(res, rspContentEncoding == "")
 
+		extra := ""
+		if envSize := EnvSize("MAX_PAYLOAD_SIZE", 256); len(rspDump) > envSize {
+			rspDump = rspDump[:envSize]
+			extra = "..."
+		}
+
 		if err != nil {
-			dl.Printf("I! %s Response Duration:%s error:%v Dump:%s", side, duration, err, rspDump)
+			dl.Printf("I! %s Response Duration: %s error: %v Dump: %s%s", side, duration, err, rspDump, extra)
 		} else {
-			dl.Printf("I! %s Response Duration:%s Dump:%s", side, duration, rspDump)
+			dl.Printf("I! %s Response Duration: %s Dump: %s%s", side, duration, rspDump, extra)
 		}
 	}
 }

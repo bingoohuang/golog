@@ -2,7 +2,6 @@ package golog
 
 import (
 	"fmt"
-	"github.com/bingoohuang/golog/pkg/str"
 	"io"
 	"log"
 	"os"
@@ -11,6 +10,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/bingoohuang/golog/pkg/str"
 
 	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/bingoohuang/golog/pkg/unmask"

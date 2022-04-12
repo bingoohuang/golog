@@ -160,7 +160,7 @@ func main() {
 		_, _ = w.Write([]byte("OK\n"))
 	})
 
-	//Wrap(mux)
+	// Wrap(mux)
 
 	log.Println("golog spec:", spec)
 

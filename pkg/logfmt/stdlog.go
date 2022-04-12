@@ -3,14 +3,15 @@ package logfmt
 import (
 	"bytes"
 	"fmt"
-	"github.com/bingoohuang/golog/pkg/caller"
-	"github.com/bingoohuang/golog/pkg/str"
-	"github.com/sirupsen/logrus"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"sync"
+
+	"github.com/bingoohuang/golog/pkg/caller"
+	"github.com/bingoohuang/golog/pkg/str"
+	"github.com/sirupsen/logrus"
 )
 
 type writerWrapper struct {
@@ -33,9 +34,11 @@ type AsyncConfig struct {
 	QueueSize int
 }
 
-var asyncCh chan *bytes.Buffer
-var asyncOnce sync.Once
-var asyncMissed int
+var (
+	asyncCh     chan *bytes.Buffer
+	asyncOnce   sync.Once
+	asyncMissed int
+)
 
 func (w writerWrapper) dealAsync(s []byte) (processed bool) {
 	if len(logOffTip.FindIndex(s)) > 0 {

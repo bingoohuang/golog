@@ -20,7 +20,7 @@ func ExampleStack() {
 	fmt.Printf("%n\n", c)
 
 	stack.Trace().TrimRuntime()
-	//fmt.Println(s)
+	// fmt.Println(s)
 
 	// Output:
 	// stack_test.go:17

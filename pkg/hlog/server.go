@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"runtime/debug"
 	"strconv"
-	"strings"
 	"time"
 )
 
@@ -33,8 +32,10 @@ func (rw *ResponseWriter) Write(data []byte) (int, error) {
 	h := rw.ResponseWriter.Header()
 	rw.contentEncoding = h.Get("Content-Encoding")
 	rw.contentLength, _ = strconv.ParseInt(h.Get("Content-Length"), 10, 64)
-	if strings.Contains(rw.contentEncoding, "json") && (rw.contentLength > 0 && rw.contentLength < 2048) {
-		rw.payload.Write(data)
+
+	if envSize := EnvSize("MAX_PAYLOAD_SIZE", 256); len(data) > envSize {
+		rw.payload.Write(data[:envSize])
+		rw.payload.Write([]byte("..."))
 	}
 
 	return rw.ResponseWriter.Write(data)
@@ -125,7 +126,13 @@ type HTTPWriterLogger interface {
 
 // LogWriter logs the writer information.
 func (dl HLog) LogWriter(duration time.Duration, status int, header http.Header, payload string) {
-	dl.Printfer.Printf("Server Response duration:%s status:%d header:%s payload:%s", duration, status, header, payload)
+	extra := ""
+	if envSize := EnvSize("MAX_PAYLOAD_SIZE", 256); len(payload) > envSize {
+		payload = payload[:envSize]
+		extra = "..."
+	}
+	dl.Printfer.Printf("Server Response duration: %s status: %d header: %s payload: %s%s",
+		duration, status, header, payload, extra)
 }
 
 type StdLogger struct{}

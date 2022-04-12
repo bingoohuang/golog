@@ -56,7 +56,7 @@ func New(logfile string, options ...OptionFn) (*Rotate, error) {
 	// make sure the dir is existed, eg:
 	// ./foo/bar/baz/hello.log must make sure ./foo/bar/baz is existed
 	dirname := filepath.Dir(logfile)
-	if err := os.MkdirAll(dirname, 0755); err != nil {
+	if err := os.MkdirAll(dirname, 0o755); err != nil {
 		return nil, errors.Wrapf(err, "failed to create directory %s", dirname)
 	}
 
@@ -220,7 +220,7 @@ func (rl *Rotate) rotateFile(filename string) error {
 	}
 
 	// if we got here, then we need to create a file
-	fh, err := os.OpenFile(rl.logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+	fh, err := os.OpenFile(rl.logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o644)
 	if err != nil {
 		InnerPrint("E! OpenFile %s error %+v", rl.logfile, err)
 		return errors.Errorf("failed to open file %s: %s", rl.logfile, err)
