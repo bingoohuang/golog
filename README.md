@@ -218,10 +218,10 @@ limit config examples:
 1. \[L:15s:ignore.sync]      to limit 1 message every 15 seconds with "ignore.sync" as key
 1. \[L:100,15s]  to limit 1 message every 15 seconds or every 100 messages with the first two words in the message as
    key
-1. \[L:100,0s]  to limit 1 message every 100 messages with the first two words in the message as key
-1. \[L:15s]      to limit 1 message every 15 seconds with the first two words in the message as key
+1. \[L:100,0s]  to limit 1 message every 100 messages with the **first two words in the message as key**
+1. \[L:15s]      to limit 1 message every 15 seconds with the **first two words in the message as key**
 1. \[L:LimitConf1]      to limit using configuration whose name is LimitConf1 registered first
-   by `golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "LimitConf1"})`
+   by `golog.RegisterLimiter(golog.LimitConf{EveryTime: 200 * time.Millisecond, Key: "LimitConf1", Level: "INFO"})`
 
 ```
 golog.Setup()

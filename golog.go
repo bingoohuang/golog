@@ -213,13 +213,16 @@ type LimitConf struct {
 	EveryNum  int
 	EveryTime time.Duration
 	Key       string
+	Level     string
 }
 
 // RegisterLimiter registers a limit for the log generation frequency.
 func RegisterLimiter(c LimitConf) {
+	level, _ := logrus.ParseLevel(c.Level)
 	logfmt.RegisterLimitConf(logfmt.LimitConf{
 		EveryNum:  c.EveryNum,
 		EveryTime: c.EveryTime,
 		Key:       c.Key,
+		Level:     level,
 	})
 }

@@ -30,6 +30,7 @@ type LimitConf struct {
 	EveryNum  int
 	EveryTime time.Duration
 	Key       string
+	Level     logrus.Level
 }
 
 type limitRuntime struct {
@@ -65,7 +66,7 @@ func (r *limitRuntime) SendNewMsg(ll *logrus.Logger, level logrus.Level, msg []b
 		}
 
 		if r.num == 0 {
-			ll.WithField(caller.Skip, 13).Log(level, msg)
+			ll.WithField(caller.Skip, 13).Log(level, string(msg))
 			r.msg = nil
 			r.num++
 			return
@@ -93,7 +94,7 @@ func (r *limitRuntime) sendMsg() {
 			WithField(caller.Skip, -1).
 			WithField(caller.GidKey, r.goroutineID).
 			WithField(caller.CallerKey, r.call).
-			Log(r.level, r.msg)
+			Log(r.level, string(r.msg))
 		r.msg = nil
 	}
 }
@@ -110,7 +111,7 @@ func Limit(ll *logrus.Logger, level logrus.Level, msg []byte, formatter *LogrusF
 		return msg, false
 	}
 
-	if level <= logrus.WarnLevel {
+	if level < conf.Level {
 		return s, false
 	}
 
@@ -137,6 +138,10 @@ func getLimitConf(key string) *LimitConf {
 }
 
 func RegisterLimitConf(limitConf LimitConf) {
+	if limitConf.Level == logrus.PanicLevel {
+		limitConf.Level = logrus.InfoLevel
+	}
+
 	limiterLock.Lock()
 	defer limiterLock.Unlock()
 
@@ -197,5 +202,6 @@ func ParseLimitConf(msg []byte) (*LimitConf, []byte) {
 		EveryNum:  everyNum,
 		EveryTime: everyTime,
 		Key:       keyVal,
+		Level:     logrus.InfoLevel,
 	}, newMsg
 }
