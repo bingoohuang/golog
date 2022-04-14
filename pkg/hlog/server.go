@@ -33,10 +33,9 @@ func (rw *ResponseWriter) Write(data []byte) (int, error) {
 	rw.contentEncoding = h.Get("Content-Encoding")
 	rw.contentLength, _ = strconv.ParseInt(h.Get("Content-Length"), 10, 64)
 
-	if envSize := EnvSize("MAX_PAYLOAD_SIZE", 256); len(data) > envSize {
-		rw.payload.Write(data[:envSize])
-		rw.payload.Write([]byte("..."))
-	}
+	payload, extra := AbbreviateBytesEnv(data)
+	rw.payload.WriteString(payload)
+	rw.payload.WriteString(extra)
 
 	return rw.ResponseWriter.Write(data)
 }
@@ -124,13 +123,30 @@ type HTTPWriterLogger interface {
 	LogWriter(duration time.Duration, status int, header http.Header, payload string)
 }
 
+func AbbreviateBytes(s []byte, n int) (string, string) {
+	return Abbreviate(string(s), n)
+}
+
+func Abbreviate(s string, n int) (string, string) {
+	r := []rune(s)
+	if len(r) <= n {
+		return s, ""
+	}
+
+	return string(r[:n]), "..."
+}
+
+func AbbreviateBytesEnv(s []byte) (string, string) {
+	return AbbreviateBytes(s, EnvSize("MAX_PAYLOAD_SIZE", 1024))
+}
+
+func AbbreviateEnv(s string) (string, string) {
+	return Abbreviate(s, EnvSize("MAX_PAYLOAD_SIZE", 1024))
+}
+
 // LogWriter logs the writer information.
 func (dl HLog) LogWriter(duration time.Duration, status int, header http.Header, payload string) {
-	extra := ""
-	if envSize := EnvSize("MAX_PAYLOAD_SIZE", 256); len(payload) > envSize {
-		payload = payload[:envSize]
-		extra = "..."
-	}
+	payload, extra := AbbreviateEnv(payload)
 	dl.Printfer.Printf("Server Response duration: %s status: %d header: %s payload: %s%s",
 		duration, status, header, payload, extra)
 }
