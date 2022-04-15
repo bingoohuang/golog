@@ -281,7 +281,7 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 	for i := callSkip; i >= 0; i-- {
 		if c := caller.GetCaller(i, "github.com/sirupsen/logrus"); c != nil {
 			// show function
-			fileLine = fmt.Sprintf("%s %s%s%d\n", filepath.Base(c.Function), filepath.Base(c.File), p.Sep, c.Line)
+			fileLine = fmt.Sprintf("%s %s%s%d ", filepath.Base(c.Function), filepath.Base(c.File), p.Sep, c.Line)
 		}
 		b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
 	}
