@@ -4,9 +4,9 @@ go 1.17
 
 require (
 	github.com/bingoohuang/sariaf v0.0.0-20210118074537-bac7a178cb89
-	github.com/bwmarrin/snowflake v0.3.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/pkg/errors v0.9.1
+	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.1
 )

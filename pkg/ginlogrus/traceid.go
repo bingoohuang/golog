@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/bingoohuang/golog/pkg/local"
-	"github.com/bwmarrin/snowflake"
+	"github.com/segmentio/ksuid"
 )
 
 // ContextKey is context key type.
@@ -35,12 +35,10 @@ func GetTraceID(ctx context.Context) string {
 	return local.String(ContextKeyTraceID)
 }
 
-var snow, _ = snowflake.NewNode(1)
-
 // AttachTraceID will attach a brand-new request ID to a http request
 func AttachTraceID(ctx context.Context, traceID string) context.Context {
 	if traceID == "" {
-		traceID = snow.Generate().String()
+		traceID = ksuid.New().String()
 	}
 
 	return context.WithValue(ctx, ContextKeyTraceID, traceID)
