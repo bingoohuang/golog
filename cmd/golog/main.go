@@ -53,9 +53,9 @@ func main() {
 	log.Printf("[L:%s] W! ignore sync %s.%s", "15s", "r.Schema", "r.Table")
 
 	logrus.Infof("hello\nworld")
-	logrus.Infof("{PRE}hello\nworld")
+	logrus.Infof("[PRE]hello\nworld")
 	log.Printf("hello\nworld")
-	log.Printf("{PRE}hello\nworld")
+	log.Printf("[PRE]hello\nworld")
 
 	log.Printf("Hello, this message is logged by std log, #%d", 0)
 

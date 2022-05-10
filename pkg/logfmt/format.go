@@ -110,11 +110,12 @@ func (f Formatter) Format(e Entry) []byte {
 	}
 
 	// indent multiple lines log
-	msg := strings.TrimRight(e.Message(), "\r\n")
+	msg := e.Message()
 
-	const pre = "{PRE}"
+	const pre = "[PRE]"
 	prePos := strings.Index(msg, pre)
 	if prePos < 0 {
+		msg = strings.TrimRight(msg, "\r\n")
 		msg = strings.Replace(msg, "\n", `\n`, -1)
 		msg = strings.Replace(msg, "\r", `\r`, -1)
 	} else {

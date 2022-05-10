@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"unicode"
 
@@ -261,6 +262,7 @@ type CallerPart struct {
 	Digits string
 	Level  logrus.Level
 	Sep    string
+	skip   int
 }
 
 func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
@@ -270,18 +272,18 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 	}
 
 	fileLine := "-"
-	callSkip := 0
+	callSkip := p.skip
 	if v, ok := e.Fields()[caller.Skip]; ok {
 		callSkip = v.(int)
 		delete(e.Fields(), caller.Skip)
 	}
 
-	if c := caller.GetCaller(callSkip, "github.com/sirupsen/logrus"); c != nil {
-		// show function
-		fileLine = fmt.Sprintf("%s %s%s%d", filepath.Base(c.Function), filepath.Base(c.File), p.Sep, c.Line)
+	for i := 0; i <= callSkip; i++ {
+		if c := caller.GetCaller(i, "github.com/sirupsen/logrus"); c != nil {
+			fileLine = fmt.Sprintf("%d%s%s %s%s%d ", i+1, p.Sep, filepath.Base(c.Function), filepath.Base(c.File), p.Sep, c.Line)
+		}
+		b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
 	}
-
-	b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
 }
 
 func parseCaller(minus bool, digits string, options string) (Part, error) {
@@ -308,6 +310,8 @@ func parseCaller(minus bool, digits string, options string) (Part, error) {
 			level = v
 		case "sep":
 			c.Sep = v
+		case "skip":
+			c.skip, _ = strconv.Atoi(v)
 		}
 	}
 

@@ -114,21 +114,21 @@ layout := `%t{HH:mm:ss.SSS} %5l{length=5} %pid --- [GID=%gid] [%trace] %caller :
 golog.Setup(golog.Spec("level=debug,rotate=.yyyy-mm-dd-HH-mm"), golog.Layout(layout))
 ```
 
-| pattern                  | remark                                                                                                                                                                       |
-|--------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `%time`  `%t`            | `%time` same with `%time{yyyy-MM-dd HH:mm:ss.SSS}`                                                                                                                           |
-| `%level`  `%l`           | `%level` same with `%level{printColor=false lowerCase=false length=0}`                                                                                                       |
-| `%pid`                   | process ID                                                                                                                                                                   |
-| `%gid`                   | go routine ID                                                                                                                                                                |
-| `%08gid`                 | go routine ID, Pad with leading zeroes(width 8)                                                                                                                              |
-| `%5gid`                  | go routine ID, Pad with spaces (width 5, right justified)                                                                                                                    |
-| `%-10trace`              | trace ID, Pad with spaces (width 10, left justified)                                                                                                                         |
-| `%caller`                | caller information, `%caller{sep=:,level=warn}`, `sep` defines the separator between filename and line number, `level` defines the lowest level to print caller information. |
-| `%fields`                | fields JSON                                                                                                                                                                  |
-| `%context(name=watchID)` | context's value, where whose name is watchID for example. `vars.Set("watchID", "your id")`                                                                                   |
-| `%message` `%msg` `%m`   | log detail message, `%m{singleLine=true}`, `singleLine` indicates whether the message should merged into a single line when there are multiple newlines in the message.      |
-| `%n`                     | new line                                                                                                                                                                     |
-| `%%`                     | escape percent sign                                                                                                                                                          |
+| pattern                  | remark                                                                                                                                                                                                                                 |
+|--------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `%time`  `%t`            | `%time` same with `%time{yyyy-MM-dd HH:mm:ss.SSS}`                                                                                                                                                                                     |
+| `%level`  `%l`           | `%level` same with `%level{printColor=false lowerCase=false length=0}`                                                                                                                                                                 |
+| `%pid`                   | process ID                                                                                                                                                                                                                             |
+| `%gid`                   | go routine ID                                                                                                                                                                                                                          |
+| `%08gid`                 | go routine ID, Pad with leading zeroes(width 8)                                                                                                                                                                                        |
+| `%5gid`                  | go routine ID, Pad with spaces (width 5, right justified)                                                                                                                                                                              |
+| `%-10trace`              | trace ID, Pad with spaces (width 10, left justified)                                                                                                                                                                                   |
+| `%caller`                | caller information, `%caller{sep=:,level=warn,skip=2}`, `sep` defines the separator between filename and line number, `level` defines the lowest level to print caller information,`skip` prints the number of levels of parent calls. |
+| `%fields`                | fields JSON                                                                                                                                                                                                                            |
+| `%context(name=watchID)` | context's value, where whose name is watchID for example. `vars.Set("watchID", "your id")`                                                                                                                                             |
+| `%message` `%msg` `%m`   | log detail message, `%m{singleLine=true}`, `singleLine` indicates whether the message should merged into a single line when there are multiple newlines in the message.                                                                |
+| `%n`                     | new line                                                                                                                                                                                                                               |
+| `%%`                     | escape percent sign                                                                                                                                                                                                                    |
 
 ## Demonstration
 
