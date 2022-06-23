@@ -2,6 +2,7 @@ package golog
 
 import (
 	"fmt"
+	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"log"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/str"
@@ -75,26 +77,35 @@ func Setup(fns ...SetupOptionFn) *logfmt.Result {
 }
 
 func (o SetupOption) InitiateOption() logfmt.Option {
-	logSpec := &LogSpec{}
-	if err := spec.ParseSpec(o.Spec, "spec", logSpec, spec.WithEnvPrefix("GOLOG")); err != nil {
+	l := &LogSpec{}
+	if err := spec.ParseSpec(o.Spec, "spec", l, spec.WithEnvPrefix("GOLOG")); err != nil {
 		panic(err)
 	}
 
-	option := logfmt.Option{
-		Level:       logSpec.Level,
-		LogPath:     CreateLogDir(o.LogPath, logSpec),
-		Rotate:      string(logSpec.Rotate),
-		MaxAge:      logSpec.MaxAge,
-		GzipAge:     logSpec.GzipAge,
-		MaxSize:     int64(logSpec.MaxSize),
-		PrintColor:  logSpec.PrintColor,
-		PrintCaller: logSpec.PrintCaller,
-		Stdout:      logSpec.Stdout,
-		Simple:      logSpec.Simple,
-		Layout:      o.Layout,
-		FixStd:      logSpec.FixStd,
+	stdout := false
+	switch strings.ToLower(l.Stdout) {
+	case "true", "1", "t", "yes", "y", "on":
+		stdout = true
+	case "false", "0", "f", "no", "n", "off":
+		stdout = false
+	default:
+		stdout = terminal.IsTerminal(syscall.Stdin)
 	}
-	return option
+	opt := logfmt.Option{
+		Level:       l.Level,
+		LogPath:     CreateLogDir(o.LogPath, l),
+		Rotate:      string(l.Rotate),
+		MaxAge:      l.MaxAge,
+		GzipAge:     l.GzipAge,
+		MaxSize:     int64(l.MaxSize),
+		PrintColor:  l.PrintColor,
+		PrintCaller: l.PrintCaller,
+		Stdout:      stdout,
+		Simple:      l.Simple,
+		Layout:      o.Layout,
+		FixStd:      l.FixStd,
+	}
+	return opt
 }
 
 func CreateLogDir(logPath string, logSpec *LogSpec) string {
@@ -188,7 +199,7 @@ type LogSpec struct {
 	MaxSize     spec.Size     `spec:"maxSize,100M"`
 	PrintColor  bool          `spec:"printColor,false"`
 	PrintCaller bool          `spec:"printCall,false"`
-	Stdout      bool          `spec:"stdout,false"`
+	Stdout      string        `spec:"stdout"`
 	Simple      bool          `spec:"simple,false"`
 	FixStd      bool          `spec:"fixstd,true"` // 是否增强log.Print...的输出
 }
