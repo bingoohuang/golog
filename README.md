@@ -281,6 +281,7 @@ func main() {
 
 ## Thanks to the giant shoulders:
 
+1. [slog](https://github.com/gookit/slog) Lightweight, configurable, extensible logging library written in Go. 一个易于使用的，轻量级、可配置、可扩展的日志库
 1. [lestrrat-go/file-rotatelogs](https://github.com/lestrrat-go/file-rotatelogs)
 1. [benbjohnson/clock](https://github.com/benbjohnson/clock)
 1. [rifflock/lfshook A local file system hook for golang logrus logger](https://github.com/rifflock/lfshook)
