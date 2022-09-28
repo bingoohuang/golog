@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 )
 
@@ -41,7 +42,7 @@ func (c *RoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	return resp, err
 }
 
-// NewTransport takes an http.RoundTripper and returns a new one that logs requests and responses
+// NewTransport takes a http.RoundTripper and returns a new one that logs requests and responses
 func NewTransport(rt http.RoundTripper, log interface{}) http.RoundTripper {
 	return &RoundTripper{RoundTripper: rt, Log: log}
 }
@@ -66,32 +67,34 @@ type Printfer interface {
 	Printf(format string, v ...interface{})
 }
 
-// HLog is an http logger that will use the standard logger in the log package to provide basic information about http responses.
+// HLog is a http logger that will use the standard logger in the log package to provide basic information about http responses.
 type HLog struct {
 	Printfer
+	RequestID string
 }
 
 // LogRequest logs the request.
-func (dl HLog) LogRequest(side string, r *http.Request) {
+func (dl *HLog) LogRequest(side string, r *http.Request) {
+	dl.RequestID = ksuid.New().String()
 	contentEncoding := r.Header.Get("Content-Encoding")
 	reqDump, _ := httputil.DumpRequest(r, contentEncoding == "")
 
 	payload, extra := AbbreviateBytesEnv(reqDump)
-	dl.Printf("I! %s Request %s %s", side, payload, extra)
+	dl.Printf("I! %s Request ID: %s %s %s", side, dl.RequestID, payload, extra)
 }
 
 // LogRecover logs the recover information.
-func (dl HLog) LogRecover(side string, duration time.Duration, recover interface{}, debugStack []byte) {
+func (dl *HLog) LogRecover(side string, duration time.Duration, recover interface{}, debugStack []byte) {
 	dl.Printf("W! %s duration:%s recover:%v debugStack:%s", duration, side, recover, debugStack)
 }
 
 // LogResponse logs path, host, status code and duration in milliseconds.
-func (dl HLog) LogResponse(side string, req *http.Request, res *http.Response, err error, duration time.Duration) {
+func (dl *HLog) LogResponse(side string, req *http.Request, res *http.Response, err error, duration time.Duration) {
 	if res == nil {
 		if err != nil {
-			dl.Printf("I! %s Response Duration:%s error:%s", side, duration, err)
+			dl.Printf("I! %s Response ID: %s Duration:%s error:%s", side, duration, err)
 		} else {
-			dl.Printf("I! %s Response Duration:%s", side, duration)
+			dl.Printf("I! %s Response ID: %s Duration:%s", side, duration)
 		}
 	} else {
 		rspContentEncoding := res.Header.Get("Content-Encoding")
@@ -99,9 +102,9 @@ func (dl HLog) LogResponse(side string, req *http.Request, res *http.Response, e
 		payload, extra := AbbreviateBytesEnv(rspDump)
 
 		if err != nil {
-			dl.Printf("I! %s Response Duration: %s error: %v Dump: %s%s", side, duration, err, payload, extra)
+			dl.Printf("I! %s Response ID: %s Duration: %s error: %v Dump: %s%s", side, dl.RequestID, duration, err, payload, extra)
 		} else {
-			dl.Printf("I! %s Response Duration: %s Dump: %s%s", side, duration, rspDump, extra)
+			dl.Printf("I! %s Response ID: %s Duration: %s Dump: %s%s", side, dl.RequestID, duration, rspDump, extra)
 		}
 	}
 }

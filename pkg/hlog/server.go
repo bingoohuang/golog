@@ -1,54 +1,11 @@
 package hlog
 
 import (
-	"bytes"
 	"log"
 	"net/http"
 	"runtime/debug"
-	"strconv"
 	"time"
 )
-
-// ResponseWriter is a minimal wrapper for http.ResponseWriter that allows the
-// written HTTP status code to be captured for logging.
-type ResponseWriter struct {
-	http.ResponseWriter
-	status          int
-	wroteHeader     bool
-	payload         bytes.Buffer
-	contentEncoding string
-	contentLength   int64
-}
-
-func wrapResponseWriter(w http.ResponseWriter) *ResponseWriter {
-	return &ResponseWriter{ResponseWriter: w}
-}
-
-func (rw *ResponseWriter) Status() int {
-	return rw.status
-}
-
-func (rw *ResponseWriter) Write(data []byte) (int, error) {
-	h := rw.ResponseWriter.Header()
-	rw.contentEncoding = h.Get("Content-Encoding")
-	rw.contentLength, _ = strconv.ParseInt(h.Get("Content-Length"), 10, 64)
-
-	payload, extra := AbbreviateBytesEnv(data)
-	rw.payload.WriteString(payload)
-	rw.payload.WriteString(extra)
-
-	return rw.ResponseWriter.Write(data)
-}
-
-func (rw *ResponseWriter) WriteHeader(code int) {
-	if rw.wroteHeader {
-		return
-	}
-
-	rw.status = code
-	rw.ResponseWriter.WriteHeader(code)
-	rw.wroteHeader = true
-}
 
 // LogWrapper is a log wrap to wrap http service.
 type LogWrapper struct {
@@ -62,7 +19,7 @@ func NewLogWrapper(logger Printfer) *LogWrapper {
 
 // NewStdLogWrapper creates a new *LogWrapper.
 func NewStdLogWrapper() *LogWrapper {
-	return &LogWrapper{Log: &HLog{Printfer: StdLogger{}}}
+	return &LogWrapper{Log: &HLog{Printfer: &StdLogger{}}}
 }
 
 // WrapHandler wraps a http.Handler for logging.
@@ -105,16 +62,14 @@ func (dl LogWrapper) ServeHTTP(w http.ResponseWriter, r *http.Request, h http.Ha
 		v.LogRequest("Server", r)
 	}
 
-	wrapped := wrapResponseWriter(w)
-	// call the original http.Handler we're wrapping
-	h(wrapped, r)
+	m := CaptureMetrics(h, w, r)
 
 	if v, ok := dl.Log.(HTTPWriterLogger); ok {
-		status := wrapped.status
+		status := m.Code
 		if status == 0 {
 			status = http.StatusOK
 		}
-		v.LogWriter(time.Since(startTime), status, wrapped.Header(), wrapped.payload.String())
+		v.LogWriter(time.Since(startTime), status, m.Header, m.payload.String())
 	}
 }
 
@@ -145,9 +100,9 @@ func AbbreviateEnv(s string) (string, string) {
 }
 
 // LogWriter logs the writer information.
-func (dl HLog) LogWriter(duration time.Duration, status int, header http.Header, payload string) {
+func (dl *HLog) LogWriter(duration time.Duration, status int, header http.Header, payload string) {
 	payload, extra := AbbreviateEnv(payload)
-	dl.Printfer.Printf("Server Response duration: %s status: %d header: %s payload: %s%s",
+	dl.Printfer.Printf("Server Response ID: %s duration: %s status: %d header: %s payload: %s%s", dl.RequestID,
 		duration, status, header, payload, extra)
 }
 
