@@ -5,9 +5,8 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/bingoohuang/golog/pkg/rotate"
+	"github.com/sirupsen/logrus"
 )
 
 func ExampleNew() {

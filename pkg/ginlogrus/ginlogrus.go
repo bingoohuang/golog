@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/local"
-
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )

@@ -11,14 +11,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/bingoohuang/golog/pkg/timex"
-
 	"github.com/bingoohuang/golog/pkg/clock"
-
 	"github.com/bingoohuang/golog/pkg/rotate"
+	"github.com/bingoohuang/golog/pkg/timex"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
 

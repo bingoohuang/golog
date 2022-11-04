@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/lock"
-
 	"github.com/bingoohuang/golog/pkg/str"
 )
 

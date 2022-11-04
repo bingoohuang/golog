@@ -11,15 +11,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/bingoohuang/golog/pkg/lock"
-
 	"github.com/bingoohuang/golog/pkg/compress"
 	"github.com/bingoohuang/golog/pkg/homedir"
+	"github.com/bingoohuang/golog/pkg/lock"
 	"github.com/bingoohuang/golog/pkg/timex"
-
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // GologDebug 加载后立即执行，此时还未获得设置的参数,在 startup 中获取

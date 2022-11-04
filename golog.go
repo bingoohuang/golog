@@ -2,7 +2,6 @@ package golog
 
 import (
 	"fmt"
-	"golang.org/x/crypto/ssh/terminal"
 	"io"
 	"log"
 	"os"
@@ -10,18 +9,14 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
-	"github.com/bingoohuang/golog/pkg/str"
-
-	"github.com/bingoohuang/golog/pkg/rotate"
-	"github.com/bingoohuang/golog/pkg/unmask"
-
 	"github.com/bingoohuang/golog/pkg/logfmt"
-
+	"github.com/bingoohuang/golog/pkg/rotate"
 	"github.com/bingoohuang/golog/pkg/spec"
-
+	"github.com/bingoohuang/golog/pkg/str"
+	"github.com/bingoohuang/golog/pkg/term"
+	"github.com/bingoohuang/golog/pkg/unmask"
 	"github.com/sirupsen/logrus"
 )
 
@@ -89,7 +84,7 @@ func (o SetupOption) InitiateOption() logfmt.Option {
 	case "false", "0", "f", "no", "n", "off":
 		stdout = false
 	default:
-		stdout = terminal.IsTerminal(syscall.Stdin)
+		stdout = term.IsTerminal()
 	}
 	opt := logfmt.Option{
 		Level:       l.Level,

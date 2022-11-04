@@ -10,10 +10,9 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/bingoohuang/golog/pkg/logctx"
-
 	"github.com/bingoohuang/golog/pkg/caller"
 	"github.com/bingoohuang/golog/pkg/gid"
+	"github.com/bingoohuang/golog/pkg/logctx"
 	"github.com/bingoohuang/golog/pkg/spec"
 	"github.com/bingoohuang/golog/pkg/str"
 	"github.com/bingoohuang/golog/pkg/timex"

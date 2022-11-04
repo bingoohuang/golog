@@ -7,10 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bingoohuang/golog/pkg/typ"
-
 	"github.com/bingoohuang/golog/pkg/str"
 	"github.com/bingoohuang/golog/pkg/timex"
+	"github.com/bingoohuang/golog/pkg/typ"
 	"github.com/pkg/errors"
 )
 

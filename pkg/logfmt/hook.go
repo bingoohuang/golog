@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"github.com/bingoohuang/golog/pkg/rotate"
-
 	"github.com/sirupsen/logrus"
 )
 

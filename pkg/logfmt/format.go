@@ -10,13 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bingoohuang/golog/pkg/stack"
-
 	"github.com/bingoohuang/golog/pkg/caller"
+	"github.com/bingoohuang/golog/pkg/gid"
+	"github.com/bingoohuang/golog/pkg/stack"
 	"github.com/bingoohuang/golog/pkg/str"
 	"github.com/bingoohuang/golog/pkg/timex"
-
-	"github.com/bingoohuang/golog/pkg/gid"
 )
 
 // Fields type, used to pass to `WithFields`.

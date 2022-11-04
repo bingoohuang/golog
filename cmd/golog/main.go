@@ -9,16 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bingoohuang/golog/pkg/logctx"
-
-	"github.com/bingoohuang/golog/pkg/ginlogrus"
-	"github.com/gin-gonic/gin"
-
-	"github.com/bingoohuang/golog/pkg/httpx"
-
 	"github.com/bingoohuang/golog"
+	"github.com/bingoohuang/golog/pkg/ginlogrus"
+	"github.com/bingoohuang/golog/pkg/httpx"
+	"github.com/bingoohuang/golog/pkg/logctx"
 	"github.com/bingoohuang/golog/pkg/port"
 	"github.com/bingoohuang/golog/pkg/randx"
+	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 

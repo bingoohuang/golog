@@ -4,9 +4,8 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-
 	"github.com/bingoohuang/golog/pkg/local"
+	"github.com/gin-gonic/gin"
 	"github.com/segmentio/ksuid"
 )
 

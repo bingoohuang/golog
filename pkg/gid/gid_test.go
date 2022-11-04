@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/bingoohuang/golog/pkg/gid"
-
 	"github.com/stretchr/testify/assert"
 )
 
