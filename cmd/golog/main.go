@@ -110,7 +110,7 @@ func main() {
 		spec = v
 	}
 
-	layout := `%t{yyyy-MM-dd HH:mm:ss.SSS} [Watch:%context{name=WatchID}] [%5l{length=4}] PID=%pid --- [GID=%5gid] [%trace] %20caller{level=info} : %fields %msg%n`
+	layout := `%t{yyyy-MM-dd HH:mm:ss,SSS} [Watch:%context{name=WatchID}] [%5l{length=4}] PID=%pid --- [GID=%5gid] [%trace] %20caller{level=info} : %fields %msg%n`
 	if v := os.Getenv("LAYOUT"); v != "" {
 		layout = v
 	}
