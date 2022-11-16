@@ -85,16 +85,16 @@ golog.Setup(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d")
 ### file
 
 1. If the file is an existed directory, like `/var/log/`, a log file will appended as `/var/log/{bin}.log`
-1. If the file is not a valid directory or file, the suffix '.log' will be used to distinguished as directory or
+2. If the file is not a valid directory or file, the suffix '.log' will be used to distinguished as directory or
    logfile.
 
 so examples:
 
 1. /var/log(existed dir) -> /var/log/{bin}.log
-1. /var/log/app.log(only existed dir) ->  (same)
-1. /var/log/applog(existed file) -> (same)
-1. /home/bingoo/logs(not existed w/o .log) -> /home/bingoo/logs/{bin}.log
-1. /home/bingoo/logs/app.log(not existed w/ .log) -> (same)
+2. /var/log/app.log(only existed dir) ->  (same)
+3. /var/log/applog(existed file) -> (same)
+4. /home/bingoo/logs(not existed w/o .log) -> /home/bingoo/logs/{bin}.log
+5. /home/bingoo/logs/app.log(not existed w/ .log) -> (same)
 
 ## environments
 
@@ -105,7 +105,7 @@ so examples:
 | GOLOG_DEBUG            | (none)        | Enable debug logging before golog setup | on      |
 
 1. asynchronously log example: `log.Printf("[LOG_ASYNC] request received %s", remote_addr)`
-1. turn off log example: `log.Printf("[LOG_OFF] request received %s", remote_addr)`
+2. turn off log example: `log.Printf("[LOG_OFF] request received %s", remote_addr)`
 
 ## Layout pattern
 
