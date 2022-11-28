@@ -101,7 +101,7 @@ so examples:
 | NAME                   | DEFAULT VALUE | MEANING                                 | example |
 |------------------------|---------------|-----------------------------------------|---------|
 | GOLOG_ASYNC_QUEUE_SIZE | 10000         | asynchronously logging channel size     | 1000    |
-| GOLOG_FLUSH_LEVEL      | (none)        | FLUSH WHEN LEVEL IS higher than         | WARN    |
+| GOLOG_FLUSH_LEVEL      | WarnLevel     | FLUSH WHEN LEVEL IS higher than         | WARN    |
 | GOLOG_DEBUG            | (none)        | Enable debug logging before golog setup | on      |
 
 1. asynchronously log example: `log.Printf("[LOG_ASYNC] request received %s", remote_addr)`

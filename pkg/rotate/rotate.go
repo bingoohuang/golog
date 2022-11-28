@@ -78,7 +78,7 @@ var enableFlushWarn = func() logrus.Level {
 		return logLevel
 	}
 
-	return 0
+	return logrus.WarnLevel
 }()
 
 // Write satisfies the io.Writer interface. It writes to the

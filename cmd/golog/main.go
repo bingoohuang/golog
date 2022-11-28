@@ -28,6 +28,7 @@ func main() {
 	features := flag.String("features", "", "features, available: fatal")
 	sleep := flag.Duration("sleep", 100*time.Millisecond, "sleep duration lime, like 10s, default 10ms")
 	cs := flag.Bool("cs", false, "http client and server logging")
+	logPanic := flag.Bool("panic", false, "log panic")
 	pprof := flag.String("pprof", "", "Profile pprof address, like localhost:6060")
 	help := flag.Bool("help", false, `SPEC="file=demo.log,maxSize=300M,stdout=false,rotate=.yyyy-MM-dd,maxAge=10d,gzipAge=3d" ./golog`)
 	flag.Parse()
@@ -48,6 +49,10 @@ func main() {
 	golog.Setup()
 
 	log.Printf("[L:%s] W! ignore sync %s.%s", "15s", "r.Schema", "r.Table")
+
+	if *logPanic {
+		log.Panicf("P! panic simulated!")
+	}
 
 	logrus.Infof("hello\nworld")
 	logrus.Infof("[PRE]hello\nworld")
