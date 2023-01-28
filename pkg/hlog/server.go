@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"runtime/debug"
+	"strings"
 	"time"
 )
 
@@ -91,17 +92,25 @@ func Abbreviate(s string, n int) (string, string) {
 	return string(r[:n]), "..."
 }
 
-func AbbreviateBytesEnv(s []byte) (string, string) {
-	return AbbreviateBytes(s, EnvSize("MAX_PAYLOAD_SIZE", 1024))
+func AbbreviateBytesEnv(contentType string, s []byte) (string, string) {
+	if strings.HasPrefix(contentType, "application/json") {
+		return AbbreviateBytes(s, EnvSize("MAX_PAYLOAD_SIZE", 1024))
+	}
+
+	return "ignored", "..."
 }
 
-func AbbreviateEnv(s string) (string, string) {
-	return Abbreviate(s, EnvSize("MAX_PAYLOAD_SIZE", 1024))
+func AbbreviateEnv(contentType, s string) (string, string) {
+	if strings.HasPrefix(contentType, "application/json") {
+		return Abbreviate(s, EnvSize("MAX_PAYLOAD_SIZE", 1024))
+	}
+
+	return "ignored", "..."
 }
 
 // LogWriter logs the writer information.
 func (dl *HLog) LogWriter(duration time.Duration, status int, header http.Header, payload string) {
-	payload, extra := AbbreviateEnv(payload)
+	payload, extra := AbbreviateEnv(header.Get("Content-Type"), payload)
 	dl.Printfer.Printf("Server Response ID: %s duration: %s status: %d header: %s payload: %s%s", dl.RequestID,
 		duration, status, header, payload, extra)
 }

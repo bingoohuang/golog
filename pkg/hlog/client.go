@@ -79,7 +79,7 @@ func (dl *HLog) LogRequest(side string, r *http.Request) {
 	contentEncoding := r.Header.Get("Content-Encoding")
 	reqDump, _ := httputil.DumpRequest(r, contentEncoding == "")
 
-	payload, extra := AbbreviateBytesEnv(reqDump)
+	payload, extra := AbbreviateBytesEnv(r.Header.Get("Content-Type"), reqDump)
 	dl.Printf("I! %s Request ID: %s %s %s", side, dl.RequestID, payload, extra)
 }
 
@@ -99,7 +99,7 @@ func (dl *HLog) LogResponse(side string, req *http.Request, res *http.Response, 
 	} else {
 		rspContentEncoding := res.Header.Get("Content-Encoding")
 		rspDump, _ := httputil.DumpResponse(res, rspContentEncoding == "")
-		payload, extra := AbbreviateBytesEnv(rspDump)
+		payload, extra := AbbreviateBytesEnv(res.Header.Get("Content-Type"), rspDump)
 
 		if err != nil {
 			dl.Printf("I! %s Response ID: %s Duration: %s error: %v Dump: %s%s", side, dl.RequestID, duration, err, payload, extra)

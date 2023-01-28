@@ -84,7 +84,7 @@ func (m *Metrics) CaptureMetrics(w http.ResponseWriter, fn func(http.ResponseWri
 					m.contentEncoding = h.Get("Content-Encoding")
 					m.contentLength, _ = strconv.ParseInt(h.Get("Content-Length"), 10, 64)
 
-					payload, extra := AbbreviateBytesEnv(p[:n])
+					payload, extra := AbbreviateBytesEnv(h.Get("Content-Type"), p[:n])
 					m.payload.WriteString(payload)
 					m.payload.WriteString(extra)
 
