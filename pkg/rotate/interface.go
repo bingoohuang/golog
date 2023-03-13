@@ -63,12 +63,15 @@ func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 		return false
 	}
 
+	modTime := fi.ModTime()
+	// .gz 会使得文件的修改时间往后推迟了
+	// 比如3天以上 gzip，那么gzip 文件的修改日志是延迟了3天
+	// 所以此处进行前移修正
 	if str.HasSuffixes(path, ".gz") {
-		// justify the gzipped file time.
-		cutoff = cutoff.Add(-rl.gzipAge)
+		modTime = modTime.Add(-rl.gzipAge)
 	}
 
-	return fi.ModTime().Before(cutoff)
+	return modTime.Before(cutoff)
 }
 
 func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
