@@ -281,6 +281,10 @@ func (rl *Rotate) maintain(now time.Time) {
 	gzipAgeCutoff := now.Add(-rl.gzipAge)
 
 	for _, path := range matches {
+		if path == rl.logfile {
+			continue
+		}
+
 		if rl.needToUnlink(path, maxAgeCutoff) {
 			rl.removeFile(path)
 		} else if rl.needToGzip(path, gzipAgeCutoff) {

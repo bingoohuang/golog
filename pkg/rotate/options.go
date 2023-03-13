@@ -60,7 +60,7 @@ func WithGzipAge(v time.Duration) OptionFn {
 
 // WithHandler creates a new Option that specifies the
 // Handler object that gets invoked when an event occurs.
-// Currently `FileRotated` event is supported.
+// Currently, `FileRotated` event is supported.
 func WithHandler(v Handler) OptionFn {
 	return func(r *Rotate) { r.handler = v }
 }

@@ -3,7 +3,6 @@ package rotate_test
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -81,7 +80,7 @@ func TestSatisfiesIOCloser(t *testing.T) {
 }
 
 func TestLogRotate(t *testing.T) {
-	dir, err := ioutil.TempDir("", "file-golog-test")
+	dir, err := os.MkdirTemp("", "file-golog-test")
 	if !assert.NoError(t, err, "creating temporary directory should succeed") {
 		return
 	}
@@ -125,7 +124,7 @@ func TestLogRotate(t *testing.T) {
 	oldFn := fn
 	fn = logfile
 
-	content, err := ioutil.ReadFile(fn)
+	content, err := os.ReadFile(fn)
 	if err != nil {
 		t.Errorf("Failed to read file %s: %s", fn, err)
 	}
@@ -157,7 +156,7 @@ func TestLogRotate(t *testing.T) {
 	}
 
 	newfn = logfile
-	content, err = ioutil.ReadFile(newfn)
+	content, err = os.ReadFile(newfn)
 	if err != nil {
 		t.Errorf("Failed to read file %s: %s", newfn, err)
 	}
@@ -177,7 +176,7 @@ func TestLogRotate(t *testing.T) {
 }
 
 func TestLogSetOutput(t *testing.T) {
-	dir, err := ioutil.TempDir("", "file-golog-test")
+	dir, err := os.MkdirTemp("", "file-golog-test")
 	if err != nil {
 		t.Errorf("Failed to create temporary directory: %s", err)
 	}
@@ -197,7 +196,7 @@ func TestLogSetOutput(t *testing.T) {
 	log.Print("W! " + str)
 
 	fn := rl.LogFile()
-	content, err := ioutil.ReadFile(fn)
+	content, err := os.ReadFile(fn)
 	if err != nil {
 		t.Errorf("Failed to read file %s: %s", fn, err)
 	}
@@ -212,7 +211,7 @@ func TestGHIssue16(t *testing.T) {
 		}
 	}()
 
-	dir, err := ioutil.TempDir("", "file-golog-gh16")
+	dir, err := os.MkdirTemp("", "file-golog-gh16")
 	if !assert.NoError(t, err, `creating temporary directory should succeed`) {
 		return
 	}
@@ -234,9 +233,8 @@ func TestGHIssue16(t *testing.T) {
 	defer rl.Close()
 }
 
-// nolint:funlen,gocognit,errcheck
 func TestRotationGenerationalNames(t *testing.T) {
-	dir, err := ioutil.TempDir("", "file-golog-generational")
+	dir, err := os.MkdirTemp("", "file-golog-generational")
 	if !assert.NoError(t, err, `creating temporary directory should succeed`) {
 		return
 	}
@@ -326,7 +324,7 @@ func ToLowerReplace(s, old, new string, n int) string {
 }
 
 func TestGHIssue23(t *testing.T) {
-	dir, err := ioutil.TempDir("", "file-golog-generational")
+	dir, err := os.MkdirTemp("", "file-golog-generational")
 	if !assert.NoError(t, err, `creating temporary directory should succeed`) {
 		return
 	}

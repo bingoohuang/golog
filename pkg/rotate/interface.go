@@ -52,7 +52,7 @@ type Rotate struct {
 
 func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 	// Ignore original log file and lock files
-	if rl.maxAge <= 0 || path == rl.logfile {
+	if rl.maxAge <= 0 {
 		return false
 	}
 
@@ -73,7 +73,7 @@ func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 
 func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
 	// Ignore original log file  files
-	if rl.gzipAge <= 0 || path == rl.logfile || str.HasSuffixes(path, ".gz") {
+	if rl.gzipAge <= 0 || str.HasSuffixes(path, ".gz") {
 		return false
 	}
 

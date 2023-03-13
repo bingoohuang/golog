@@ -3,7 +3,6 @@ package logfmt
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"runtime"
 	"time"
@@ -116,7 +115,7 @@ func (lo Option) Setup(ll *logrus.Logger) *Result {
 
 	ll = lo.setLoggerLevel(ll)
 	ll.SetFormatter(&DiscardFormatter{})
-	ll.SetOutput(ioutil.Discard)
+	ll.SetOutput(io.Discard)
 
 	ll.Hooks = make(logrus.LevelHooks)
 	ll.AddHook(NewHook(writers))

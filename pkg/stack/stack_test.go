@@ -2,7 +2,7 @@ package stack_test
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"path"
 	"path/filepath"
 	"reflect"
@@ -423,7 +423,7 @@ func BenchmarkCallVFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprint(ioutil.Discard, c)
+		fmt.Fprint(io.Discard, c)
 	}
 }
 
@@ -431,7 +431,7 @@ func BenchmarkCallPlusVFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprintf(ioutil.Discard, "%+v", c)
+		fmt.Fprintf(io.Discard, "%+v", c)
 	}
 }
 
@@ -439,7 +439,7 @@ func BenchmarkCallSharpVFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprintf(ioutil.Discard, "%#v", c)
+		fmt.Fprintf(io.Discard, "%#v", c)
 	}
 }
 
@@ -447,7 +447,7 @@ func BenchmarkCallSFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprintf(ioutil.Discard, "%s", c)
+		fmt.Fprintf(io.Discard, "%s", c)
 	}
 }
 
@@ -455,7 +455,7 @@ func BenchmarkCallPlusSFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprintf(ioutil.Discard, "%+s", c)
+		fmt.Fprintf(io.Discard, "%+s", c)
 	}
 }
 
@@ -463,7 +463,7 @@ func BenchmarkCallSharpSFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprintf(ioutil.Discard, "%#s", c)
+		fmt.Fprintf(io.Discard, "%#s", c)
 	}
 }
 
@@ -471,7 +471,7 @@ func BenchmarkCallDFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprintf(ioutil.Discard, "%d", c)
+		fmt.Fprintf(io.Discard, "%d", c)
 	}
 }
 
@@ -479,7 +479,7 @@ func BenchmarkCallNFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprintf(ioutil.Discard, "%n", c)
+		fmt.Fprintf(io.Discard, "%n", c)
 	}
 }
 
@@ -487,7 +487,7 @@ func BenchmarkCallPlusNFmt(b *testing.B) {
 	c := stack.Caller(0)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		fmt.Fprintf(ioutil.Discard, "%+n", c)
+		fmt.Fprintf(io.Discard, "%+n", c)
 	}
 }
 
@@ -539,20 +539,20 @@ func BenchmarkTrace100(b *testing.B) {
 
 func BenchmarkCallerAndVFmt(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		fmt.Fprint(ioutil.Discard, stack.Caller(0))
+		fmt.Fprint(io.Discard, stack.Caller(0))
 	}
 }
 
 func BenchmarkTraceAndVFmt(b *testing.B) {
 	for i := 0; i < b.N; i++ {
-		fmt.Fprint(ioutil.Discard, stack.Trace())
+		fmt.Fprint(io.Discard, stack.Trace())
 	}
 }
 
 func BenchmarkTrace10AndVFmt(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		b.StopTimer()
-		fmt.Fprint(ioutil.Discard, deepStack(10, b))
+		fmt.Fprint(io.Discard, deepStack(10, b))
 	}
 }
 
@@ -573,7 +573,7 @@ func BenchmarkRuntimeCallerAndFmt(b *testing.B) {
 		if i := strings.LastIndex(file, sep); i != -1 {
 			file = file[i+len(sep):]
 		}
-		fmt.Fprint(ioutil.Discard, file, ":", line)
+		fmt.Fprint(io.Discard, file, ":", line)
 	}
 }
 
