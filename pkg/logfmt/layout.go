@@ -280,8 +280,8 @@ func (p CallerPart) Append(b *bytes.Buffer, e Entry) {
 	for i := 0; i < callSkip; i++ {
 		if c := caller.GetCaller(i, "github.com/sirupsen/logrus"); c != nil {
 			fileLine = fmt.Sprintf("\n%d%s%s %s%s%d ", i+1, p.Sep, filepath.Base(c.Function), filepath.Base(c.File), p.Sep, c.Line)
+			b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
 		}
-		b.WriteString(fmt.Sprintf("%"+p.Digits+"s", fileLine))
 	}
 }
 
