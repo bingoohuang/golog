@@ -10,6 +10,10 @@ import (
 type Size int
 
 func (size *Size) Parse(s string) error {
+	if s == "" {
+		return nil
+	}
+
 	i := strings.IndexFunc(s, func(r rune) bool {
 		return r < '0' || r > '9'
 	})
