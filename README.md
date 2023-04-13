@@ -9,13 +9,14 @@
 golog，支持:
 
 1. 日志格式化标准
-1. 日志级别颜色
-1. 按天/大小滚动
-1. 自动压缩
-1. 自动删除
-1. 自动日志文件名
-1. logrus一行集成
-1. 日志限速
+2. 日志级别颜色
+3. 按天/大小滚动
+4. 自动压缩
+5. 自动删除
+6. 自动日志文件名
+7. logrus一行集成
+8. 日志限速
+9. 限制所有日志文件总大小
 
 ## Integration with logrus and log
 
@@ -67,20 +68,21 @@ golog.Setup(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d")
 
 ## Specifications
 
-| name       | env              | prerequisite    | default value          | description                                                                                          |
-|------------|------------------|-----------------|------------------------|------------------------------------------------------------------------------------------------------|
-| level      | GOLOG_LEVEL      | -               | info                   | log level to record (debug/info/warn/error)                                                          |
-| file       | GOLOG_FILE       | -               | ~/logs/{bin}/{bin}.log | base log file name, if root user, default log file will be /var/log/{bin}/{bin}.log                  |
-| rotate     | GOLOG_ROTATE     | -               | .yyyy-MM-dd            | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit] |
-| maxAge     | GOLOG_MAXAGE     | -               | 30d                    | max age to keep log files (unit m/h/d/w)                                                             |
-| gzipAge    | GOLOG_GZIPAGE    | -               | 3d                     | gzip aged log files (unit m/h/d/w)                                                                   |
-| maxSize    | GOLOG_MAXSIZE    | -               | 100M                   | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)                                       |
-| stdout     | GOLOG_STDOUT     | -               | false                  | print the log to stdout at the same time or not                                                      |
-| printColor | GOLOG_PRINTCOLOR | layout is empty | true                   | print color on the log level or not, only for stdout=true                                            |
-| printCall  | GOLOG_PRINTCALL  | layout is empty | false                  | print caller file:line or not (performance slow)                                                     |
-| simple     | GOLOG_SIMPLE     | layout is empty | false                  | simple to print log (not print `PID --- [GID] [TraceID]`)                                            |
-| layout     | GOLOG_LAYOUT     | -               | (empty)                | log line layout customization, like `%t %5l %pid --- [%5gid] [%trace] %20caller : %fields %msg%n`    |
-| fixstd     | GOLOG_FIXSTD     | -               | true                   | improve standard log for golog format.                                                               |
+| name         | env                | prerequisite    | default value          | description                                                                                          |
+|--------------|--------------------|-----------------|------------------------|------------------------------------------------------------------------------------------------------|
+| level        | GOLOG_LEVEL        | -               | info                   | log level to record (debug/info/warn/error)                                                          |
+| file         | GOLOG_FILE         | -               | ~/logs/{bin}/{bin}.log | base log file name, if root user, default log file will be /var/log/{bin}/{bin}.log                  |
+| rotate       | GOLOG_ROTATE       | -               | .yyyy-MM-dd            | time rotate pattern(full pattern: yyyy-MM-dd HH:mm)[Split according to the Settings of the last bit] |
+| maxAge       | GOLOG_MAXAGE       | -               | 30d                    | max age to keep log files (unit m/h/d/w)                                                             |
+| gzipAge      | GOLOG_GZIPAGE      | -               | 3d                     | gzip aged log files (unit m/h/d/w)                                                                   |
+| maxSize      | GOLOG_MAXSIZE      | -               | 100M                   | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)                                       |
+| totalSizeCap | GOLOG_TOTALSIZECAP | -               | 0                      | 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志 (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)                    |
+| stdout       | GOLOG_STDOUT       | -               | false                  | print the log to stdout at the same time or not                                                      |
+| printColor   | GOLOG_PRINTCOLOR   | layout is empty | true                   | print color on the log level or not, only for stdout=true                                            |
+| printCall    | GOLOG_PRINTCALL    | layout is empty | false                  | print caller file:line or not (performance slow)                                                     |
+| simple       | GOLOG_SIMPLE       | layout is empty | false                  | simple to print log (not print `PID --- [GID] [TraceID]`)                                            |
+| layout       | GOLOG_LAYOUT       | -               | (empty)                | log line layout customization, like `%t %5l %pid --- [%5gid] [%trace] %20caller : %fields %msg%n`    |
+| fixstd       | GOLOG_FIXSTD       | -               | true                   | improve standard log for golog format.                                                               |
 
 ### file
 
@@ -281,13 +283,14 @@ func main() {
 
 ## Thanks to the giant shoulders:
 
-1. [slog](https://github.com/gookit/slog) Lightweight, configurable, extensible logging library written in Go. 一个易于使用的，轻量级、可配置、可扩展的日志库
-1. [lestrrat-go/file-rotatelogs](https://github.com/lestrrat-go/file-rotatelogs)
-1. [benbjohnson/clock](https://github.com/benbjohnson/clock)
-1. [rifflock/lfshook A local file system hook for golang logrus logger](https://github.com/rifflock/lfshook)
-1. [mzky/utils 一个工具集，包括文件组件，日志组件](https://github.com/mzky/utils)
-1. [Lumberjack writing logs to rolling files.](https://github.com/natefinch/lumberjack)
-1. [应用程序日志规范](https://github.com/bingoohuang/blog/issues/151)
-1. [op/go-logging format](https://github.com/op/go-logging/blob/master/format.go)
-1. [log4j layout](https://logging.apache.org/log4j/2.x/manual/layouts.html)
-1. [CLI 控制台颜色渲染工具库, 拥有简洁的使用API，支持16色，256色，RGB色彩渲染输出](https://github.com/gookit/color)
+1. [slog](https://github.com/gookit/slog) Lightweight, configurable, extensible logging library written in Go.
+   一个易于使用的，轻量级、可配置、可扩展的日志库
+2. [lestrrat-go/file-rotatelogs](https://github.com/lestrrat-go/file-rotatelogs)
+3. [benbjohnson/clock](https://github.com/benbjohnson/clock)
+4. [rifflock/lfshook A local file system hook for golang logrus logger](https://github.com/rifflock/lfshook)
+5. [mzky/utils 一个工具集，包括文件组件，日志组件](https://github.com/mzky/utils)
+6. [Lumberjack writing logs to rolling files.](https://github.com/natefinch/lumberjack)
+7. [应用程序日志规范](https://github.com/bingoohuang/blog/issues/151)
+8. [op/go-logging format](https://github.com/op/go-logging/blob/master/format.go)
+9. [log4j layout](https://logging.apache.org/log4j/2.x/manual/layouts.html)
+10. [CLI 控制台颜色渲染工具库, 拥有简洁的使用API，支持16色，256色，RGB色彩渲染输出](https://github.com/gookit/color)

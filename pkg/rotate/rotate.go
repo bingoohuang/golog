@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -196,7 +197,7 @@ func NewBufioWriteCloser(w io.WriteCloser) *BufioWriteCloser {
 }
 
 func (b *BufioWriteCloser) Close() error {
-	b.Writer.Flush()
+	_ = b.Writer.Flush()
 	return b.closer.Close()
 }
 
@@ -267,38 +268,96 @@ func (rl *Rotate) Rotate() error {
 	return err
 }
 
+type logFileItem struct {
+	Name    string
+	ModTime time.Time
+	Size    int64
+}
+
 func (rl *Rotate) maintain(now time.Time) {
 	defer rl.maintainLock.Unlock()
 
 	matches, err := filepath.Glob(rl.logfile + "*")
 	if err != nil {
 		InnerPrint("E! fail to glob %v* error %+v", rl.logfile, err)
-
 		return
 	}
+
+	logFileItems := make([]logFileItem, len(matches))
+	for i, logFile := range matches {
+		logFileItems[i] = logFileItem{
+			Name: logFile,
+		}
+		if fi, _ := os.Stat(logFile); fi != nil {
+			logFileItems[i].ModTime = fi.ModTime()
+			logFileItems[i].Size = fi.Size()
+		}
+	}
+
+	sort.SliceStable(logFileItems, func(i, j int) bool {
+		f1, f2 := logFileItems[i], logFileItems[j]
+		f1Gz := strings.HasSuffix(f1.Name, ".gz")
+		f2Gz := strings.HasSuffix(f2.Name, ".gz")
+
+		if f1Gz && !f2Gz { // gz 文件比 非 gz 文件排前面
+			return true
+		} else if !f1Gz && f2Gz {
+			return false
+		}
+
+		return f1.ModTime.Before(f2.ModTime)
+	})
 
 	maxAgeCutoff := now.Add(-rl.maxAge)
 	gzipAgeCutoff := now.Add(-rl.gzipAge)
 
-	for _, path := range matches {
-		if path == rl.logfile {
+	totalSize := int64(0) // 日志文件总大小
+	totalSizedFiles := make([]logFileItem, 0, len(logFileItems))
+	for _, logFile := range logFileItems {
+		if logFile.Name == rl.logfile {
+			break
+		}
+
+		if rl.needToUnlink(logFile.Name, logFile.ModTime, maxAgeCutoff) {
+			rl.removeFile(logFile.Name)
 			continue
 		}
 
-		if rl.needToUnlink(path, maxAgeCutoff) {
-			rl.removeFile(path)
-		} else if rl.needToGzip(path, gzipAgeCutoff) {
-			rl.gzipFile(path)
+		currentSize := logFile.Size
+		currentFile := logFile.Name
+
+		if rl.needToGzip(logFile.Name, logFile.ModTime, gzipAgeCutoff) {
+			currentSize = int64(rl.gzipFile(logFile.Name))
+			currentFile = ".gz"
+		}
+
+		totalSize += currentSize
+		totalSizedFiles = append(totalSizedFiles, logFileItem{
+			Name: currentFile,
+			Size: currentSize,
+		})
+	}
+
+	if rl.totalSizeCap > 0 && totalSize > rl.totalSizeCap {
+		for _, file := range totalSizedFiles {
+			_ = os.Remove(file.Name)
+			totalSize -= file.Size
+
+			if totalSize <= rl.totalSizeCap {
+				break
+			}
 		}
 	}
 }
 
-func (rl *Rotate) gzipFile(path string) {
+func (rl *Rotate) gzipFile(path string) int {
 	InnerPrint("I! gzipped by duration:%s path:%s", rl.gzipAge, path)
 
-	if err := compress.Gzip(path); err != nil {
+	n, err := compress.Gzip(path)
+	if err != nil {
 		InnerPrint("E! Gzip error %+v", err)
 	}
+	return n
 }
 
 func (rl *Rotate) removeFile(path string) {

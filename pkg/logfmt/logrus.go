@@ -33,12 +33,13 @@ type Option struct {
 	Simple      bool
 	Layout      string
 
-	LogPath string
-	Rotate  string
-	MaxSize int64
-	MaxAge  time.Duration
-	GzipAge time.Duration
-	FixStd  bool // 是否增强log.Print...的输出
+	LogPath      string
+	Rotate       string
+	MaxSize      int64
+	TotalSizeCap int64 // 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志
+	MaxAge       time.Duration
+	GzipAge      time.Duration
+	FixStd       bool // 是否增强log.Print...的输出
 }
 
 type DiscardFormatter struct{}
@@ -92,6 +93,7 @@ func (lo Option) Setup(ll *logrus.Logger) *Result {
 		r, err := rotate.New(lo.LogPath,
 			rotate.WithRotateLayout(lo.Rotate),
 			rotate.WithMaxSize(lo.MaxSize),
+			rotate.WithTotalSizeCap(lo.TotalSizeCap),
 			rotate.WithMaxAge(lo.MaxAge),
 			rotate.WithGzipAge(lo.GzipAge),
 		)

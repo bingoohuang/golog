@@ -29,11 +29,17 @@ func (o OptionFns) Apply(r *Rotate) {
 	}
 }
 
+// WithTotalSizeCap 用来指定所有日志文件的总大小上限(可选),
+// 例如设置为3GB的话，那么到了这个值，就会删除旧的日志.
+func WithTotalSizeCap(v int64) OptionFn {
+	return func(r *Rotate) { r.totalSizeCap = v }
+}
+
 // WithClock creates a new Option that sets a clock
 // that the Rotate object will use to determine
 // the current time.
 //
-// By default Rotate.Local, which returns the
+// By default, Rotate.Local, which returns the
 // current time in the local time zone, is used. If you
 // would rather use UTC, use Rotate.UTC as the argument
 // to this option, and pass it to the constructor.
@@ -78,7 +84,7 @@ func WithRotateFullLayout(v string) OptionFn {
 }
 
 // WithMaxSize set how much max size should a log file be rotated.
-// eg. 100*spec.MiB
+// e.g. 100*spec.MiB
 func WithMaxSize(v int64) OptionFn {
 	return func(r *Rotate) { r.rotateMaxSize = v }
 }

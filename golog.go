@@ -62,7 +62,7 @@ func DisableLogging() {
 	log.SetFlags(0)
 }
 
-// Setup setup the logrus logger with specific configuration like guava CacheBuilderSpec.
+// Setup set up the logrus logger with specific configuration like guava CacheBuilderSpec.
 // eg: "level=info,file=a.log,rotate=yyyy-MM-dd,maxAge=30d,gzipAge=3d,maxSize=100M,printColor,stdout,printCaller"
 func Setup(fns ...SetupOptionFn) *logfmt.Result {
 	o := SetupOption{}
@@ -87,18 +87,19 @@ func (o SetupOption) InitiateOption() logfmt.Option {
 		stdout = term.IsTerminal()
 	}
 	opt := logfmt.Option{
-		Level:       l.Level,
-		LogPath:     CreateLogDir(o.LogPath, l),
-		Rotate:      string(l.Rotate),
-		MaxAge:      l.MaxAge,
-		GzipAge:     l.GzipAge,
-		MaxSize:     int64(l.MaxSize),
-		PrintColor:  l.PrintColor,
-		PrintCaller: l.PrintCaller,
-		Stdout:      stdout,
-		Simple:      l.Simple,
-		Layout:      o.Layout,
-		FixStd:      l.FixStd,
+		Level:        l.Level,
+		LogPath:      CreateLogDir(o.LogPath, l),
+		Rotate:       string(l.Rotate),
+		MaxAge:       l.MaxAge,
+		GzipAge:      l.GzipAge,
+		MaxSize:      int64(l.MaxSize),
+		TotalSizeCap: int64(l.TotalSizeCap),
+		PrintColor:   l.PrintColor,
+		PrintCaller:  l.PrintCaller,
+		Stdout:       stdout,
+		Simple:       l.Simple,
+		Layout:       o.Layout,
+		FixStd:       l.FixStd,
 	}
 	return opt
 }
@@ -186,17 +187,18 @@ func CheckPrivileges() bool {
 
 // LogSpec defines the spec structure to be mapped to the log specification.
 type LogSpec struct {
-	Level       string        `spec:"level,info"`
-	File        string        `spec:"file"`
-	Rotate      spec.Layout   `spec:"rotate,.yyyy-MM-dd"`
-	MaxAge      time.Duration `spec:"maxAge,30d"`
-	GzipAge     time.Duration `spec:"gzipAge,3d"`
-	MaxSize     spec.Size     `spec:"maxSize,100M"`
-	PrintColor  bool          `spec:"printColor,false"`
-	PrintCaller bool          `spec:"printCall,false"`
-	Stdout      string        `spec:"stdout"`
-	Simple      bool          `spec:"simple,false"`
-	FixStd      bool          `spec:"fixstd,true"` // 是否增强log.Print...的输出
+	Level        string        `spec:"level,info"`
+	File         string        `spec:"file"`
+	Rotate       spec.Layout   `spec:"rotate,.yyyy-MM-dd"`
+	MaxAge       time.Duration `spec:"maxAge,30d"`
+	GzipAge      time.Duration `spec:"gzipAge,3d"`
+	MaxSize      spec.Size     `spec:"maxSize,100M"`
+	TotalSizeCap spec.Size     `spec:"totalSizeCap"` // 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志
+	PrintColor   bool          `spec:"printColor,false"`
+	PrintCaller  bool          `spec:"printCall,false"`
+	Stdout       string        `spec:"stdout"`
+	Simple       bool          `spec:"simple,false"`
+	FixStd       bool          `spec:"fixstd,true"` // 是否增强log.Print...的输出
 }
 
 // Printf calls Output to print to the standard logger.

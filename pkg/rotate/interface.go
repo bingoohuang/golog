@@ -1,7 +1,6 @@
 package rotate
 
 import (
-	"os"
 	"time"
 
 	"github.com/bingoohuang/golog/pkg/lock"
@@ -46,24 +45,18 @@ type Rotate struct {
 	rotateLayout        string
 	rotatePostfixLayout string
 	rotateMaxSize       int64
+	// 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志
+	totalSizeCap int64
 
 	maintainLock *lock.Try
 }
 
-func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
+func (rl *Rotate) needToUnlink(path string, modTime, cutoff time.Time) bool {
 	// Ignore original log file and lock files
 	if rl.maxAge <= 0 {
 		return false
 	}
 
-	fi, err := os.Stat(path)
-	if err != nil {
-		InnerPrint("E! Stat %s error %+v", path, err)
-
-		return false
-	}
-
-	modTime := fi.ModTime()
 	// .gz 会使得文件的修改时间往后推迟了
 	// 比如3天以上 gzip，那么gzip 文件的修改日志是延迟了3天
 	// 所以此处进行前移修正
@@ -74,22 +67,13 @@ func (rl *Rotate) needToUnlink(path string, cutoff time.Time) bool {
 	return modTime.Before(cutoff)
 }
 
-func (rl *Rotate) needToGzip(path string, cutoff time.Time) bool {
+func (rl *Rotate) needToGzip(path string, modTime, cutoff time.Time) bool {
 	// Ignore original log file  files
 	if rl.gzipAge <= 0 || str.HasSuffixes(path, ".gz") {
 		return false
 	}
 
-	fi, err := os.Stat(path)
-	if err != nil {
-		if !os.IsNotExist(err) {
-			InnerPrint("E! Stat %s error %+v", path, err)
-		}
-
-		return false
-	}
-
-	return fi.ModTime().Before(cutoff)
+	return modTime.Before(cutoff)
 }
 
 func (rl *Rotate) flushing() {
