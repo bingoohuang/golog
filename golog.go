@@ -193,7 +193,7 @@ type LogSpec struct {
 	MaxAge       time.Duration `spec:"maxAge,30d"`
 	GzipAge      time.Duration `spec:"gzipAge,3d"`
 	MaxSize      spec.Size     `spec:"maxSize,100M"`
-	TotalSizeCap spec.Size     `spec:"totalSizeCap"` // 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志
+	TotalSizeCap spec.Size     `spec:"totalSizeCap,1G"` // 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志
 	PrintColor   bool          `spec:"printColor,false"`
 	PrintCaller  bool          `spec:"printCall,false"`
 	Stdout       string        `spec:"stdout"`

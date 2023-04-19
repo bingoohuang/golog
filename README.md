@@ -76,7 +76,7 @@ golog.Setup(golog.Spec("level=debug,rotate=.yyyy-MM-dd-HH,maxAge=5d,gzipAge=1d")
 | maxAge       | GOLOG_MAXAGE       | -               | 30d                    | max age to keep log files (unit m/h/d/w)                                                             |
 | gzipAge      | GOLOG_GZIPAGE      | -               | 3d                     | gzip aged log files (unit m/h/d/w)                                                                   |
 | maxSize      | GOLOG_MAXSIZE      | -               | 100M                   | max size to rotate log files (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)                                       |
-| totalSizeCap | GOLOG_TOTALSIZECAP | -               | 0                      | 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志 (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)                    |
+| totalSizeCap | GOLOG_TOTALSIZECAP | -               | 1G                     | 用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志 (unit K/M/K/KiB/MiB/GiB/KB/MB/GB)                       |
 | stdout       | GOLOG_STDOUT       | -               | false                  | print the log to stdout at the same time or not                                                      |
 | printColor   | GOLOG_PRINTCOLOR   | layout is empty | true                   | print color on the log level or not, only for stdout=true                                            |
 | printCall    | GOLOG_PRINTCALL    | layout is empty | false                  | print caller file:line or not (performance slow)                                                     |
