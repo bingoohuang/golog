@@ -74,7 +74,7 @@ func (r *limitRuntime) SendNewMsg(ll *logrus.Logger, level logrus.Level, msg []b
 	}
 
 	r.num++
-	r.msg = msg
+	r.msg = append([]byte{}, msg...)
 	r.level = level
 	r.ll = ll
 	r.goroutineID = gid.CurGoroutineID()
