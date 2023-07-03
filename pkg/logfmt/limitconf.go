@@ -27,21 +27,21 @@ var (
 )
 
 type LimitConf struct {
+	Key       string
 	EveryNum  int
 	EveryTime time.Duration
-	Key       string
 	Level     logrus.Level
 }
 
 type limitRuntime struct {
-	conf *LimitConf
-	num  int
-	msg  []byte
-	sync.Mutex
-	level       logrus.Level
+	conf        *LimitConf
 	ll          *logrus.Logger
-	goroutineID gid.GoroutineID
 	call        *stack.Call
+	goroutineID gid.GoroutineID
+	msg         []byte
+	num         int
+	sync.Mutex
+	level logrus.Level
 }
 
 func (r *limitRuntime) run() {

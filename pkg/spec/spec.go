@@ -160,7 +160,7 @@ func parseEnvSpec(prefix, name string) (string, bool) {
 	}
 
 	envKey := prefix + "_" + strings.ToUpper(name)
-	envKey = strings.Replace(envKey, "-", "_", -1)
+	envKey = strings.ReplaceAll(envKey, "-", "_")
 
 	value, isSet := envVars[envKey]
 	return value, isSet
@@ -199,8 +199,8 @@ func ParseSpecMap(query string) map[string]string {
 		}
 
 		value := ""
-		if i := strings.Index(key, "="); i >= 0 {
-			key, value = key[:i], key[i+1:]
+		if k, v, ok := strings.Cut(key, "="); ok {
+			key, value = k, v
 		}
 
 		m[key] = value

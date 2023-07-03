@@ -44,8 +44,8 @@ func Gzip(src string) (n int, err error) {
 
 // WriterCounter is counter for io.Writer
 type WriterCounter struct {
-	count uint64
 	io.Writer
+	count uint64
 }
 
 // NewWriterCounter function create new WriterCounter

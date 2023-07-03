@@ -10,14 +10,14 @@ func (l *Layout) Parse(s string) error {
 }
 
 func ConvertTimeLayout(s string) string {
-	s = strings.Replace(s, "yyyy", "2006", -1)
-	s = strings.Replace(s, "yy", "06", -1)
-	s = strings.Replace(s, "MM", "01", -1)
-	s = strings.Replace(s, "dd", "02", -1)
-	s = strings.Replace(s, "hh", "03", -1)
-	s = strings.Replace(s, "HH", "15", -1)
-	s = strings.Replace(s, "mm", "04", -1)
-	s = strings.Replace(s, "ss", "05", -1)
-	s = strings.Replace(s, "SSS", "000", -1)
+	s = strings.ReplaceAll(s, "yyyy", "2006")
+	s = strings.ReplaceAll(s, "yy", "06")
+	s = strings.ReplaceAll(s, "MM", "01")
+	s = strings.ReplaceAll(s, "dd", "02")
+	s = strings.ReplaceAll(s, "hh", "03")
+	s = strings.ReplaceAll(s, "HH", "15")
+	s = strings.ReplaceAll(s, "mm", "04")
+	s = strings.ReplaceAll(s, "ss", "05")
+	s = strings.ReplaceAll(s, "SSS", "000")
 	return s
 }

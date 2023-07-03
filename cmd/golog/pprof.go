@@ -59,44 +59,44 @@ func WrapServeMux(mux *http.ServeMux) {
 }
 
 var routers = []struct {
+	Handler gin.HandlerFunc
 	Method  string
 	Path    string
-	Handler gin.HandlerFunc
 }{
-	{"GET", "/debug/pprof/", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/", Handler: func(c *gin.Context) {
 		pprof.Index(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/cmdline", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/cmdline", Handler: func(c *gin.Context) {
 		pprof.Cmdline(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/profile", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/profile", Handler: func(c *gin.Context) {
 		pprof.Profile(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/symbol", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/symbol", Handler: func(c *gin.Context) {
 		pprof.Symbol(c.Writer, c.Request)
 	}},
-	{"POST", "/debug/pprof/symbol", func(c *gin.Context) {
+	{Method: "POST", Path: "/debug/pprof/symbol", Handler: func(c *gin.Context) {
 		pprof.Symbol(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/trace", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/trace", Handler: func(c *gin.Context) {
 		pprof.Trace(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/heap", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/heap", Handler: func(c *gin.Context) {
 		pprof.Handler("heap").ServeHTTP(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/goroutine", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/goroutine", Handler: func(c *gin.Context) {
 		pprof.Handler("goroutine").ServeHTTP(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/allocs", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/allocs", Handler: func(c *gin.Context) {
 		pprof.Handler("allocs").ServeHTTP(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/block", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/block", Handler: func(c *gin.Context) {
 		pprof.Handler("block").ServeHTTP(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/threadcreate", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/threadcreate", Handler: func(c *gin.Context) {
 		pprof.Handler("threadcreate").ServeHTTP(c.Writer, c.Request)
 	}},
-	{"GET", "/debug/pprof/mutex", func(c *gin.Context) {
+	{Method: "GET", Path: "/debug/pprof/mutex", Handler: func(c *gin.Context) {
 		pprof.Handler("mutex").ServeHTTP(c.Writer, c.Request)
 	}},
 }

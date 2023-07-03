@@ -10,6 +10,11 @@ import (
 
 // Metrics holds metrics captured from CaptureMetrics.
 type Metrics struct {
+	Header http.Header
+
+	contentEncoding string
+
+	payload bytes.Buffer
 	// Code is the first http response code passed to the WriteHeader func of
 	// the ResponseWriter. If no such call is made, a default code of 200 is
 	// assumed instead.
@@ -21,12 +26,8 @@ type Metrics struct {
 	// data to their underlaying connection directly (e.g. headers), but those
 	// are not tracked. Therefor the number of Written bytes will usually match
 	// the size of the response body.
-	Written int64
-	Header  http.Header
-
-	payload         bytes.Buffer
-	contentEncoding string
-	contentLength   int64
+	Written       int64
+	contentLength int64
 }
 
 // CaptureMetrics wraps the given hnd, executes it with the given w and r, and

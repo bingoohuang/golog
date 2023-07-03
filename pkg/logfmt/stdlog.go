@@ -114,7 +114,7 @@ func (w writerWrapper) writeInternal(p []byte) (n int, err error) {
 	level, msg, _ := ParseLevelFromMsg(p)
 
 	if s, ok := Limit(w.ll, level, msg, w.formatter); !ok {
-		w.ll.WithField(caller.Skip, 11).Log(level, str.ToString(s))
+		w.ll.WithField(caller.Skip, 11).Log(level, string(s))
 	}
 
 	return 0, nil

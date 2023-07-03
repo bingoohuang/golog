@@ -1,3 +1,4 @@
+// Package golog is a convenient logging.
 package golog
 
 import (
@@ -22,10 +23,10 @@ import (
 
 // SetupOption defines the options to setup.
 type SetupOption struct {
+	Logger  *logrus.Logger
 	Spec    string
 	Layout  string
 	LogPath string
-	Logger  *logrus.Logger
 }
 
 type (
@@ -71,6 +72,7 @@ func Setup(fns ...SetupOptionFn) *logfmt.Result {
 	return option.Setup(o.Logger)
 }
 
+// InitiateOption initialize options.
 func (o SetupOption) InitiateOption() logfmt.Option {
 	l := &LogSpec{}
 	if err := spec.ParseSpec(o.Spec, "spec", l, spec.WithEnvPrefix("GOLOG")); err != nil {
@@ -104,6 +106,7 @@ func (o SetupOption) InitiateOption() logfmt.Option {
 	return opt
 }
 
+// CreateLogDir creates log dir.
 func CreateLogDir(logPath string, logSpec *LogSpec) string {
 	if logPath == "" {
 		logPath = logSpec.File
@@ -161,6 +164,7 @@ func CreateLogDir(logPath string, logSpec *LogSpec) string {
 	return logPath
 }
 
+// ExecutableInCurrentDir check the exe is in the working dir.
 func ExecutableInCurrentDir() (bool, error) {
 	ex, err := os.Executable()
 	if err != nil {
@@ -190,13 +194,13 @@ type LogSpec struct {
 	Level        string        `spec:"level,info"`
 	File         string        `spec:"file"`
 	Rotate       spec.Layout   `spec:"rotate,.yyyy-MM-dd"`
+	Stdout       string        `spec:"stdout"`
 	MaxAge       time.Duration `spec:"maxAge,30d"`
 	GzipAge      time.Duration `spec:"gzipAge,3d"`
 	MaxSize      spec.Size     `spec:"maxSize,100M"`
 	TotalSizeCap spec.Size     `spec:"totalSizeCap,1G"` // 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志
 	PrintColor   bool          `spec:"printColor,false"`
 	PrintCaller  bool          `spec:"printCall,false"`
-	Stdout       string        `spec:"stdout"`
 	Simple       bool          `spec:"simple,false"`
 	FixStd       bool          `spec:"fixstd,true"` // 是否增强log.Print...的输出
 }
@@ -218,10 +222,10 @@ func Printf(format string, v ...interface{}) {
 
 // LimitConf defines the log limit configuration.
 type LimitConf struct {
-	EveryNum  int
-	EveryTime time.Duration
 	Key       string
 	Level     string
+	EveryNum  int
+	EveryTime time.Duration
 }
 
 // RegisterLimiter registers a limit for the log generation frequency.

@@ -209,8 +209,8 @@ type combiner interface {
 // this is container for the compiler to keep track of appenders,
 // and combine them as we parse and compile the pattern.
 type combiningAppend struct {
-	list           appenderList
 	prev           Appender
+	list           appenderList
 	prevCanCombine bool
 }
 

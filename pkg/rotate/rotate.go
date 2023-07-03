@@ -269,8 +269,8 @@ func (rl *Rotate) Rotate() error {
 }
 
 type logFileItem struct {
-	Name    string
 	ModTime time.Time
+	Name    string
 	Size    int64
 }
 

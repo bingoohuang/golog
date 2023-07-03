@@ -55,12 +55,13 @@ func (c *clock) Timer(d time.Duration) *Timer {
 // Mock represents a mock clock that only moves forward programmically.
 // It can be preferable to a real-time clock when testing time-based functionality.
 type Mock struct {
-	mu     sync.Mutex
 	now    time.Time   // current time
 	timers clockTimers // tickers & timers
 
+	waiting []waiting
+
 	calls      Calls
-	waiting    []waiting
+	mu         sync.Mutex
 	callsMutex sync.Mutex
 }
 
@@ -369,6 +370,6 @@ func (c Calls) atLeast(o Calls) bool {
 }
 
 type waiting struct {
-	expected Calls
 	done     chan struct{}
+	expected Calls
 }

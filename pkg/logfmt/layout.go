@@ -166,7 +166,7 @@ func (p MessagePart) Append(b *bytes.Buffer, e Entry) {
 
 	if p.SingleLine {
 		// indent multiple lines log
-		b.WriteString(strings.Replace(msg, "\n", `\n`, -1))
+		b.WriteString(strings.ReplaceAll(msg, "\n", `\n`))
 	} else {
 		b.WriteString(msg)
 	}
@@ -191,8 +191,7 @@ func parseMessage(minus bool, digits string, options string) (Part, error) {
 			v = parts[1]
 		}
 
-		switch k {
-		case "singleline":
+		if k == "singleline" {
 			p.SingleLine = str.ParseBool(v, true)
 		}
 
@@ -243,8 +242,7 @@ func parseContext(minus bool, digits string, options string) (Part, error) {
 			v = parts[1]
 		}
 
-		switch k {
-		case "name":
+		if k == "name" {
 			name = v
 		}
 	}
@@ -259,9 +257,9 @@ func parseContext(minus bool, digits string, options string) (Part, error) {
 
 type CallerPart struct {
 	Digits string
-	Level  logrus.Level
 	Sep    string
 	skip   int
+	Level  logrus.Level
 }
 
 func (p CallerPart) Append(b *bytes.Buffer, e Entry) {

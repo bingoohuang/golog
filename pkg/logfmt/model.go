@@ -10,10 +10,9 @@ import (
 )
 
 type Result struct {
+	io.Writer
 	Rotate *rotate.Rotate
 	Option Option
-
-	io.Writer
 }
 
 // RegisterSignalRotate register a signal like syscall.SIGHUP to rotate the log file.

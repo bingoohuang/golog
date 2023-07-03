@@ -26,19 +26,20 @@ func (e LogrusEntry) Caller() *runtime.Frame { return e.Entry.Caller }
 
 // Option defines the options to setup logrus logging system.
 type Option struct {
-	Level       string
-	PrintColor  bool
-	PrintCaller bool
-	Stdout      bool
-	Simple      bool
-	Layout      string
+	Layout string
+
+	Level  string
+	Rotate string
 
 	LogPath      string
-	Rotate       string
-	MaxSize      int64
 	TotalSizeCap int64 // 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志
+	MaxSize      int64
 	MaxAge       time.Duration
 	GzipAge      time.Duration
+	Simple       bool
+	Stdout       bool
+	PrintCaller  bool
+	PrintColor   bool
 	FixStd       bool // 是否增强log.Print...的输出
 }
 

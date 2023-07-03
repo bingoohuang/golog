@@ -55,11 +55,12 @@ func Logger(l0 logrus.FieldLogger, filter bool) gin.HandlerFunc {
 			c.Writer.Size(), c.Request.Referer(), c.Request.UserAgent(), stop)
 
 		l2 := NewLoggerGin(c, l)
-		if statusCode > 499 {
+		switch {
+		case statusCode > 499:
 			l2.Error(msg)
-		} else if statusCode > 399 {
+		case statusCode > 399:
 			l2.Warn(msg)
-		} else {
+		default:
 			l2.Info(msg)
 		}
 	}

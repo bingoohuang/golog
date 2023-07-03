@@ -6,8 +6,8 @@ type Option interface {
 }
 
 type option struct {
-	name  string
 	value interface{}
+	name  string
 }
 
 func (o *option) Name() string       { return o.name }
@@ -24,8 +24,8 @@ func WithSpecificationSet(ds SpecificationSet) Option {
 }
 
 type optSpecificationPair struct {
-	name     byte
 	appender Appender
+	name     byte
 }
 
 const optSpecification = `opt-specification`

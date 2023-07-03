@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/bingoohuang/golog/pkg/stack"
+	"github.com/pkg/errors"
 )
 
 func ExampleStack() {
@@ -337,7 +338,7 @@ func TestCallMarshalText(t *testing.T) {
 
 	for _, d := range data {
 		text, err := d.c.MarshalText()
-		if got, want := err, d.err; got != want {
+		if got, want := err, d.err; !errors.Is(got, want) {
 			t.Errorf("%s: got err %v, want err %v", d.desc, got, want)
 		}
 		if got, want := text, d.out; !reflect.DeepEqual(got, want) {

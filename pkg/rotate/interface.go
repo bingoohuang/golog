@@ -30,25 +30,27 @@ type FileRotatedEvent struct {
 // Rotate represents a log file that gets
 // automatically rotated as you write to it.
 type Rotate struct {
-	clock      Clock
-	curFn      string
-	curFnBase  string
-	generation int
-	maxAge     time.Duration
-	gzipAge    time.Duration
-	lock       lock.RWLock
-	handler    Handler
-	outFh      FlushWriteCloser
-	outFhSize  int64
+	handler Handler
+	clock   Clock
+	outFh   FlushWriteCloser
 
-	logfile             string
-	rotateLayout        string
+	maintainLock        *lock.Try
 	rotatePostfixLayout string
-	rotateMaxSize       int64
+
+	logfile      string
+	rotateLayout string
+	curFnBase    string
+	curFn        string
+	gzipAge      time.Duration
+	maxAge       time.Duration
+	generation   int
+	outFhSize    int64
+
+	rotateMaxSize int64
 	// 可选，用来指定所有日志文件的总大小上限，例如设置为3GB的话，那么到了这个值，就会删除旧的日志
 	totalSizeCap int64
 
-	maintainLock *lock.Try
+	lock lock.RWLock
 }
 
 func (rl *Rotate) needToUnlink(path string, modTime, cutoff time.Time) bool {

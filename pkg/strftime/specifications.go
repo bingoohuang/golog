@@ -24,9 +24,9 @@ type SpecificationSet interface {
 }
 
 type specificationSet struct {
-	mutable bool
 	lock    rwLocker
 	store   map[byte]Appender
+	mutable bool
 }
 
 // The default specification set does not need any locking as it is never

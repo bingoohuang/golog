@@ -356,7 +356,7 @@ func (w *rw) Unwrap() http.ResponseWriter {
 }
 
 func (w *rw) Header() http.Header {
-	f := w.w.(http.ResponseWriter).Header
+	f := w.w.Header
 	if w.h.Header != nil {
 		f = w.h.Header(f)
 	}
@@ -364,7 +364,7 @@ func (w *rw) Header() http.Header {
 }
 
 func (w *rw) WriteHeader(code int) {
-	f := w.w.(http.ResponseWriter).WriteHeader
+	f := w.w.WriteHeader
 	if w.h.WriteHeader != nil {
 		f = w.h.WriteHeader(f)
 	}
@@ -372,7 +372,7 @@ func (w *rw) WriteHeader(code int) {
 }
 
 func (w *rw) Write(b []byte) (int, error) {
-	f := w.w.(http.ResponseWriter).Write
+	f := w.w.Write
 	if w.h.Write != nil {
 		f = w.h.Write(f)
 	}

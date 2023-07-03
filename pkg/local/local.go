@@ -7,8 +7,8 @@ import (
 
 // nolint gochecknoglobals
 var locals = &struct {
-	sync.RWMutex
 	ctx map[uint64]context.Context
+	sync.RWMutex
 }{
 	ctx: make(map[uint64]context.Context),
 }

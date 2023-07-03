@@ -49,10 +49,10 @@ func (e EntryItem) Message() string        { return e.EntryMessage }
 func (e EntryItem) Caller() *runtime.Frame { return nil }
 
 type Formatter struct {
+	Layout      *Layout
 	PrintColor  bool
 	PrintCaller bool
 	Simple      bool
-	Layout      *Layout
 }
 
 var Pid = os.Getpid()
@@ -114,8 +114,8 @@ func (f Formatter) Format(e Entry) []byte {
 	prePos := strings.Index(msg, pre)
 	if prePos < 0 {
 		msg = strings.TrimRight(msg, "\r\n")
-		msg = strings.Replace(msg, "\n", `\n`, -1)
-		msg = strings.Replace(msg, "\r", `\r`, -1)
+		msg = strings.ReplaceAll(msg, "\n", `\n`)
+		msg = strings.ReplaceAll(msg, "\r", `\r`)
 	} else {
 		msg = msg[:prePos] + msg[prePos+len(pre):]
 	}
