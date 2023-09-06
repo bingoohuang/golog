@@ -294,3 +294,18 @@ func main() {
 8. [op/go-logging format](https://github.com/op/go-logging/blob/master/format.go)
 9. [log4j layout](https://logging.apache.org/log4j/2.x/manual/layouts.html)
 10. [CLI 控制台颜色渲染工具库, 拥有简洁的使用API，支持16色，256色，RGB色彩渲染输出](https://github.com/gookit/color)
+
+## Relative blogs
+
+1. [Logging in Go: A Comparison of the Top 8 Libraries](https://betterstack.com/community/guides/logging/best-golang-logging-libraries/)
+
+   | Package	  | Time	                | Objects Allocated |
+   |-----------|----------------------|-------------------|
+   | zerolog	  | 81 ns/op	            | 0 allocs/op       |
+   | zap	      | 193 ns/op	           | 0 allocs/op       |
+   | zap       | (sugared)	227 ns/op	 | 1 allocs/op       |
+   | slog      | 	322 ns/op	          | 0 allocs/op       |
+   | apex/log	 | 19518 ns/op	         | 53 allocs/op      |
+   | log15	    | 19812 ns/op	         | 70 allocs/op      |
+   | logrus	   | 21997 ns/op	         | 68 allocs/op      |
+
